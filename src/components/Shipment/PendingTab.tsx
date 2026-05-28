@@ -1,5 +1,4 @@
 import React from "react";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 interface PendingTabProps {
   data: any[];
@@ -16,65 +15,136 @@ const PendingTab: React.FC<PendingTabProps> = ({
   onToggleSelectAll,
   isAllSelected,
 }) => {
+  /* Figma spec from dev panel:
+     - Cell frame: 344×100, padding: 16px top/bottom, 8px left/right, gap: 4px
+     - Font: "Plus Jakarta Sans" (round geometric — what Figma uses here)
+     - Size: 13px, weight: 400, color: #111827
+     - Header text: same font/size/color as body — dark #111827, NOT grey
+  */
+
+  const FONT = "'Plus Jakarta Sans', 'DM Sans', 'Inter', -apple-system, sans-serif";
+
+  const txt: React.CSSProperties = {
+    fontFamily: FONT,
+    fontSize: "13px",
+    fontWeight: 400,
+    color: "#111827",
+    lineHeight: "1.4",
+  };
+
+  /* FIX: headers must be dark #111827 at 13px to match Figma — NOT grey #9ca3af */
+  const thStyle: React.CSSProperties = {
+    fontFamily: FONT,
+    fontSize: "13px",
+    fontWeight: 400,
+    color: "#111827",
+    textAlign: "left",
+    borderBottom: "1px solid #f3f4f6",
+    whiteSpace: "nowrap",
+    background: "#ffffff",
+    padding: "12px 8px",
+  };
+
+  const tdStyle: React.CSSProperties = {
+    padding: "16px 8px",   /* Figma: 16px vertical, 8px horizontal */
+    verticalAlign: "middle",
+  };
+
   return (
-    <table className="custom-table">
+    <table
+      style={{
+        width: "100%",
+        borderCollapse: "collapse",
+        tableLayout: "fixed",
+        fontFamily: FONT,
+      }}
+    >
+      <colgroup>
+        <col style={{ width: "44px" }} />   {/* checkbox */}
+        <col style={{ width: "130px" }} />  {/* Order Date | Time */}
+        <col style={{ width: "140px" }} />  {/* Sample No. | Type */}
+        <col style={{ width: "155px" }} />  {/* Test Code | Name */}
+        <col style={{ width: "175px" }} />  {/* Service Name */}
+        <col />                              {/* Patient — fills rest */}
+      </colgroup>
+
       <thead>
-        <tr>
-          <th className="checkbox-cell">
+        <tr style={{ background: "#ffffff" }}>
+          {/* checkbox — left-aligned with 20px left padding */}
+          <th style={{ ...thStyle, padding: "12px 8px 12px 20px" }}>
             <div
               className={`custom-checkbox ${isAllSelected ? "checked" : ""}`}
               onClick={onToggleSelectAll}
             />
           </th>
-          <th>Order Date | Time</th>
-          <th>Sample No. | Type</th>
-          <th>Test Code | Name</th>
-          <th>Service Name</th>
-          <th>Patient</th>
+          <th style={{ ...thStyle, paddingLeft: "20px" }}>Order Date | Time</th>
+          <th style={thStyle}>Sample No. | Type</th>
+          <th style={thStyle}>Test Code | Name</th>
+          <th style={thStyle}>Service Name</th>
+          <th style={thStyle}>Patient</th>
         </tr>
       </thead>
+
       <tbody>
         {data.map((row) => {
           const isSelected = selectedRows.includes(row.id);
           return (
-            <tr key={row.id} className={isSelected ? "selected-row" : ""}>
-              <td className="checkbox-cell">
+            <tr
+              key={row.id}
+              style={{ borderBottom: "1px solid #f3f4f6", background: "#ffffff" }}
+            >
+              {/* checkbox */}
+              <td style={{ ...tdStyle, padding: "16px 8px 16px 20px" }}>
                 <div
                   className={`custom-checkbox ${isSelected ? "checked" : ""}`}
                   onClick={() => onToggleRow(row.id)}
-                >
-                  {isSelected && <CheckCircleIcon className="check-icon" />}
-                </div>
+                />
               </td>
-              <td>
-                <div className="cell-top">{row.date}</div>
-                <div className="cell-bottom">{row.time}</div>
+
+              {/* Order Date | Time — gap:4px between lines per Figma */}
+              <td style={{ ...tdStyle, paddingLeft: "20px" }}>
+                <div style={txt}>{row.date}</div>
+                <div style={{ ...txt, marginTop: "4px" }}>{row.time}</div>
               </td>
-              <td>
-                <div className="cell-top">{row.sampleNo}</div>
-                <div className="cell-bottom">{row.type}</div>
+
+              {/* Sample No. | Type */}
+              <td style={tdStyle}>
+                <div style={txt}>{row.sampleNo}</div>
+                <div style={{ ...txt, marginTop: "4px" }}>{row.type}</div>
               </td>
-              <td>
-                <div className="cell-top">{row.testCode}</div>
-                <div className="cell-bottom">{row.testName}</div>
+
+              {/* Test Code | Name */}
+              <td style={tdStyle}>
+                <div style={txt}>{row.testCode}</div>
+                <div style={{ ...txt, marginTop: "4px" }}>{row.testName}</div>
               </td>
-              <td>
-                <div className="cell-top">{row.serviceName}</div>
+
+              {/* Service Name */}
+              <td style={tdStyle}>
+                <div style={txt}>{row.serviceName}</div>
               </td>
-              <td>
-                <div className="patient-name">
-                  {row.patientName} | {row.age}
-                </div>
-                <div className="patient-details">
-                  {row.patientCode} | {row.gender}
-                </div>
+
+              {/* Patient */}
+              <td style={tdStyle}>
+                <div style={txt}>{row.patientName} | {row.age}</div>
+                <div style={{ ...txt, marginTop: "4px" }}>{row.patientCode} | {row.gender}</div>
               </td>
             </tr>
           );
         })}
+
         {data.length === 0 && (
           <tr>
-            <td colSpan={6} style={{ textAlign: "center", padding: "40px", color: "#9ca3af" }}>
+            <td
+              colSpan={6}
+              style={{
+                textAlign: "center",
+                padding: "40px",
+                color: "#9ca3af",
+                fontSize: "13px",
+                fontFamily: FONT,
+              }}
+            >
               No matching records found.
             </td>
           </tr>

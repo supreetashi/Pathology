@@ -1,9 +1,7 @@
 import React from "react";
-import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
+import PrintOutlinedIcon from "@mui/icons-material/PrintOutlined";
 
-interface ActivityLogsTabProps {
-  data: any[];
-}
+interface ActivityLogsTabProps { data: any[]; }
 
 const ActivityLogsTab: React.FC<ActivityLogsTabProps> = ({ data }) => {
   return (
@@ -15,7 +13,7 @@ const ActivityLogsTab: React.FC<ActivityLogsTabProps> = ({ data }) => {
           <th>Ship From</th>
           <th>Ship To</th>
           <th>Ship By</th>
-          <th style={{ width: "50px" }}></th>
+          <th style={{ width: "48px" }}></th>
         </tr>
       </thead>
       <tbody>
@@ -25,18 +23,10 @@ const ActivityLogsTab: React.FC<ActivityLogsTabProps> = ({ data }) => {
               <div className="cell-top">{row.date}</div>
               <div className="cell-bottom">{row.time}</div>
             </td>
-            <td>
-              <div className="cell-top">{row.shipNo}</div>
-            </td>
-            <td>
-              <div className="cell-top">{row.shipFrom}</div>
-            </td>
-            <td>
-              <div className="cell-top">{row.shipTo}</div>
-            </td>
-            <td>
-              <div className="cell-top">{row.shipBy}</div>
-            </td>
+            <td><div className="cell-top">{row.shipNo}</div></td>
+            <td><div className="cell-top">{row.shipFrom}</div></td>
+            <td><div className="cell-top">{row.shipTo}</div></td>
+            <td><div className="cell-top">{row.shipBy}</div></td>
             <td style={{ textAlign: "center" }}>
               <PrintOutlinedIcon style={{ color: "#3b82f6", fontSize: "20px", cursor: "pointer" }} />
             </td>
@@ -44,7 +34,7 @@ const ActivityLogsTab: React.FC<ActivityLogsTabProps> = ({ data }) => {
         ))}
         {data.length === 0 && (
           <tr>
-            <td colSpan={6} style={{ textAlign: "center", padding: "40px", color: "#9ca3af" }}>
+            <td colSpan={6} style={{ textAlign: "center", padding: "40px", color: "#9ca3af", fontSize: "13px" }}>
               No matching records found.
             </td>
           </tr>
