@@ -1,5 +1,5 @@
 import PrintOutlinedIcon from "@mui/icons-material/PrintOutlined";
-import type { SampleRow } from "../ReceiveMockData";
+import type { SampleRow } from "./ReceiveMockData";
 
 type ActivityLogsTabProps = {
   rows: SampleRow[];

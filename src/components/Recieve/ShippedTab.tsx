@@ -1,6 +1,6 @@
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import type { SampleRow } from "../ReceiveMockData";
+import type { SampleRow } from "./ReceiveMockData";
 
 type ShippedTabProps = {
   rows: SampleRow[];
