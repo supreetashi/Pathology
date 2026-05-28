@@ -1,10 +1,8 @@
 import React from "react";
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 
-interface ReceivedTabProps {
-  data: any[];
-}
+interface ReceivedTabProps { data: any[]; }
 
 const ReceivedTab: React.FC<ReceivedTabProps> = ({ data }) => {
   return (
@@ -20,6 +18,7 @@ const ReceivedTab: React.FC<ReceivedTabProps> = ({ data }) => {
           <th>Ship To</th>
           <th>Status</th>
           <th>Result</th>
+          <th style={{ width: "48px" }}></th>
         </tr>
       </thead>
       <tbody>
@@ -29,9 +28,7 @@ const ReceivedTab: React.FC<ReceivedTabProps> = ({ data }) => {
               <div className="cell-top">{row.date}</div>
               <div className="cell-bottom">{row.time}</div>
             </td>
-            <td>
-              <div className="cell-top">{row.receivedNo || "-"}</div>
-            </td>
+            <td><div className="cell-top">{row.receivedNo ?? "-"}</div></td>
             <td>
               <div className="cell-top">{row.sampleNo}</div>
               <div className="cell-bottom">{row.type}</div>
@@ -40,40 +37,32 @@ const ReceivedTab: React.FC<ReceivedTabProps> = ({ data }) => {
               <div className="cell-top">{row.testCode}</div>
               <div className="cell-bottom">{row.testName}</div>
             </td>
+            <td><div className="cell-service">{row.serviceName}</div></td>
             <td>
-              <div className="cell-top">{row.serviceName}</div>
+              <div className="patient-name">{row.patientName} | {row.age}</div>
+              <div className="patient-details">{row.patientCode} | {row.gender}</div>
+            </td>
+            <td><div className="cell-top">{row.shipTo}</div></td>
+            <td>
+              <span className={`status-pill ${row.status.toLowerCase()}`}>{row.status}</span>
             </td>
             <td>
-              <div className="patient-name">
-                {row.patientName} | {row.age}
+              <div className="result-cell">
+                {row.status === "Accepted" ? (
+                  <DescriptionOutlinedIcon style={{ color: "#3b82f6", fontSize: "18px", cursor: "pointer" }} />
+                ) : (
+                  <span style={{ color: "#9ca3af", fontSize: "13px" }}>--</span>
+                )}
               </div>
-              <div className="patient-details">
-                {row.patientCode} | {row.gender}
-              </div>
-            </td>
-            <td>
-              <div className="cell-top">{row.shipTo}</div>
-            </td>
-            <td>
-              <span className={`status-pill ${row.status.toLowerCase()}`}>
-                {row.status}
-              </span>
             </td>
             <td style={{ textAlign: "center" }}>
-               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
-                  {row.status === "Accepted" ? (
-                    <DescriptionOutlinedIcon style={{ color: "#3b82f6", fontSize: "18px", cursor: "pointer" }} />
-                  ) : (
-                    <span style={{ color: "#9ca3af" }}>--</span>
-                  )}
-                  <ErrorOutlineIcon style={{ color: "#fdba74", fontSize: "18px" }} />
-               </div>
+              <ErrorOutlineIcon style={{ color: "#fb923c", fontSize: "18px", cursor: "pointer" }} />
             </td>
           </tr>
         ))}
         {data.length === 0 && (
           <tr>
-            <td colSpan={9} style={{ textAlign: "center", padding: "40px", color: "#9ca3af" }}>
+            <td colSpan={10} style={{ textAlign: "center", padding: "40px", color: "#9ca3af", fontSize: "13px" }}>
               No matching records found.
             </td>
           </tr>
