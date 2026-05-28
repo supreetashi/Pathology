@@ -53,7 +53,7 @@ export const PATHOLOGY_MENU: MenuItem[] = [
         path: "/pathology/configuration/sample-and-tube",
         page: lazy(
           () =>
-            import("../components/Configuration/SampleandTube/SampleAndTube"),
+            import("../components/Configuration/SampleAndTube/SampleAndTube"),
         ),
       },
       {
