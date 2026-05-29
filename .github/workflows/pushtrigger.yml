@@ -57,11 +57,6 @@ jobs:
           script: |
             cd /opt/apps/pathology
 
-            # Stop and remove old container 
-            docker compose down
-
-            # Pull latest image
             docker compose pull frontend
 
-            # Start fresh container
-            docker compose up -d frontend
+            docker compose up -d --force-recreate frontend
