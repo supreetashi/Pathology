@@ -11,6 +11,7 @@ import {
   type ShipmentReceived as APIReceived,
   type ActivityLog as APIActivity,
 } from "../../services/shipment.api";
+import filterIcon from "../../assets/icons/filter.svg";
 import SearchIcon from "@mui/icons-material/Search";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -235,7 +236,7 @@ const ShipmentView: React.FC = () => {
           {/* ✅ FIXED: Same filter icon as Orders page — img tag pointing to shared filter.svg asset */}
           <button className="filter-button" onClick={() => setShowFilterModal(true)}>
             <img
-              src="/pathology/src/assets/icons/filter.svg"
+              src={filterIcon}
               alt="filter"
               width="18"
               height="18"
