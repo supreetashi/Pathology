@@ -5,7 +5,16 @@ interface ActivityLogsTabProps { data: any[]; }
 
 const ActivityLogsTab: React.FC<ActivityLogsTabProps> = ({ data }) => {
   return (
-    <table className="custom-table">
+    <table className="custom-table" style={{ tableLayout: "fixed", width: "100%" }}>
+      <colgroup>
+        <col style={{ width: "155px" }} />
+        <col style={{ width: "120px" }} />
+        <col style={{ width: "160px" }} />
+        <col style={{ width: "160px" }} />
+        <col />
+        <col style={{ width: "40px" }} />
+      </colgroup>
+
       <thead>
         <tr>
           <th>Ship Date | Time</th>
@@ -13,22 +22,23 @@ const ActivityLogsTab: React.FC<ActivityLogsTabProps> = ({ data }) => {
           <th>Ship From</th>
           <th>Ship To</th>
           <th>Ship By</th>
-          <th style={{ width: "48px" }}></th>
+          <th></th>
         </tr>
       </thead>
+
       <tbody>
         {data.map((row) => (
           <tr key={row.id}>
             <td>
               <div className="cell-top">{row.date}</div>
-              <div className="cell-bottom">{row.time}</div>
+              <div className="cell-time">{row.time}</div>
             </td>
             <td><div className="cell-top">{row.shipNo}</div></td>
             <td><div className="cell-top">{row.shipFrom}</div></td>
             <td><div className="cell-top">{row.shipTo}</div></td>
             <td><div className="cell-top">{row.shipBy}</div></td>
-            <td style={{ textAlign: "center" }}>
-              <PrintOutlinedIcon style={{ color: "#3b82f6", fontSize: "20px", cursor: "pointer" }} />
+            <td style={{ textAlign: "right", paddingRight: "0" }}>
+              <PrintOutlinedIcon style={{ color: "#3b82f6", fontSize: "18px", cursor: "pointer" }} />
             </td>
           </tr>
         ))}
