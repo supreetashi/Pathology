@@ -262,3 +262,61 @@
   color: white;
   border-color: black;
 }
+
+/* Shipment typography parity */
+.result-container,
+.result-content,
+.table-section,
+.test-sidebar {
+  font-family: var(--shipment-font-family) !important;
+  font-size: var(--shipment-font-size-base) !important;
+  color: var(--shipment-text-secondary) !important;
+}
+
+.result-header h2,
+.result-header h3 {
+  font-size: var(--shipment-font-size-title) !important;
+  font-weight: 600 !important;
+  color: var(--shipment-text-primary) !important;
+}
+
+.table-head,
+.result-table th {
+  font-size: var(--shipment-font-size-base) !important;
+  font-weight: 400 !important;
+  color: var(--shipment-text-primary) !important;
+}
+
+.table-row,
+.result-table td,
+.table-row p,
+.table-row small,
+.patient-grid label,
+.patient-grid p,
+.test-item,
+.result-footer,
+.result-footer p,
+.search-box input,
+.filter-modal select,
+.pagination button {
+  font-size: var(--shipment-font-size-base) !important;
+}
+
+.table-row,
+.result-table td,
+.table-row p,
+.patient-grid p,
+.test-item,
+.search-box input,
+.filter-modal select,
+.pagination button {
+  color: var(--shipment-text-primary) !important;
+}
+
+.table-row small,
+.patient-grid label,
+.result-footer,
+.result-footer p,
+.search-box input::placeholder {
+  color: var(--shipment-text-muted) !important;
+}

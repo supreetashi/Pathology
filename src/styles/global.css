@@ -1,12 +1,118 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
 * {
   box-sizing: border-box;
 }
 
+:root {
+  --shipment-font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --shipment-text-primary: #111827;
+  --shipment-text-secondary: #374151;
+  --shipment-text-muted: #9ca3af;
+  --shipment-font-size-base: 13px;
+  --shipment-font-size-title: 16px;
+}
+
+html,
+body,
+#root {
+  font-family: var(--shipment-font-family);
+  font-size: var(--shipment-font-size-base);
+  color: var(--shipment-text-primary);
+}
+
+#root,
+#root * {
+  font-family: var(--shipment-font-family) !important;
+}
+
 body {
   margin: 0;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--shipment-font-family);
   background: #f6f6f7;
-  color: #1f1f1f;
+  color: var(--shipment-text-primary);
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: var(--shipment-font-size-base);
+  color: var(--shipment-text-secondary);
+}
+
+#root :where(h1, h2, h3, h4, h5, h6) {
+  font-size: var(--shipment-font-size-title) !important;
+  color: var(--shipment-text-primary) !important;
+  font-weight: 600 !important;
+}
+
+#root :where(p, label, li, a, td, th, small, input, select, textarea) {
+  font-size: var(--shipment-font-size-base) !important;
+  color: var(--shipment-text-secondary) !important;
+}
+
+#root th {
+  color: var(--shipment-text-primary) !important;
+}
+
+#root :where(input::placeholder, textarea::placeholder) {
+  color: var(--shipment-text-muted) !important;
+}
+
+/* Keep core module typography in sync with Shipment style tokens. */
+.content-shell,
+.menu-page-card,
+.receive-view,
+.shipment-container {
+  font-family: var(--shipment-font-family);
+  font-size: var(--shipment-font-size-base);
+  color: var(--shipment-text-primary);
+}
+
+.content-shell :where(h1, h2, h3, h4, h5, h6),
+.menu-page-card :where(h1, h2, h3, h4, h5, h6),
+.receive-view :where(h1, h2, h3, h4, h5, h6),
+.shipment-container :where(h1, h2, h3, h4, h5, h6) {
+  color: var(--shipment-text-primary);
+  font-family: var(--shipment-font-family);
+  font-size: var(--shipment-font-size-title);
+}
+
+.content-shell :where(p, li, label, td, th, a),
+.menu-page-card :where(p, li, label, td, th, a),
+.receive-view :where(p, li, label, td, th, a),
+.shipment-container :where(p, li, label, td, th, a) {
+  color: var(--shipment-text-secondary);
+  font-family: var(--shipment-font-family);
+  font-size: var(--shipment-font-size-base);
+}
+
+.content-shell :where(input::placeholder, textarea::placeholder),
+.menu-page-card :where(input::placeholder, textarea::placeholder),
+.receive-view :where(input::placeholder, textarea::placeholder),
+.shipment-container :where(input::placeholder, textarea::placeholder) {
+  color: var(--shipment-text-muted);
+}
+
+.MuiTypography-root,
+.MuiButton-root,
+.MuiInputBase-input,
+.MuiInputLabel-root,
+.MuiMenuItem-root,
+.MuiListItemText-primary,
+.MuiListItemText-secondary {
+  font-family: var(--shipment-font-family) !important;
+}
+
+.MuiTypography-root,
+.MuiInputBase-input,
+.MuiMenuItem-root,
+.MuiListItemText-primary,
+.MuiListItemText-secondary {
+  font-size: var(--shipment-font-size-base) !important;
+  color: var(--shipment-text-secondary) !important;
 }
 
 .dashboard-layout {

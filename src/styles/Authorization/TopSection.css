@@ -8,8 +8,9 @@
 }
 
 .header h2 {
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 600;
+    color: #111827;
 }
 
 .header input {
@@ -17,8 +18,13 @@
     border: 1px solid #ddd;
     border-radius: 8px;
     width: 260px;
-    font-size: 14px;
+    font-size: 13px;
     outline: none;
+    color: #374151;
+}
+
+.header input::placeholder {
+    color: #9ca3af;
 }
 
 .header input:focus {
@@ -39,7 +45,8 @@
     border: 1px solid #ddd;
     background: #f5f5f5;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
+    color: #6b7280;
     transition: 0.2s;
 }
 

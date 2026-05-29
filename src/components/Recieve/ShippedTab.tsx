@@ -1,4 +1,3 @@
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import type { SampleRow } from "./ReceiveMockData";
 
@@ -27,9 +26,7 @@ function ShippedTab({
               className={`select-checkbox ${allSelected ? "selected" : ""}`}
               onClick={onToggleAllRows}
               aria-label="Select all rows"
-            >
-              {allSelected ? <CheckCircleIcon fontSize="small" /> : null}
-            </button>
+            />
           </th>
           <th>Ship Date | Time</th>
           <th>Shipment No.</th>
@@ -53,9 +50,7 @@ function ShippedTab({
                   className={`select-checkbox ${selected ? "selected" : ""}`}
                   onClick={() => onToggleSingleRow(row.id)}
                   aria-label={`Select sample ${row.sampleNo}`}
-                >
-                  {selected ? <CheckCircleIcon fontSize="small" /> : null}
-                </button>
+                />
               </td>
               <td>
                 <div className="cell-primary">{row.shipDate}</div>
