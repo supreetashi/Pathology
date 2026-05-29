@@ -1,8 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 /* ============================================
-   SHIPMENT MODULE - Full Complete CSS
-   Figma Exact Match - All Styles Included
+   SHIPMENT MODULE - FULL COMPLETE CSS
+   Figma Exact - Plus Jakarta Sans
    ============================================ */
 
 /* ============================================
@@ -30,6 +30,7 @@
   font-weight: 600;
   color: #111827;
   margin: 0;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .header-right {
@@ -82,22 +83,23 @@
    FILTER BUTTON
    ============================================ */
 .filter-button {
-  background: #f3f4f6;
+  background: transparent;
   border: none;
-  border-radius: 8px;
-  width: 38px;
-  height: 38px;
+  border-radius: 0;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #6b7280;
+  color: #374151;
   flex-shrink: 0;
-  transition: background 0.15s;
+  padding: 0;
+  transition: color 0.15s;
 }
 
 .filter-button:hover {
-  background: #e5e7eb;
+  color: #111827;
 }
 
 /* ============================================
@@ -138,16 +140,19 @@
 
 /* ============================================
    TABLE OUTER CONTAINER
+   NO outer box border — Figma has none
+   Only row separator lines inside
    ============================================ */
 .table-container {
   background: white;
-  border-radius: 12px;
-  border: 1px solid #f3f4f6;
+  border-radius: 0;
+  border: none;
   overflow: hidden;
 }
 
 /* ============================================
-   TABLE BASE STYLES
+   TABLE
+   Auto column widths, row separator lines only
    ============================================ */
 .custom-table {
   width: 100%;
@@ -155,17 +160,13 @@
   border-spacing: 0;
 }
 
-.custom-table thead tr {
-  background: #ffffff;
-}
-
-/* FIX: Figma headers are dark #111827 at 13px, weight 400 — NOT grey */
+/* Headers — dark, same as body, 13px */
 .custom-table thead th {
-  padding: 12px 8px;
+  padding: 12px 32px 12px 0;
   text-align: left;
   font-size: 13px;
   font-weight: 400;
-  color: #111827;
+  color: #6b7280;
   border-bottom: 1px solid #f3f4f6;
   white-space: nowrap;
   background: #ffffff;
@@ -173,13 +174,14 @@
 }
 
 .custom-table thead th:first-child {
-  padding-left: 20px;
+  padding-left: 0;
 }
 
-.custom-table thead th:nth-child(2) {
-  padding-left: 20px;
+.custom-table thead th:last-child {
+  padding-right: 0;
 }
 
+/* Body rows — ONLY bottom border line, no box */
 .custom-table tbody tr {
   border-bottom: 1px solid #f3f4f6;
   background: #ffffff;
@@ -189,8 +191,9 @@
   border-bottom: none;
 }
 
+/* Cells — 16px top/bottom, 32px right creates col gap, 0 left */
 .custom-table tbody td {
-  padding: 12px 8px;
+  padding: 16px 32px 16px 0;
   font-size: 13px;
   color: #374151;
   vertical-align: middle;
@@ -198,15 +201,22 @@
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
+.custom-table tbody td:first-child {
+  padding-left: 0;
+}
+
+.custom-table tbody td:last-child {
+  padding-right: 0;
+}
+
 /* ============================================
    CHECKBOX COLUMN
-   Only the checkbox turns green — NOT the row
    ============================================ */
 .checkbox-cell {
-  width: 44px;
-  text-align: center !important;
-  padding-left: 20px !important;
-  padding-right: 8px !important;
+  width: 36px;
+  text-align: left !important;
+  padding-right: 12px !important;
+  padding-left: 0 !important;
 }
 
 .custom-checkbox {
@@ -229,7 +239,6 @@
   border-color: #10b981;
 }
 
-/* Green fill + white CSS checkmark when checked */
 .custom-checkbox.checked {
   background-color: #10b981;
   border-color: #10b981;
@@ -247,64 +256,57 @@
 }
 
 /* ============================================
-   TABLE CELL CONTENT CLASSES
-   ALL text in rows = same dark color #111827
-   No grey anywhere in table body — only headers are grey
+   CELL TEXT CLASSES
+   Slightly dark #374151 — matches Figma
    ============================================ */
-
 .cell-top {
   font-size: 13px;
   font-weight: 400;
-  color: #111827;
+  color: #374151;
   line-height: 1.5;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Time — same dark as date */
 .cell-time {
   font-size: 13px;
   font-weight: 400;
-  color: #111827;
+  color: #374151;
   line-height: 1.5;
-  margin-top: 4px;
+  margin-top: 2px;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Type, Test Name — same dark */
 .cell-bottom {
   font-size: 13px;
   font-weight: 400;
-  color: #111827;
+  color: #374151;
   line-height: 1.5;
-  margin-top: 4px;
+  margin-top: 2px;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Patient name — dark */
-.patient-name {
-  font-size: 13px;
-  font-weight: 400;
-  color: #111827;
-  line-height: 1.5;
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-/* PCC code | Female — same dark, NOT grey */
-.patient-details {
-  font-size: 13px;
-  font-weight: 400;
-  color: #111827;
-  line-height: 1.5;
-  margin-top: 4px;
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-/* Service Name — dark */
 .cell-service {
   font-size: 13px;
   font-weight: 400;
-  color: #111827;
+  color: #374151;
   line-height: 1.5;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.patient-name {
+  font-size: 13px;
+  font-weight: 400;
+  color: #374151;
+  line-height: 1.5;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.patient-details {
+  font-size: 13px;
+  font-weight: 400;
+  color: #374151;
+  line-height: 1.5;
+  margin-top: 2px;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
@@ -315,7 +317,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 16px;
+  padding: 14px 0;
   border-top: 1px solid #f3f4f6;
   background: #ffffff;
 }
@@ -385,7 +387,6 @@
 
 /* ============================================
    SCHEDULE SHIPPING BUTTON
-   Only shown when rows are selected
    ============================================ */
 .shipping-button-container {
   display: flex;
@@ -438,7 +439,6 @@
   overflow-y: auto;
 }
 
-/* Modal scrollbar */
 .modal-content::-webkit-scrollbar {
   width: 4px;
 }
@@ -463,6 +463,7 @@
   font-size: 16px;
   font-weight: 700;
   color: #111827;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .close-icon-btn {
@@ -519,10 +520,11 @@
   color: #9ca3af;
   margin-bottom: 6px;
   letter-spacing: 0.01em;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* ============================================
-   SHARED INPUT WITH ICON (filter fields)
+   INPUT WITH ICON (filter fields)
    ============================================ */
 .input-with-icon {
   position: relative;
@@ -604,8 +606,8 @@
 }
 
 /* ============================================
-   SCHEDULE SHIPPING MODAL
-   Floating-label bordered fields (Figma exact)
+   SHIPPING MODAL
+   Floating-label bordered fields
    ============================================ */
 .shipping-modal {
   width: 540px;
@@ -618,7 +620,6 @@
   margin-bottom: 24px;
 }
 
-/* Each field: full bordered box with label floated on top */
 .ship-field {
   border: 1px solid #e5e7eb;
   border-radius: 8px;
@@ -643,7 +644,6 @@
   cursor: default;
 }
 
-/* Floating label inside the box */
 .ship-field-label {
   font-size: 11px;
   color: #9ca3af;
@@ -652,9 +652,15 @@
   margin-bottom: 3px;
   pointer-events: none;
   white-space: nowrap;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Plain text input inside ship-field */
+.ship-field-inner {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
 .ship-field-input {
   border: none;
   outline: none;
@@ -663,9 +669,10 @@
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   background: transparent;
   padding: 0;
-  width: 100%;
+  flex: 1;
   line-height: 1.5;
   font-weight: 400;
+  min-width: 0;
 }
 
 .ship-field.disabled .ship-field-input {
@@ -673,7 +680,6 @@
   cursor: default;
 }
 
-/* Select inside ship-field */
 .ship-field-select {
   border: none;
   outline: none;
@@ -682,72 +688,36 @@
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   background: transparent;
   padding: 0;
-  padding-right: 24px;
-  width: 100%;
+  flex: 1;
   appearance: none;
   -webkit-appearance: none;
   line-height: 1.5;
   font-weight: 400;
   cursor: pointer;
+  min-width: 0;
 }
 
-/* Icon pinned to right-center of the ship-field box */
-.ship-field-icon {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #9ca3af !important;
+/* Hide native browser date/time picker icon */
+.ship-date-input::-webkit-calendar-picker-indicator,
+.ship-time-input::-webkit-calendar-picker-indicator {
+  display: none;
+  -webkit-appearance: none;
+}
+
+.ship-date-input,
+.ship-time-input {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Custom picker icon — always visible on right */
+.ship-picker-icon {
+  color: #94a3b8 !important;
   font-size: 18px !important;
-  pointer-events: none;
-}
-
-/* ============================================
-   MUI DatePicker / TimePicker overrides
-   Strip all MUI chrome so it sits flat in ship-field
-   ============================================ */
-.ship-field .MuiFormControl-root {
-  width: 100%;
-}
-
-.ship-field .MuiInputBase-root {
-  padding: 0 !important;
-  font-size: 13px !important;
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
-  background: transparent !important;
-  color: #111827 !important;
-  width: 100%;
-}
-
-.ship-field .MuiInputBase-root::before,
-.ship-field .MuiInputBase-root::after {
-  display: none !important;
-}
-
-.ship-field .MuiInputBase-input {
-  padding: 0 24px 0 0 !important;
-  font-size: 13px !important;
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
-  color: #111827 !important;
-  height: auto !important;
-  line-height: 1.5 !important;
-  font-weight: 400 !important;
-}
-
-.ship-field .MuiInputAdornment-root {
-  display: none !important;
-}
-
-.ship-field fieldset {
-  display: none !important;
-}
-
-.ship-field .MuiOutlinedInput-notchedOutline {
-  display: none !important;
-}
-
-.ship-field .MuiSvgIcon-root {
-  display: none !important;
+  flex-shrink: 0;
+  margin-left: 6px;
+  cursor: pointer;
+  display: block !important;
 }
 
 /* ============================================
@@ -764,6 +734,7 @@
   margin: 0 0 12px 0;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* ============================================
@@ -801,6 +772,7 @@
   font-weight: 500;
   white-space: nowrap;
   border-bottom: 1px solid #f3f4f6;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .mini-table tbody tr {
@@ -818,14 +790,15 @@
   line-height: 1.5;
   vertical-align: top;
   font-weight: 400;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Mini table cell helpers */
 .mini-cell-top {
   font-size: 12px;
   font-weight: 400;
   color: #111827;
   line-height: 1.5;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .mini-cell-bottom {
@@ -834,6 +807,7 @@
   color: #9ca3af;
   margin-top: 1px;
   line-height: 1.4;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* ============================================
@@ -890,6 +864,7 @@
   text-align: center;
   white-space: nowrap;
   line-height: 1.4;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .status-pill.accepted {
@@ -919,4 +894,195 @@
 .action-icon-cell {
   text-align: center;
   width: 48px;
+}
+
+/* ============================================
+   FILTER MODAL — Figma exact
+   Compact, floating-label stacked fields
+   ============================================ */
+.fmodal {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.14);
+  width: 390px;
+  max-width: 95vw;
+  padding: 22px 22px 20px 22px;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.fmodal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.fmodal-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.fmodal-close {
+  background: #f3f4f6;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.fmodal-close:hover { background: #e5e7eb; }
+
+/* 2-col grid */
+.fmodal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+/* Field box - compact Figma style */
+.fmodal-field {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 7px 10px;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  min-height: 50px;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+  cursor: text;
+  justify-content: center;
+}
+
+.fmodal-field:focus-within {
+  border-color: #374151;
+}
+
+/* Floating label — small grey on top */
+.fmodal-label {
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 400;
+  line-height: 1.2;
+  margin-bottom: 4px;
+  pointer-events: none;
+  white-space: nowrap;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  display: block;
+}
+
+/* Row: input/select + icon */
+.fmodal-input-wrap {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  flex: 1;
+}
+
+/* Text/date input — dark value */
+.fmodal-input {
+  border: none;
+  outline: none;
+  font-size: 13px;
+  color: #111827;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: transparent;
+  padding: 0;
+  flex: 1;
+  line-height: 1.5;
+  font-weight: 400;
+  min-width: 0;
+  width: 100%;
+}
+
+.fmodal-input::placeholder { color: #9ca3af; }
+
+/* Select — dark value, no default arrow */
+.fmodal-select {
+  border: none;
+  outline: none;
+  font-size: 13px;
+  color: #111827;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: transparent;
+  padding: 0;
+  flex: 1;
+  appearance: none;
+  -webkit-appearance: none;
+  line-height: 1.5;
+  font-weight: 400;
+  cursor: pointer;
+  min-width: 0;
+  width: 100%;
+}
+
+/* Icon on right */
+.fmodal-icon {
+  color: #9ca3af !important;
+  font-size: 16px !important;
+  flex-shrink: 0;
+  margin-left: 4px;
+  pointer-events: none;
+  display: block !important;
+}
+
+/* Footer buttons */
+.fmodal-footer {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.fmodal-clear {
+  flex: 1;
+  background: #ffffff;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+  padding: 11px 0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  transition: background 0.15s;
+  text-align: center;
+}
+
+.fmodal-clear:hover { background: #f9fafb; }
+
+.fmodal-apply {
+  flex: 1;
+  background: #1f2937;
+  color: #ffffff;
+  border: none;
+  padding: 11px 0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  transition: background 0.15s;
+  text-align: center;
+}
+
+.fmodal-apply:hover { background: #111827; }
+
+/* Hide native date picker icon — we use our own calendar icon */
+.fmodal-date-input::-webkit-calendar-picker-indicator {
+  display: none;
+  -webkit-appearance: none;
+}
+.fmodal-date-input {
+  -webkit-appearance: none;
+  appearance: none;
 }

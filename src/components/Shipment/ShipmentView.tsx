@@ -14,9 +14,6 @@ import ShippedTab from "./ShippedTab";
 import ReceivedTab from "./ReceivedTab";
 import ActivityLogsTab from "./ActivityLogsTab";
 
-/* ── Round geometric font used in Figma for all UI text ── */
-const FONT = "'Plus Jakarta Sans', 'DM Sans', 'Inter', -apple-system, sans-serif";
-
 const ShipmentView: React.FC = () => {
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
   const [activeTab, setActiveTab] = useState("pending");
@@ -26,6 +23,7 @@ const ShipmentView: React.FC = () => {
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [showShippingModal, setShowShippingModal] = useState(false);
 
+  /* Shipping modal fields — plain strings, native HTML date/time inputs */
   const [shipDate, setShipDate] = useState("2026-03-13");
   const [shipTime, setShipTime] = useState("12:30");
   const [shipTo, setShipTo] = useState("Willowbrook");
@@ -165,353 +163,355 @@ const ShipmentView: React.FC = () => {
   ];
 
   return (
-    <div className="shipment-container" style={{ fontFamily: FONT }}>
+    <div className="shipment-container">
 
-      {/* ── Header ── */}
-      <div className="shipment-header">
-        <h2
-          className="page-title"
-          style={{ fontFamily: FONT }}
-        >
-          Sample List ({filteredData.length})
-        </h2>
-        <div className="header-right">
-          <div className="search-wrapper">
-            <SearchIcon className="search-icon" />
-            <input
-              type="text"
-              placeholder={
-                activeTab === "activity"
-                  ? "Search by Ship No., ..."
-                  : "Search by Patient name, MRN No., Specimen No., Test..."
-              }
-              className="search-input"
-              style={{ fontFamily: FONT }}
-              value={searchQuery}
-              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-            />
-          </div>
-          <button className="filter-button" onClick={() => setShowFilterModal(true)}>
-            <FilterAltIcon fontSize="small" />
-          </button>
-        </div>
-      </div>
-
-      {/* ── Tabs — Plus Jakarta Sans, pill shape ── */}
-      <div className="tabs-container">
-        {tabs.map(({ key, label }) => (
-          <button
-            key={key}
-            className={`tab-item ${activeTab === key ? "active" : ""}`}
-            style={{ fontFamily: FONT }}
-            onClick={() => { setActiveTab(key); setCurrentPage(1); setSearchQuery(""); }}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {/* ── Table ── */}
-      <div className="table-container">
-        {renderTabContent()}
-        <div className="table-footer">
-          <div className="showing-entries" style={{ fontFamily: FONT }}>
-            Showing {filteredData.length > 0 ? startIndex + 1 : 0} to{" "}
-            {Math.min(startIndex + itemsPerPage, filteredData.length)} of {filteredData.length} entries
-          </div>
-          <div className="pagination-controls">
-            <ChevronLeftIcon
-              className={`pagination-arrow ${currentPage === 1 ? "disabled" : ""}`}
-              onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
-            />
-            {Array.from({ length: Math.min(totalPages || 1, 3) }, (_, i) => i + 1).map((num) => (
-              <button
-                key={num}
-                className={`page-num ${currentPage === num ? "active" : ""}`}
-                style={{ fontFamily: FONT }}
-                onClick={() => setCurrentPage(num)}
-              >
-                {num}
-              </button>
-            ))}
-            <ChevronRightIcon
-              className={`pagination-arrow ${currentPage === totalPages || totalPages === 0 ? "disabled" : ""}`}
-              onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Schedule Shipping button */}
-      {activeTab === "pending" && selectedRows.length > 0 && (
-        <div className="shipping-button-container">
-          <button
-            className="schedule-shipping-btn"
-            style={{ fontFamily: FONT }}
-            onClick={() => setShowShippingModal(true)}
-          >
-            Schedule Shipping
-          </button>
-        </div>
-      )}
-
-      {/* ── FILTER MODAL ── */}
-      {showFilterModal && (
-        <div className="modal-overlay" onClick={() => setShowFilterModal(false)}>
-          <div className="modal-content filter-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3 style={{ fontFamily: FONT }}>Filters</h3>
-              <CloseIcon className="close-icon-btn" onClick={() => setShowFilterModal(false)} />
+        {/* Header */}
+        <div className="shipment-header">
+          <h2 className="page-title">Sample List ({filteredData.length})</h2>
+          <div className="header-right">
+            <div className="search-wrapper">
+              <SearchIcon className="search-icon" />
+              <input
+                type="text"
+                placeholder={activeTab === "activity" ? "Search by Ship No., ..." : "Search by Patient name, MRN No., Specimen No., Test..."}
+                className="search-input"
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+              />
             </div>
-            <div className="filter-grid">
-              <div className="filter-item">
-                <label style={{ fontFamily: FONT }}>From Date</label>
-                <div className="input-with-icon">
-                  <input type="text" placeholder="13/03/2026" style={{ fontFamily: FONT }} value={filters.fromDate} onChange={(e) => setFilters({ ...filters, fromDate: e.target.value })} />
-                  <CalendarMonthIcon className="inner-icon" />
-                </div>
-              </div>
-              <div className="filter-item">
-                <label style={{ fontFamily: FONT }}>To Date</label>
-                <div className="input-with-icon">
-                  <input type="text" placeholder="14/03/2026" style={{ fontFamily: FONT }} value={filters.toDate} onChange={(e) => setFilters({ ...filters, toDate: e.target.value })} />
-                  <CalendarMonthIcon className="inner-icon" />
-                </div>
-              </div>
-              {activeTab === "activity" ? (
-                <>
-                  <div className="filter-item">
-                    <label style={{ fontFamily: FONT }}>Ship From</label>
-                    <div className="input-with-icon">
-                      <select style={{ fontFamily: FONT }} value={filters.shipFrom} onChange={(e) => setFilters({ ...filters, shipFrom: e.target.value })}>
-                        <option value="">All</option>
-                        <option value="Vidai, Pune">Vidai, Pune</option>
-                        <option value="Fertivue, Pune">Fertivue, Pune</option>
-                      </select>
-                      <KeyboardArrowDownIcon className="inner-icon" />
-                    </div>
-                  </div>
-                  <div className="filter-item">
-                    <label style={{ fontFamily: FONT }}>Ship To</label>
-                    <div className="input-with-icon">
-                      <select style={{ fontFamily: FONT }} value={filters.shipTo} onChange={(e) => setFilters({ ...filters, shipTo: e.target.value })}>
-                        <option value="">All</option>
-                        <option value="Fertivue, Pune">Fertivue, Pune</option>
-                        <option value="Vidai, Pune">Vidai, Pune</option>
-                      </select>
-                      <KeyboardArrowDownIcon className="inner-icon" />
-                    </div>
-                  </div>
-                  <div className="filter-item">
-                    <label style={{ fontFamily: FONT }}>Ship By</label>
-                    <div className="input-with-icon">
-                      <select style={{ fontFamily: FONT }} value={filters.shipBy} onChange={(e) => setFilters({ ...filters, shipBy: e.target.value })}>
-                        <option value="">All</option>
-                        <option value="Jordan Blake">Jordan Blake</option>
-                        <option value="Riley Brooks">Riley Brooks</option>
-                      </select>
-                      <KeyboardArrowDownIcon className="inner-icon" />
-                    </div>
-                  </div>
-                  <div className="filter-item">
-                    <label style={{ fontFamily: FONT }}>Shipment No.</label>
-                    <div className="input-with-icon">
-                      <input type="text" placeholder="AH-7651" style={{ fontFamily: FONT }} value={filters.shipmentNo} onChange={(e) => setFilters({ ...filters, shipmentNo: e.target.value })} />
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="filter-item">
-                    <label style={{ fontFamily: FONT }}>Ship To</label>
-                    <div className="input-with-icon">
-                      <select style={{ fontFamily: FONT }} value={filters.shipTo} onChange={(e) => setFilters({ ...filters, shipTo: e.target.value })}>
-                        <option value="">All</option>
-                        <option value="Rosewood">Rosewood</option>
-                        <option value="Redwood">Redwood</option>
-                        <option value="Willowbrook">Willowbrook</option>
-                        <option value="Silverlake">Silverlake</option>
-                      </select>
-                      <KeyboardArrowDownIcon className="inner-icon" />
-                    </div>
-                  </div>
-                  <div className="filter-item">
-                    <label style={{ fontFamily: FONT }}>Specimen Type</label>
-                    <div className="input-with-icon">
-                      <select style={{ fontFamily: FONT }} value={filters.specimenType} onChange={(e) => setFilters({ ...filters, specimenType: e.target.value })}>
-                        <option value="">All</option>
-                        <option value="Blood">Blood</option>
-                        <option value="Urine">Urine</option>
-                        <option value="Saliva">Saliva</option>
-                      </select>
-                      <KeyboardArrowDownIcon className="inner-icon" />
-                    </div>
-                  </div>
-                  <div className="filter-item">
-                    <label style={{ fontFamily: FONT }}>Test Name</label>
-                    <div className="input-with-icon">
-                      <select style={{ fontFamily: FONT }} value={filters.testName} onChange={(e) => setFilters({ ...filters, testName: e.target.value })}>
-                        <option value="">All</option>
-                        <option value="Urine Culture">Urine Culture</option>
-                        <option value="Biopsy">Biopsy</option>
-                        <option value="Drug Testing">Drug Testing</option>
-                        <option value="Dipstick Test">Dipstick Test</option>
-                        <option value="Genetic Testing">Genetic Testing</option>
-                        <option value="CBC">CBC</option>
-                      </select>
-                      <KeyboardArrowDownIcon className="inner-icon" />
-                    </div>
-                  </div>
-                  <div className="filter-item">
-                    <label style={{ fontFamily: FONT }}>Service</label>
-                    <div className="input-with-icon">
-                      <select style={{ fontFamily: FONT }} value={filters.service} onChange={(e) => setFilters({ ...filters, service: e.target.value })}>
-                        <option value="">All</option>
-                        <option value="Women Pathology 2026">Women Pathology</option>
-                        <option value="General Diagnostics">General Diagnostics</option>
-                        <option value="Genetics Lab">Genetics Lab</option>
-                      </select>
-                      <KeyboardArrowDownIcon className="inner-icon" />
-                    </div>
-                  </div>
-                </>
-              )}
+            <button className="filter-button" onClick={() => setShowFilterModal(true)}>
+              <FilterAltIcon fontSize="small" />
+            </button>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="tabs-container">
+          {tabs.map(({ key, label }) => (
+            <button key={key} className={`tab-item ${activeTab === key ? "active" : ""}`}
+              onClick={() => { setActiveTab(key); setCurrentPage(1); setSearchQuery(""); }}>
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Table */}
+        <div className="table-container">
+          {renderTabContent()}
+          <div className="table-footer">
+            <div className="showing-entries">
+              Showing {filteredData.length > 0 ? startIndex + 1 : 0} to{" "}
+              {Math.min(startIndex + itemsPerPage, filteredData.length)} of {filteredData.length} entries
             </div>
-            <div className="modal-footer filter-footer">
-              <button className="clear-all-btn" style={{ fontFamily: FONT }} onClick={handleClearFilters}>Clear All</button>
-              <button className="apply-btn" style={{ fontFamily: FONT }} onClick={handleApplyFilters}>Apply</button>
+            <div className="pagination-controls">
+              <ChevronLeftIcon className={`pagination-arrow ${currentPage === 1 ? "disabled" : ""}`}
+                onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)} />
+              {Array.from({ length: Math.min(totalPages || 1, 3) }, (_, i) => i + 1).map((num) => (
+                <button key={num} className={`page-num ${currentPage === num ? "active" : ""}`}
+                  onClick={() => setCurrentPage(num)}>{num}</button>
+              ))}
+              <ChevronRightIcon className={`pagination-arrow ${currentPage === totalPages || totalPages === 0 ? "disabled" : ""}`}
+                onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)} />
             </div>
           </div>
         </div>
-      )}
 
-      {/* ── SCHEDULE SHIPPING MODAL ── */}
-      {showShippingModal && (
-        <div className="modal-overlay" onClick={() => setShowShippingModal(false)}>
-          <div className="modal-content shipping-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3 style={{ fontFamily: FONT }}>Schedule Shipping</h3>
-              <CloseIcon className="close-icon-btn" onClick={() => setShowShippingModal(false)} />
+        {/* Schedule Shipping button — only when rows selected */}
+        {activeTab === "pending" && selectedRows.length > 0 && (
+          <div className="shipping-button-container">
+            <button className="schedule-shipping-btn" onClick={() => setShowShippingModal(true)}>
+              Schedule Shipping
+            </button>
+          </div>
+        )}
+
+        {/* FILTER MODAL — Figma exact: compact, floating-label fields, dark Apply btn */}
+        {showFilterModal && (
+          <div className="modal-overlay" onClick={() => setShowFilterModal(false)}>
+            <div className="fmodal" onClick={(e) => e.stopPropagation()}>
+              {/* Header */}
+              <div className="fmodal-header">
+                <span className="fmodal-title">Filters</span>
+                <button className="fmodal-close" onClick={() => setShowFilterModal(false)}>
+                  <CloseIcon style={{ fontSize: 16, color: "#6b7280" }} />
+                </button>
+              </div>
+
+              {/* Fields grid */}
+              <div className="fmodal-grid">
+                {/* From Date — enabled native date input */}
+                <div className="fmodal-field" onClick={() => (document.getElementById('filter-from-date') as HTMLInputElement)?.showPicker?.()}>
+                  <span className="fmodal-label">From Date</span>
+                  <div className="fmodal-input-wrap">
+                    <input
+                      id="filter-from-date"
+                      className="fmodal-input fmodal-date-input"
+                      type="date"
+                      value={filters.fromDate || "2026-03-13"}
+                      onChange={(e) => setFilters({ ...filters, fromDate: e.target.value })}
+                    />
+                    <CalendarMonthIcon className="fmodal-icon" style={{ cursor: "pointer", pointerEvents: "auto" }}
+                      onClick={() => (document.getElementById('filter-from-date') as HTMLInputElement)?.showPicker?.()}
+                    />
+                  </div>
+                </div>
+
+                {/* To Date — enabled native date input */}
+                <div className="fmodal-field" onClick={() => (document.getElementById('filter-to-date') as HTMLInputElement)?.showPicker?.()}>
+                  <span className="fmodal-label">To Date</span>
+                  <div className="fmodal-input-wrap">
+                    <input
+                      id="filter-to-date"
+                      className="fmodal-input fmodal-date-input"
+                      type="date"
+                      value={filters.toDate || "2026-03-14"}
+                      onChange={(e) => setFilters({ ...filters, toDate: e.target.value })}
+                    />
+                    <CalendarMonthIcon className="fmodal-icon" style={{ cursor: "pointer", pointerEvents: "auto" }}
+                      onClick={() => (document.getElementById('filter-to-date') as HTMLInputElement)?.showPicker?.()}
+                    />
+                  </div>
+                </div>
+
+                {activeTab === "activity" ? (
+                  <>
+                    <div className="fmodal-field">
+                      <span className="fmodal-label">Ship From</span>
+                      <div className="fmodal-input-wrap">
+                        <select className="fmodal-select" value={filters.shipFrom} onChange={(e) => setFilters({ ...filters, shipFrom: e.target.value })}>
+                          <option value="">All</option>
+                          <option value="Vidai, Pune">Vidai, Pune</option>
+                          <option value="Fertivue, Pune">Fertivue, Pune</option>
+                        </select>
+                        <KeyboardArrowDownIcon className="fmodal-icon" />
+                      </div>
+                    </div>
+                    <div className="fmodal-field">
+                      <span className="fmodal-label">Ship To</span>
+                      <div className="fmodal-input-wrap">
+                        <select className="fmodal-select" value={filters.shipTo} onChange={(e) => setFilters({ ...filters, shipTo: e.target.value })}>
+                          <option value="">All</option>
+                          <option value="Fertivue, Pune">Fertivue, Pune</option>
+                          <option value="Vidai, Pune">Vidai, Pune</option>
+                        </select>
+                        <KeyboardArrowDownIcon className="fmodal-icon" />
+                      </div>
+                    </div>
+                    <div className="fmodal-field">
+                      <span className="fmodal-label">Ship By</span>
+                      <div className="fmodal-input-wrap">
+                        <select className="fmodal-select" value={filters.shipBy} onChange={(e) => setFilters({ ...filters, shipBy: e.target.value })}>
+                          <option value="">All</option>
+                          <option value="Jordan Blake">Jordan Blake</option>
+                          <option value="Riley Brooks">Riley Brooks</option>
+                        </select>
+                        <KeyboardArrowDownIcon className="fmodal-icon" />
+                      </div>
+                    </div>
+                    <div className="fmodal-field">
+                      <span className="fmodal-label">Shipment No.</span>
+                      <div className="fmodal-input-wrap">
+                        <input className="fmodal-input" type="text" placeholder="AH-7651" value={filters.shipmentNo} onChange={(e) => setFilters({ ...filters, shipmentNo: e.target.value })} />
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="fmodal-field">
+                      <span className="fmodal-label">Ship To</span>
+                      <div className="fmodal-input-wrap">
+                        <select className="fmodal-select" value={filters.shipTo} onChange={(e) => setFilters({ ...filters, shipTo: e.target.value })}>
+                          <option value="">Willowbrook</option>
+                          <option value="Rosewood">Rosewood</option>
+                          <option value="Redwood">Redwood</option>
+                          <option value="Willowbrook">Willowbrook</option>
+                          <option value="Silverlake">Silverlake</option>
+                        </select>
+                        <KeyboardArrowDownIcon className="fmodal-icon" />
+                      </div>
+                    </div>
+                    <div className="fmodal-field">
+                      <span className="fmodal-label">Specimen Type</span>
+                      <div className="fmodal-input-wrap">
+                        <select className="fmodal-select" value={filters.specimenType} onChange={(e) => setFilters({ ...filters, specimenType: e.target.value })}>
+                          <option value="">Blood</option>
+                          <option value="Blood">Blood</option>
+                          <option value="Urine">Urine</option>
+                          <option value="Saliva">Saliva</option>
+                        </select>
+                        <KeyboardArrowDownIcon className="fmodal-icon" />
+                      </div>
+                    </div>
+                    <div className="fmodal-field">
+                      <span className="fmodal-label">Test Name</span>
+                      <div className="fmodal-input-wrap">
+                        <select className="fmodal-select" value={filters.testName} onChange={(e) => setFilters({ ...filters, testName: e.target.value })}>
+                          <option value="">Drug Testing</option>
+                          <option value="Urine Culture">Urine Culture</option>
+                          <option value="Biopsy">Biopsy</option>
+                          <option value="Drug Testing">Drug Testing</option>
+                          <option value="Dipstick Test">Dipstick Test</option>
+                          <option value="Genetic Testing">Genetic Testing</option>
+                          <option value="CBC">CBC</option>
+                        </select>
+                        <KeyboardArrowDownIcon className="fmodal-icon" />
+                      </div>
+                    </div>
+                    <div className="fmodal-field">
+                      <span className="fmodal-label">Service</span>
+                      <div className="fmodal-input-wrap">
+                        <select className="fmodal-select" value={filters.service} onChange={(e) => setFilters({ ...filters, service: e.target.value })}>
+                          <option value="">Women Pathology 2...</option>
+                          <option value="Women Pathology 2026">Women Pathology</option>
+                          <option value="General Diagnostics">General Diagnostics</option>
+                          <option value="Genetics Lab">Genetics Lab</option>
+                        </select>
+                        <KeyboardArrowDownIcon className="fmodal-icon" />
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Footer buttons */}
+              <div className="fmodal-footer">
+                <button className="fmodal-clear" onClick={handleClearFilters}>Clear All</button>
+                <button className="fmodal-apply" onClick={handleApplyFilters}>Apply</button>
+              </div>
             </div>
+          </div>
+        )}
 
-            <div className="shipping-form-grid">
-              <div className="ship-field">
-                <span className="ship-field-label" style={{ fontFamily: FONT }}>Ship Date</span>
-                <div className="ship-field-inner">
-                  <input
-                    ref={dateInputRef}
-                    className="ship-field-input ship-date-input"
-                    type="date"
-                    style={{ fontFamily: FONT }}
-                    value={shipDate}
-                    onChange={(e) => setShipDate(e.target.value)}
-                  />
-                  <CalendarMonthIcon
-                    className="ship-picker-icon"
-                    onClick={() => dateInputRef.current?.showPicker()}
-                  />
+
+        {/* SCHEDULE SHIPPING MODAL */}
+        {showShippingModal && (
+          <div className="modal-overlay" onClick={() => setShowShippingModal(false)}>
+            <div className="modal-content shipping-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>Schedule Shipping</h3>
+                <CloseIcon className="close-icon-btn" onClick={() => setShowShippingModal(false)} />
+              </div>
+
+              <div className="shipping-form-grid">
+
+                {/* Ship Date — native date input, calendar icon click triggers it */}
+                <div className="ship-field">
+                  <span className="ship-field-label">Ship Date</span>
+                  <div className="ship-field-inner">
+                    <input
+                      ref={dateInputRef}
+                      className="ship-field-input ship-date-input"
+                      type="date"
+                      value={shipDate}
+                      onChange={(e) => setShipDate(e.target.value)}
+                    />
+                    <CalendarMonthIcon
+                      className="ship-picker-icon"
+                      onClick={() => dateInputRef.current?.showPicker()}
+                    />
+                  </div>
+                </div>
+
+                {/* Ship Time — native time input, clock icon click triggers it */}
+                <div className="ship-field">
+                  <span className="ship-field-label">Ship Time</span>
+                  <div className="ship-field-inner">
+                    <input
+                      ref={timeInputRef}
+                      className="ship-field-input ship-time-input"
+                      type="time"
+                      value={shipTime}
+                      onChange={(e) => setShipTime(e.target.value)}
+                    />
+                    <AccessTimeIcon
+                      className="ship-picker-icon"
+                      onClick={() => timeInputRef.current?.showPicker()}
+                    />
+                  </div>
+                </div>
+
+                {/* Dispatched By — disabled */}
+                <div className="ship-field disabled">
+                  <span className="ship-field-label">Dispatched By</span>
+                  <div className="ship-field-inner">
+                    <input
+                      className="ship-field-input"
+                      type="text"
+                      value="Fertivue, Pune"
+                      readOnly
+                    />
+                  </div>
+                </div>
+
+                {/* Ship To — select with chevron */}
+                <div className="ship-field">
+                  <span className="ship-field-label">Ship To</span>
+                  <div className="ship-field-inner">
+                    <select
+                      className="ship-field-select"
+                      value={shipTo}
+                      onChange={(e) => setShipTo(e.target.value)}
+                    >
+                      <option value="Willowbrook">Willowbrook</option>
+                      <option value="Rosewood">Rosewood</option>
+                      <option value="Redwood">Redwood</option>
+                      <option value="Silverlake">Silverlake</option>
+                    </select>
+                    <KeyboardArrowDownIcon className="ship-picker-icon" style={{ pointerEvents: "none" }} />
+                  </div>
                 </div>
               </div>
 
-              <div className="ship-field">
-                <span className="ship-field-label" style={{ fontFamily: FONT }}>Ship Time</span>
-                <div className="ship-field-inner">
-                  <input
-                    ref={timeInputRef}
-                    className="ship-field-input ship-time-input"
-                    type="time"
-                    style={{ fontFamily: FONT }}
-                    value={shipTime}
-                    onChange={(e) => setShipTime(e.target.value)}
-                  />
-                  <AccessTimeIcon
-                    className="ship-picker-icon"
-                    onClick={() => timeInputRef.current?.showPicker()}
-                  />
-                </div>
-              </div>
-
-              <div className="ship-field disabled">
-                <span className="ship-field-label" style={{ fontFamily: FONT }}>Dispatched By</span>
-                <div className="ship-field-inner">
-                  <input
-                    className="ship-field-input"
-                    type="text"
-                    style={{ fontFamily: FONT }}
-                    value="Fertivue, Pune"
-                    readOnly
-                  />
-                </div>
-              </div>
-
-              <div className="ship-field">
-                <span className="ship-field-label" style={{ fontFamily: FONT }}>Ship To</span>
-                <div className="ship-field-inner">
-                  <select
-                    className="ship-field-select"
-                    style={{ fontFamily: FONT }}
-                    value={shipTo}
-                    onChange={(e) => setShipTo(e.target.value)}
-                  >
-                    <option value="Willowbrook">Willowbrook</option>
-                    <option value="Rosewood">Rosewood</option>
-                    <option value="Redwood">Redwood</option>
-                    <option value="Silverlake">Silverlake</option>
-                  </select>
-                  <KeyboardArrowDownIcon className="ship-picker-icon" style={{ pointerEvents: "none" }} />
-                </div>
-              </div>
-            </div>
-
-            <div className="shipping-details-section">
-              <h4 style={{ fontFamily: FONT }}>Shipping Details ({selectedRows.length})</h4>
-              <div className="mini-table-container">
-                <table className="mini-table" style={{ fontFamily: FONT }}>
-                  <thead>
-                    <tr>
-                      <th style={{ fontFamily: FONT }}>Date | Time</th>
-                      <th style={{ fontFamily: FONT }}>Specimen No. | Type</th>
-                      <th style={{ fontFamily: FONT }}>Test Code | Name</th>
-                      <th style={{ fontFamily: FONT }}>Patient</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pendingDataOriginal.filter((item) => selectedRows.includes(item.id)).map((item) => (
-                      <tr key={item.id}>
-                        <td>
-                          <div className="mini-cell-top" style={{ fontFamily: FONT }}>{item.date}</div>
-                          <div className="mini-cell-bottom" style={{ fontFamily: FONT }}>{item.time}</div>
-                        </td>
-                        <td>
-                          <div className="mini-cell-top" style={{ fontFamily: FONT }}>{item.sampleNo}</div>
-                          <div className="mini-cell-bottom" style={{ fontFamily: FONT }}>{item.type}</div>
-                        </td>
-                        <td>
-                          <div className="mini-cell-top" style={{ fontFamily: FONT }}>{item.testCode}</div>
-                          <div className="mini-cell-bottom" style={{ fontFamily: FONT }}>{item.testName}</div>
-                        </td>
-                        <td>
-                          <div className="mini-cell-top" style={{ fontFamily: FONT }}>{item.patientName} | {item.age}</div>
-                          <div className="mini-cell-bottom" style={{ fontFamily: FONT }}>{item.patientCode} | {item.gender}</div>
-                        </td>
+              {/* Shipping Details table */}
+              <div className="shipping-details-section">
+                <h4>Shipping Details ({selectedRows.length})</h4>
+                <div className="mini-table-container">
+                  <table className="mini-table">
+                    <thead>
+                      <tr>
+                        <th>Date | Time</th>
+                        <th>Specimen No. | Type</th>
+                        <th>Test Code | Name</th>
+                        <th>Patient</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {pendingDataOriginal.filter((item) => selectedRows.includes(item.id)).map((item) => (
+                        <tr key={item.id}>
+                          <td>
+                            <div className="mini-cell-top">{item.date}</div>
+                            <div className="mini-cell-bottom">{item.time}</div>
+                          </td>
+                          <td>
+                            <div className="mini-cell-top">{item.sampleNo}</div>
+                            <div className="mini-cell-bottom">{item.type}</div>
+                          </td>
+                          <td>
+                            <div className="mini-cell-top">{item.testCode}</div>
+                            <div className="mini-cell-bottom">{item.testName}</div>
+                          </td>
+                          <td>
+                            <div className="mini-cell-top">{item.patientName} | {item.age}</div>
+                            <div className="mini-cell-bottom">{item.patientCode} | {item.gender}</div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="modal-footer shipping-footer">
+                <button className="cancel-btn" onClick={() => setShowShippingModal(false)}>Cancel</button>
+                <button className="save-btn" onClick={() => {
+                  alert("Shipping Scheduled!");
+                  setSelectedRows([]);
+                  setShowShippingModal(false);
+                }}>Save</button>
               </div>
             </div>
-
-            <div className="modal-footer shipping-footer">
-              <button className="cancel-btn" style={{ fontFamily: FONT }} onClick={() => setShowShippingModal(false)}>Cancel</button>
-              <button className="save-btn" style={{ fontFamily: FONT }} onClick={() => {
-                alert("Shipping Scheduled!");
-                setSelectedRows([]);
-                setShowShippingModal(false);
-              }}>Save</button>
-            </div>
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 };
