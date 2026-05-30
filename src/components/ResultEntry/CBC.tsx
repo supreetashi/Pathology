@@ -5,14 +5,35 @@ import { Result } from "./types";
 
 import Chromosome from "./Chromosome";
 
-import Ellipse_12 from "../assets/icons/Ellipse_12.svg";
+import Ellipse_12 from "../../assets/icons/Ellipse_12.svg";
+import UndoIconAsset from "../../assets/icons/undo.png";
 
 
 
 interface Props {
   onBack: () => void;
   data: Result;
+  initialMode?: "edit" | "view";
 }
+
+interface SidebarItem {
+  label: string;
+  checked: boolean;
+}
+
+const INITIAL_PARAMETERS: SidebarItem[] = [
+  { label: "Select All", checked: false },
+  { label: "HIV (Rapid Card)", checked: true },
+  { label: "HCV (Rapid Card)", checked: true },
+  { label: "HBaSG (Rapid Card)", checked: false },
+  { label: "(CBC) Complete Bl...", checked: true },
+];
+
+const INITIAL_TEMPLATES: SidebarItem[] = [
+  { label: "Testosteron Total", checked: true },
+  { label: "VDRL (Rapid Card)", checked: false },
+  { label: "Blood Glucose (RBS)", checked: false },
+];
 
 const previousResults: Record<string, { date: string; param: string; value: string }[]> = {
   "Heamoglobin (hb)": [
@@ -32,11 +53,16 @@ const previousResults: Record<string, { date: string; param: string; value: stri
   ],
 };
 
-const CBC: React.FC<Props> = ({ onBack, data }) => {
-  
-  const [isEdit, setIsEdit] = useState(true);
+const CBC: React.FC<Props> = ({ onBack, data, initialMode = "edit" }) => {
+  const [isEdit, setIsEdit] = useState(initialMode === "edit");
   const [activeTab, setActiveTab] = useState("");
   const [modalParam, setModalParam] = useState<string | null>(null);
+  const [parameters, setParameters] = useState<SidebarItem[]>(INITIAL_PARAMETERS);
+  const [templates, setTemplates] = useState<SidebarItem[]>(INITIAL_TEMPLATES);
+
+  React.useEffect(() => {
+    setIsEdit(initialMode === "edit");
+  }, [initialMode]);
 
   const testTabs = [
     "HIV (Rapid Card)",
@@ -45,19 +71,28 @@ const CBC: React.FC<Props> = ({ onBack, data }) => {
     "Y Chromosome Microdeletion",
   ];
 
-  const parameters = [
-    { label: "Select All", checked: false },
-    { label: "HIV (Rapid Card)", checked: true },
-    { label: "HCV (Rapid Card)", checked: true },
-    { label: "HBaSG (Rapid Card)", checked: false },
-    { label: "(CBC) Complete Bl...", checked: true },
-  ];
+  const toggleParameter = (index: number) => {
+    setParameters((prev) => {
+      // First row controls all test checkboxes.
+      if (index === 0) {
+        const nextChecked = !prev[0].checked;
+        return prev.map((item) => ({ ...item, checked: nextChecked }));
+      }
 
-  const templates = [
-    { label: "Testosteron Total", checked: true },
-    { label: "VDRL (Rapid Card)", checked: false },
-    { label: "Blood Glucose (RBS)", checked: false },
-  ];
+      const next = prev.map((item, i) =>
+        i === index ? { ...item, checked: !item.checked } : item
+      );
+      const allChecked = next.slice(1).every((item) => item.checked);
+      next[0] = { ...next[0], checked: allChecked };
+      return next;
+    });
+  };
+
+  const toggleTemplate = (index: number) => {
+    setTemplates((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, checked: !item.checked } : item))
+    );
+  };
 
   const [tableData, setTableData] = useState([
     {
@@ -275,7 +310,9 @@ if (activeTab === "Y Chromosome Microdeletion") {
         {modalParam && <PreviousModal />}
 
         <div className="cbc-header">
-          <button className="back-btn" onClick={onBack}>&#8634;</button>
+          <button className="back-btn" onClick={onBack}>
+            <img src={UndoIconAsset} alt="Back" className="back-btn-icon" />
+          </button>
           <h2>Add Result Details</h2>
         </div>
 
@@ -297,7 +334,12 @@ if (activeTab === "Y Chromosome Microdeletion") {
           <div className="cbc-sidebar">
             <div className="sidebar-section-title">PARAMETER</div>
             {parameters.map((p, i) => (
-              <label key={i} className="sidebar-item">
+              <label
+                key={i}
+                className="sidebar-item"
+                onClick={() => toggleParameter(i)}
+                style={{ cursor: "pointer" }}
+              >
                 <span className={`sidebar-check ${p.checked ? "checked" : ""}`}>
                   {p.checked && <span>✓</span>}
                 </span>
@@ -306,7 +348,12 @@ if (activeTab === "Y Chromosome Microdeletion") {
             ))}
             <div className="sidebar-section-title" style={{ marginTop: 20 }}>TEMPLATE</div>
             {templates.map((t, i) => (
-              <label key={i} className="sidebar-item">
+              <label
+                key={i}
+                className="sidebar-item"
+                onClick={() => toggleTemplate(i)}
+                style={{ cursor: "pointer" }}
+              >
                 <span className={`sidebar-check ${t.checked ? "checked" : ""}`}>
                   {t.checked && <span>✓</span>}
                 </span>
@@ -392,7 +439,9 @@ if (activeTab === "Y Chromosome Microdeletion") {
       {modalParam && <PreviousModal />}
 
       <div className="cbc-header">
-        <button className="back-btn" onClick={onBack}>&#8634;</button>
+        <button className="back-btn" onClick={onBack}>
+          <img src={UndoIconAsset} alt="Back" className="back-btn-icon" />
+        </button>
         <h2>View Result Details</h2>
         <button className="print-btn" style={{ marginLeft: "auto" }}>🖨</button>
       </div>

@@ -25,7 +25,7 @@ export const EXTRA_ROUTES: ExtraRoute[] = [
   {
     key: "result-entry",
     path: "/pathology/result-entry",
-    page: lazy(() => import("../pages/ResultEntryPage")),
+    page: lazy(() => import("../components/ResultEntry/ResultEntryView")),
   },
   {
     key: "authorization",
