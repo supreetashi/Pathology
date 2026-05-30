@@ -1,252 +1,35 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AddIcon from "../../../assets/icons/add-square.svg";
 import EditIcon from "../../../assets/icons/edit.svg";
 import LeftArrow from "../../../assets/icons/left_arrow.svg";
 import RightArrow from "../../../assets/icons/right_arrow.svg";
 import SearchIcon from "../../../assets/icons/search.png";
+import { useDispatch, useSelector } from "react-redux";
 import {
-  type SampleTubeItem,
-  sampleMockData,
-  tubeMockData,
-} from "./mockDataSampleTube";
-import CreateSampleModal from "./CreateSampleModal";
-
-type SampleTubeTab = "Sample" | "Tube";
+  createSample,
+  createTube,
+  fetchSamples,
+  fetchTubes,
+  selectSamples,
+  selectTubes,
+  toggleSampleStatus,
+  toggleTubeStatus,
+} from "../../../store/sampleTubeSlice";
+import { SampleTubeTab } from "../../../types/sampleTube.types";
+import styles from "../../../styles/Configuration/SampleTube/sampleAndTube.module.css";
+import { AppDispatch } from "../../../store";
+import CreateSampleTubeModal from "./CreateSampleTubeModal";
 
 const tabs: SampleTubeTab[] = ["Sample", "Tube"];
-
-const styles = {
-  container: {
-    width: "100%",
-    height: "100%",
-    display: "flex",
-    flexDirection: "column" as const,
-    borderRadius: "14px",
-    backgroundColor: "#ffffff",
-    overflow: "hidden",
-  },
-  tabs: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    borderBottom: "1px solid #eceef2",
-    backgroundColor: "transparent",
-  },
-  tabButton: {
-    padding: "14px 10px",
-    border: "none",
-    borderBottom: "2px solid #eceef2",
-    background: "transparent",
-    backgroundColor: "transparent",
-    color: "#81858d",
-    fontSize: "14px",
-    fontWeight: 600,
-    cursor: "pointer",
-    width: "100%",
-    position: "sticky" as const,
-  },
-  tabButtonActive: {
-    color: "#23262b",
-    borderBottom: "2px solid #e65245",
-    backgroundColor: "transparent",
-  },
-  content: {
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: "14px",
-    padding: "14px",
-    height: "100%",
-  },
-  toolbar: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: "12px",
-    flexWrap: "wrap" as const,
-  },
-  title: {
-    fontSize: "22px",
-    fontWeight: 700,
-    color: "#2a2d33",
-  },
-  actions: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    flexWrap: "wrap" as const,
-  },
-  searchWrapper: {
-    position: "relative" as const,
-  },
-  searchIcon: {
-    position: "absolute" as const,
-    left: "12px",
-    top: "50%",
-    transform: "translateY(-50%)",
-    width: "14px",
-    height: "14px",
-    opacity: 0.55,
-    pointerEvents: "none" as const,
-  },
-  searchInput: {
-    width: "280px",
-    height: "36px",
-    borderRadius: "10px",
-    border: "1px solid #dde1e7",
-    padding: "0 12px 0 34px",
-    fontSize: "13px",
-    outline: "none",
-    color: "#333842",
-  },
-  createButton: {
-    display: "inline-flex",
-    alignItems: "center",
-    gap: "8px",
-    height: "36px",
-    border: "none",
-    borderRadius: "10px",
-    backgroundColor: "#4e5158",
-    color: "#ffffff",
-    padding: "0 14px",
-    fontSize: "13px",
-    fontWeight: 600,
-    cursor: "pointer",
-  },
-  createIcon: {
-    width: "14px",
-    height: "14px",
-    filter: "brightness(0) invert(1)",
-  },
-  tableWrap: {
-    border: "1px solid #edf0f4",
-    borderTop: "none",
-    borderRadius: "12px",
-    overflow: "hidden",
-    display: "flex",
-    flexDirection: "column" as const,
-    minHeight: "420px",
-  },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse" as const,
-  },
-  tableHead: {
-    backgroundColor: "#f8f9fb",
-  },
-  th: {
-    textAlign: "left" as const,
-    fontSize: "14px",
-    color: "#7d828b",
-    fontWeight: 600,
-    padding: "12px 14px",
-    borderBottom: "1px solid #edf0f4",
-    whiteSpace: "nowrap" as const,
-  },
-  td: {
-    fontSize: "14px",
-    color: "#373b43",
-    padding: "13px 14px",
-    borderBottom: "1px solid #f2f4f7",
-  },
-  mutedTd: {
-    color: "#8a909a",
-    textAlign: "center" as const,
-  },
-  statusCell: {
-    textAlign: "center" as const,
-  },
-  actionCell: {
-    textAlign: "center" as const,
-    width: "40px",
-  },
-  iconButton: {
-    border: "none",
-    background: "transparent",
-    cursor: "pointer",
-    padding: 0,
-    lineHeight: 0,
-  },
-  switchLabel: {
-    position: "relative" as const,
-    display: "inline-block",
-    width: "30px",
-    height: "16px",
-  },
-  switchInput: {
-    opacity: 0,
-    width: 0,
-    height: 0,
-    position: "absolute" as const,
-  },
-  slider: {
-    position: "absolute" as const,
-    inset: 0,
-    borderRadius: "999px",
-    backgroundColor: "#d8dbe1",
-    transition: "all .2s ease",
-  },
-  sliderOn: {
-    backgroundColor: "#4bb569",
-  },
-  knob: {
-    position: "absolute" as const,
-    top: "2px",
-    left: "2px",
-    width: "12px",
-    height: "12px",
-    borderRadius: "50%",
-    backgroundColor: "#ffffff",
-    boxShadow: "0 1px 3px rgba(0,0,0,.25)",
-    transition: "all .2s ease",
-  },
-  knobOn: {
-    transform: "translateX(14px)",
-  },
-  tableFooter: {
-    marginTop: "auto",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: "8px",
-    padding: "12px 14px",
-    color: "#8a909a",
-    fontSize: "12px",
-  },
-  pagination: {
-    display: "flex",
-    alignItems: "center",
-    gap: "6px",
-  },
-  pageButton: {
-    minWidth: "24px",
-    height: "24px",
-    border: "1px solid #d6dae2",
-    borderRadius: "6px",
-    backgroundColor: "#ffffff",
-    color: "#636a75",
-    fontSize: "12px",
-    fontWeight: 600,
-    cursor: "pointer",
-    display: "grid",
-    placeItems: "center" as const,
-    padding: 0,
-  },
-  pageButtonActive: {
-    backgroundColor: "#1f232a",
-    borderColor: "#1f232a",
-    color: "#ffffff",
-  },
-  pageButtonDisabled: {
-    opacity: 0.4,
-    cursor: "not-allowed",
-  },
-};
 
 function SampleAndTube() {
   const [activeTab, setActiveTab] = useState<SampleTubeTab>("Sample");
   const [searchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [sampleData, setSampleData] = useState(sampleMockData);
-  const [tubeData, setTubeData] = useState(tubeMockData);
+  const dispatch = useDispatch<AppDispatch>();
+
+  const sampleData = useSelector(selectSamples);
+  const tubeData = useSelector(selectTubes);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const itemsPerPage = 10;
@@ -288,33 +71,36 @@ function SampleAndTube() {
   };
 
   const toggleStatus = (id: number) => {
-    const updater = (items: SampleTubeItem[]) =>
-      items.map((item) =>
-        item.id === id ? { ...item, isActive: !item.isActive } : item,
-      );
-
     if (activeTab === "Sample") {
-      setSampleData((prev) => updater(prev));
-      return;
+      dispatch(toggleSampleStatus(id));
+    } else {
+      dispatch(toggleTubeStatus(id));
     }
-
-    setTubeData((prev) => updater(prev));
   };
 
+  useEffect(() => {
+    dispatch(fetchSamples());
+    dispatch(fetchTubes());
+  }, [dispatch]);
+
   return (
-    <div style={styles.container}>
-      <div style={styles.tabs}>
+    <div className={styles.container}>
+      <div className={styles.tabs}>
         {tabs.map((tab) => {
-          const tabStyle =
-            activeTab === tab
-              ? { ...styles.tabButton, ...styles.tabButtonActive }
-              : styles.tabButton;
+          // const tabStyle =
+          //   activeTab === tab
+          //     ? { ...styles.tabButton, ...styles.tabButtonActive }
+          //     : styles.tabButton;
 
           return (
             <button
               key={tab}
               type="button"
-              style={tabStyle}
+              className={
+                activeTab === tab
+                  ? `${styles.tabButton} ${styles.tabButtonActive}`
+                  : styles.tabButton
+              }
               onClick={() => handleTabClick(tab)}
             >
               {tab}
@@ -323,13 +109,17 @@ function SampleAndTube() {
         })}
       </div>
 
-      <div style={styles.content}>
-        <div style={styles.toolbar}>
-          <span style={styles.title}>{toolbarTitle}</span>
+      <div className={styles.content}>
+        <div className={styles.toolbar}>
+          <span className={styles.title}>{toolbarTitle}</span>
 
-          <div style={styles.actions}>
-            <div style={styles.searchWrapper}>
-              <img src={SearchIcon} alt="search" style={styles.searchIcon} />
+          <div className={styles.actions}>
+            <div className={styles.searchWrapper}>
+              <img
+                src={SearchIcon}
+                alt="search"
+                className={styles.searchIcon}
+              />
               <input
                 value={searchText}
                 onChange={(event) => {
@@ -337,80 +127,75 @@ function SampleAndTube() {
                   setCurrentPage(1);
                 }}
                 placeholder={`Search by ${activeTab} Code / Name`}
-                style={styles.searchInput}
+                className={styles.searchInput}
               />
             </div>
 
             <button
               type="button"
-              style={styles.createButton}
+              className={styles.createButton}
               onClick={() => setIsModalOpen(true)}
             >
-              <img src={AddIcon} alt="add" style={styles.createIcon} />
+              <img src={AddIcon} alt="add" className={styles.createIcon} />
               {`Create New ${activeTab}`}
             </button>
           </div>
         </div>
 
-        <div style={styles.tableWrap}>
-          <table style={styles.table}>
-            <thead style={styles.tableHead}>
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <thead className={styles.tableHead}>
               <tr>
-                <th style={{ ...styles.th, width: "140px" }}>
-                  {`${activeTab} Code`}
-                </th>
-                <th style={styles.th}>{`${activeTab} Name`}</th>
-                <th
-                  style={{ ...styles.th, textAlign: "center", width: "90px" }}
-                >
+                <th className={styles.th}>{`${activeTab} Code`}</th>
+                <th className={styles.th}>{`${activeTab} Name`}</th>
+                <th className={`${styles.th} ${styles.statusHeader}`}>
+                  {" "}
                   Status
                 </th>
-                <th
-                  style={{ ...styles.th, textAlign: "center", width: "40px" }}
-                ></th>
+                <th className={`${styles.th} ${styles.actionHeader}`}></th>
               </tr>
             </thead>
             <tbody>
               {paginatedRows.length === 0 ? (
                 <tr>
-                  <td style={{ ...styles.td, ...styles.mutedTd }} colSpan={4}>
+                  <td className={`${styles.td} ${styles.mutedTd}`} colSpan={4}>
                     No {activeTab.toLowerCase()} records found.
                   </td>
                 </tr>
               ) : (
                 paginatedRows.map((row) => (
                   <tr key={row.id}>
-                    <td style={styles.td}>{row.code}</td>
-                    <td style={styles.td}>{row.name}</td>
-                    <td style={{ ...styles.td, ...styles.statusCell }}>
-                      <label style={styles.switchLabel}>
+                    <td className={styles.td}>{row.code}</td>
+                    <td className={styles.td}>{row.name}</td>
+                    <td className={`${styles.td} ${styles.statusCell}`}>
+                      <label className={styles.switchLabel}>
                         <input
                           type="checkbox"
                           checked={row.isActive}
                           onChange={() => toggleStatus(row.id)}
-                          style={styles.switchInput}
+                          className={styles.switchInput}
                         />
                         <span
-                          style={
+                          className={
                             row.isActive
-                              ? { ...styles.slider, ...styles.sliderOn }
+                              ? `${styles.slider} ${styles.sliderOn}`
                               : styles.slider
                           }
                         >
                           <span
-                            style={
+                            className={
                               row.isActive
-                                ? { ...styles.knob, ...styles.knobOn }
+                                ? `${styles.knob} ${styles.knobOn}`
                                 : styles.knob
                             }
                           />
                         </span>
                       </label>
                     </td>
-                    <td style={{ ...styles.td, ...styles.actionCell }}>
+                    <td className={`${styles.td} ${styles.actionCell}`}>
                       <button
                         type="button"
-                        style={styles.iconButton}
+                        className={styles.iconButton}
                         aria-label={`Edit ${row.name}`}
                       >
                         <img src={EditIcon} alt="edit" width={14} height={14} />
@@ -422,17 +207,17 @@ function SampleAndTube() {
             </tbody>
           </table>
 
-          <div style={styles.tableFooter}>
+          <div className={styles.tableFooter}>
             <span>
               Showing {startEntry} to {endEntry} of {totalItems} entries
             </span>
 
-            <div style={styles.pagination}>
+            <div className={styles.pagination}>
               <button
                 type="button"
-                style={
+                className={
                   safeCurrentPage === 1
-                    ? { ...styles.pageButton, ...styles.pageButtonDisabled }
+                    ? `${styles.pageButton} ${styles.pageButtonDisabled}`
                     : styles.pageButton
                 }
                 onClick={() =>
@@ -449,9 +234,9 @@ function SampleAndTube() {
                   <button
                     key={page}
                     type="button"
-                    style={
+                    className={
                       safeCurrentPage === page
-                        ? { ...styles.pageButton, ...styles.pageButtonActive }
+                        ? `${styles.pageButton} ${styles.pageButtonActive}`
                         : styles.pageButton
                     }
                     onClick={() => setCurrentPage(page)}
@@ -463,9 +248,9 @@ function SampleAndTube() {
 
               <button
                 type="button"
-                style={
+                className={
                   safeCurrentPage === totalPages
-                    ? { ...styles.pageButton, ...styles.pageButtonDisabled }
+                    ? `${styles.pageButton} ${styles.pageButtonDisabled}`
                     : styles.pageButton
                 }
                 onClick={() =>
@@ -483,13 +268,27 @@ function SampleAndTube() {
         </div>
 
         {/* STEP 4 — ADD HERE */}
-        <CreateSampleModal
+        <CreateSampleTubeModal
           isOpen={isModalOpen}
           type={activeTab}
           onClose={() => setIsModalOpen(false)}
           onSave={(code, name) => {
-            console.log(code, name);
-        
+            if (activeTab === "Sample") {
+              dispatch(
+                createSample({
+                  sample_code: code,
+                  sample_name: name,
+                  frequency: 1,
+                }),
+              );
+            } else {
+              dispatch(
+                createTube({
+                  tube_code: code,
+                  tube_name: name,
+                }),
+              );
+            }
           }}
         />
       </div>

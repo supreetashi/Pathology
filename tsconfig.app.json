@@ -12,21 +12,11 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "typeRoots": ["./node_modules/@types"],
-    "types": ["react", "react-dom"],
+    "types": ["react", "react-dom", "vite/client"],
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": [
-    "src/main.tsx",
-    "src/App.tsx",
-    "src/vite-env.d.ts",
-    "src/components/**/*.tsx",
-    "src/config/sidebar.menu.ts",
-    "src/config/sidebar.tabs.ts",
-    "src/pages/**/*.tsx",
-    "routes.tsx"
-  ],
-  "exclude": ["src/config/appType.test.ts", "src/config/extra.routes.ts", "src/utils/**"]
+  "include": ["src"]
 }

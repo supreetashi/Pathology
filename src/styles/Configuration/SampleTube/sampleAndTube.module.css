@@ -1,0 +1,237 @@
+.container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border-radius: 14px;
+    background-color: #fff;
+    overflow: hidden;
+}
+
+.tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-bottom: 1px solid #eceef2;
+}
+
+.tabButton {
+    padding: 14px 10px;
+    border: none;
+    border-bottom: 2px solid #eceef2;
+    background: transparent;
+    color: #81858d;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.tabButtonActive {
+    color: #23262b;
+    border-bottom: 2px solid #e65245;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 14px;
+    height: 100%;
+}
+
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #2a2d33;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.searchWrapper {
+    position: relative;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+}
+
+.searchInput {
+    width: 280px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid #dde1e7;
+    padding: 0 12px 0 34px;
+}
+
+.createButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    border: none;
+    border-radius: 10px;
+    background: #4e5158;
+    color: white;
+    cursor: pointer;
+}
+
+.createIcon {
+    width: 14px;
+    height: 14px;
+}
+
+.tableWrap {
+    border: 1px solid #edf0f4;
+    border-top: none;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 420px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tableHead {
+    background-color: #f8f9fb;
+}
+
+.th {
+    text-align: left;
+    font-size: 14px;
+    color: #7d828b;
+    font-weight: 600;
+    padding: 12px 14px;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.td {
+    font-size: 14px;
+    color: #373b43;
+    padding: 13px 14px;
+    border-bottom: 1px solid #f2f4f7;
+}
+
+.mutedTd {
+    color: #8a909a;
+    text-align: center;
+}
+
+.statusCell {
+    text-align: center;
+}
+
+.actionCell {
+    text-align: center;
+    width: 40px;
+}
+
+.tableFooter {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 14px;
+}
+
+.pagination {
+    display: flex;
+    gap: 6px;
+}
+
+.pageButton {
+    min-width: 24px;
+    height: 24px;
+    border: 1px solid #d6dae2;
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+}
+
+.pageButtonActive {
+    background: #1f232a;
+    color: white;
+}
+
+.pageButtonDisabled {
+    opacity: 0.4;
+}
+
+.codeColumn {
+    width: 140px;
+}
+
+.statusHeader {
+    text-align: center;
+    width: 90px;
+}
+
+.actionHeader {
+    text-align: center;
+    width: 40px;
+}
+
+.switchLabel {
+    position: relative;
+    display: inline-block;
+    width: 30px;
+    height: 16px;
+}
+
+.switchInput {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.slider {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background-color: #d8dbe1;
+    transition: all 0.2s ease;
+}
+
+.sliderOn {
+    background-color: #4bb569;
+}
+
+.knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    transition: all 0.2s ease;
+}
+
+.knobOn {
+    transform: translateX(14px);
+}
+
+.iconButton {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    line-height: 0; }

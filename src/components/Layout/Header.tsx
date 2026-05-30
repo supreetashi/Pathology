@@ -1,6 +1,6 @@
 import ArrowIcon from "../../assets/icons/Down.svg";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   AppBar,
@@ -16,12 +16,9 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import CalendarIcon from "../../assets/icons/calendar.svg";
 import UserAvatarIcon from "../../assets/icons/Ellipse_12.svg";
 import { PATHOLOGY_MENU } from "../../config/sidebar.menu";
-
-type Clinic = {
-  clinic_id: number;
-  clinic__name: string;
-  is_default?: boolean;
-};
+import { useDispatch, useSelector } from "react-redux";
+import { fetchClinic, selectClinic } from "../../store/clinicSlice";
+import { AppDispatch } from "../../store";
 
 type HeaderUser = {
   first_name: string;
@@ -35,7 +32,7 @@ type ActiveMenu = {
 };
 
 const getActiveMenuLabel = (pathname: string): ActiveMenu => {
-    for (const item of PATHOLOGY_MENU) {
+  for (const item of PATHOLOGY_MENU) {
     if (item.path === pathname) {
       return { parent: null, child: item.label };
     }
@@ -58,15 +55,15 @@ const getActiveMenuLabel = (pathname: string): ActiveMenu => {
 const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
   const user: HeaderUser = {
     first_name: "Kate",
     last_name: "Russell",
     designation_label: "Receptionist",
   };
-  const clinics: Clinic[] = [
-    { clinic_id: 1, clinic__name: "Crysta IVF, Banglore", is_default: true },
-  ];
-  const selectedClinic = clinics.find((c) => c.is_default) || clinics[0];
+  const clinic = useSelector(selectClinic);
+
+  const clinicName = clinic?.clinic_name ?? "Select Clinic";
   const activeBreadcrumb = getActiveMenuLabel(location.pathname);
   const [clinicAnchor, setClinicAnchor] = useState<null | HTMLElement>(null);
 
@@ -103,6 +100,10 @@ const Header = () => {
     navigate("/login", { replace: true });
   };
 
+  useEffect(() => {
+    dispatch(fetchClinic(1));
+  }, [dispatch]);
+
   const iconMenus = [{ icon: CalendarIcon, type: "calendar" }] as const;
 
   return (
@@ -119,30 +120,30 @@ const Header = () => {
       <Toolbar sx={{ justifyContent: "space-between", py: 2 }}>
         {/* LEFT: Breadcrumbs */}
         <Box sx={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <Typography sx={{ color: "#666" }}>Pathology</Typography>
 
+          {/* ALWAYS show arrow after Pathology */}
+          <Box component="img" src={ArrowIcon} sx={{ width: 12, height: 12 }} />
 
-        <Typography sx={{ color: "#666" }}>Pathology</Typography>
+          {/* Show parent if exists */}
+          {activeBreadcrumb.parent && (
+            <>
+              <Typography sx={{ color: "#666" }}>
+                {activeBreadcrumb.parent}
+              </Typography>
 
-{/* ALWAYS show arrow after Pathology */}
-<Box component="img" src={ArrowIcon} sx={{ width: 12, height: 12 }} />
+              <Box
+                component="img"
+                src={ArrowIcon}
+                sx={{ width: 12, height: 12 }}
+              />
+            </>
+          )}
 
-{/* Show parent if exists */}
-{activeBreadcrumb.parent && (
-  <>
-    <Typography sx={{ color: "#666" }}>
-      {activeBreadcrumb.parent}
-    </Typography>
-
-    <Box component="img" src={ArrowIcon} sx={{ width: 12, height: 12 }} />
-  </>
-)}
-
-{/* Always show child */}
-<Typography sx={{ color: "#1f1f1f", fontSize: 18, fontWeight: 700 }}>
-  {activeBreadcrumb.child}
-</Typography>
-
-
+          {/* Always show child */}
+          <Typography sx={{ color: "#1f1f1f", fontSize: 18, fontWeight: 700 }}>
+            {activeBreadcrumb.child}
+          </Typography>
         </Box>
 
         {/* RIGHT */}
@@ -162,7 +163,7 @@ const Header = () => {
               }}
             >
               <Typography variant="body2">
-                Clinic: <b>{selectedClinic.clinic__name}</b>
+                Clinic: <b>{clinicName}</b>
               </Typography>
               <ArrowDropDownIcon />
             </Box>
@@ -172,11 +173,7 @@ const Header = () => {
               open={Boolean(clinicAnchor)}
               onClose={handleClinicClose}
             >
-              {clinics.map((c) => (
-                <MenuItem key={c.clinic_id} onClick={handleClinicClose}>
-                  {c.clinic__name}
-                </MenuItem>
-              ))}
+              <MenuItem disabled>{clinicName}</MenuItem>
             </Menu>
           </Box>
 
