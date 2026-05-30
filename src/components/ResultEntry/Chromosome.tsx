@@ -1,0 +1,611 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import "./Chromosome.css";
+import { Result } from "./types";
+import { FiPlusCircle, FiSearch, FiXCircle } from "react-icons/fi";
+import UndoOutlinedIcon from "@mui/icons-material/UndoOutlined";
+import RedoOutlinedIcon from "@mui/icons-material/RedoOutlined";
+import FormatBoldIcon from "@mui/icons-material/FormatBold";
+import FormatItalicIcon from "@mui/icons-material/FormatItalic";
+import FormatUnderlinedIcon from "@mui/icons-material/FormatUnderlined";
+import FormatColorTextIcon from "@mui/icons-material/FormatColorText";
+import FormatAlignLeftIcon from "@mui/icons-material/FormatAlignLeft";
+import FormatAlignCenterIcon from "@mui/icons-material/FormatAlignCenter";
+import FormatAlignRightIcon from "@mui/icons-material/FormatAlignRight";
+import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
+import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
+import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
+import StrikethroughSIcon from "@mui/icons-material/StrikethroughS";
+import FormatClearIcon from "@mui/icons-material/FormatClear";
+import Ellipse_12 from "../../assets/icons/Ellipse_12.svg";
+import UndoIconAsset from "../../assets/icons/undo.png";
+import ReactQuill, { Quill } from "react-quill";
+import "react-quill/dist/quill.snow.css";
+
+const FontStyle = Quill.import("attributors/style/font") as any;
+const SizeStyle = Quill.import("attributors/style/size") as any;
+
+FontStyle.whitelist = ["Nunito", "Plus Jakarta Sans", "Arial", "Times New Roman"];
+SizeStyle.whitelist = ["10px", "11px", "12px", "13px", "14px", "16px", "18px", "20px", "24px", "28px", "32px"];
+
+Quill.register(FontStyle, true);
+Quill.register(SizeStyle, true);
+
+interface Props {
+  onBack: () => void;
+  data?: Result;
+}
+
+const tabs = [
+  "HIV (Rapid Card)",
+  "HCV (Rapid Card)",
+  "(CBC) Complete Blood Count",
+  "Y Chromosome Microdeletion",
+];
+
+const INITIAL_REPORT_HTML = `
+  <p><strong>RESULTS:</strong></p>
+  <p><strong>AZFa Region:</strong><br />STS markers (SRY, SY84, SY86) were analyzed. No deletion detected.</p>
+  <p><strong>AZFb Region:</strong><br />STS markers (SY127, SY134) were analyzed. No deletion detected.</p>
+  <p><strong>AZFc Region:</strong><br />STS markers (SY254, SY255) were analyzed. Partial deletion observed.</p>
+  <p><strong>AZFd Region:</strong><br />STS marker (SY157) analyzed. No deletion detected.</p>
+  <p><strong>INTERPRETATION:</strong></p>
+  <p>The Y chromosome contains critical regions responsible for spermatogenesis.</p>
+`;
+
+const FONT_OPTIONS = ["Nunito", "Plus Jakarta Sans", "Arial", "Times New Roman"];
+const SIZE_OPTIONS = [10, 11, 12, 13, 14, 16, 18, 20, 24, 28, 32];
+
+const Chromosome = ({ onBack, data }: Props) => {
+  const [activeTab, setActiveTab] = useState("Y Chromosome Microdeletion");
+  const [showCreate, setShowCreate] = useState(false);
+  const [isViewMode, setIsViewMode] = useState(true);
+  const [fontFamily, setFontFamily] = useState("Nunito");
+  const [selectedParamIndex, setSelectedParamIndex] = useState(0);
+  const [selectedTemplateIndex, setSelectedTemplateIndex] = useState(0);
+  const [fontSize, setFontSize] = useState(13);
+  const [textTransformMode, setTextTransformMode] = useState("none");
+  const [reportHtml, setReportHtml] = useState(INITIAL_REPORT_HTML);
+  const [suggestionNote, setSuggestionNote] = useState(
+    "Hb Within Normal Range. Continue Routine Monitoring If Clinically Required."
+  );
+  const [footNote, setFootNote] = useState(
+    "Reference Ranges May Vary Depending On Age, Gender, And Clinical Condition."
+  );
+  const [referredBy, setReferredBy] = useState("Dr. Soniya S.");
+  const [pathologist, setPathologist] = useState("John Wick");
+  const quillRef = useRef<ReactQuill | null>(null);
+  const colorInputRef = useRef<HTMLInputElement | null>(null);
+  const lastRangeRef = useRef<{ index: number; length: number } | null>(null);
+  const getEditor = () => quillRef.current?.getEditor();
+
+  const getActiveRange = () => {
+    const editor = getEditor();
+
+    if (!editor) {
+      return null;
+    }
+
+    editor.focus();
+    let range = editor.getSelection();
+
+    if (!range) {
+      if (lastRangeRef.current) {
+        range = lastRangeRef.current;
+        editor.setSelection(range.index, range.length, "silent");
+        return range;
+      }
+
+      const length = editor.getLength();
+      const index = Math.max(0, length - 1);
+      editor.setSelection(index, 0, "silent");
+      range = editor.getSelection();
+    }
+
+    if (range) {
+      lastRangeRef.current = { index: range.index, length: range.length };
+    }
+
+    return range;
+  };
+
+  const syncEditorHtml = () => {
+    const editor = getEditor();
+    if (editor) {
+      setReportHtml(editor.root.innerHTML);
+    }
+  };
+
+  const runFormat = (format: string, value: string | boolean | number | null) => {
+    if (isViewMode) {
+      return;
+    }
+
+    const editor = getEditor();
+    if (!editor) {
+      return;
+    }
+
+    const range = getActiveRange();
+    if (!range) {
+      return;
+    }
+
+    editor.format(format, value);
+    syncEditorHtml();
+  };
+
+  const applyTextTransform = (mode: string) => {
+    if (isViewMode) {
+      return;
+    }
+
+    const editor = getEditor();
+    const range = getActiveRange();
+
+    if (!editor || !range || range.length <= 0) {
+      setTextTransformMode(mode);
+      return;
+    }
+
+    const selectedText = editor.getText(range.index, range.length);
+
+    let transformed = selectedText;
+    if (mode === "upper") {
+      transformed = selectedText.toUpperCase();
+    } else if (mode === "lower") {
+      transformed = selectedText.toLowerCase();
+    } else if (mode === "title") {
+      transformed = selectedText.replace(/\w\S*/g, (word) =>
+        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      );
+    }
+
+    if (transformed !== selectedText) {
+      editor.deleteText(range.index, range.length, "user");
+      editor.insertText(range.index, transformed, "user");
+      editor.setSelection(range.index, transformed.length, "silent");
+      syncEditorHtml();
+    }
+
+    setTextTransformMode(mode);
+  };
+
+  const applyInlineQuotes = () => {
+    if (isViewMode) {
+      return;
+    }
+
+    const editor = getEditor();
+    const range = getActiveRange();
+
+    if (!editor || !range) {
+      return;
+    }
+
+    if (range.length > 0) {
+      const selectedText = editor.getText(range.index, range.length);
+      const quotedText = `"${selectedText}"`;
+      editor.deleteText(range.index, range.length, "user");
+      editor.insertText(range.index, quotedText, "user");
+      editor.setSelection(range.index + quotedText.length, 0, "silent");
+    } else {
+      const quotedPlaceholder = '"...."';
+      editor.insertText(range.index, quotedPlaceholder, "user");
+      // Keep the caret inside quotes so user can type immediately.
+      editor.setSelection(range.index + 1, 4, "silent");
+    }
+
+    syncEditorHtml();
+  };
+
+  const handleToolbarAction = (action: () => void) => (event: React.MouseEvent<HTMLElement>) => {
+    event.preventDefault();
+    action();
+  };
+
+  const applyHeading = (tag: "H1" | "H2" | "H3" | "H4" | "H5" | "H6" | "P") => {
+    const editor = getEditor();
+
+    if (!editor || isViewMode) {
+      return;
+    }
+
+    const range = getActiveRange();
+    if (!range) {
+      return;
+    }
+
+    editor.formatLine(range.index, range.length, "header", tag === "P" ? false : Number(tag.slice(1)));
+    syncEditorHtml();
+  };
+
+  useEffect(() => {
+    return undefined;
+  }, []);
+
+  const quillModules = useMemo(
+    () => ({
+      toolbar: false,
+      history: {
+        delay: 300,
+        maxStack: 100,
+        userOnly: true,
+      },
+    }),
+    []
+  );
+
+  if (!data) {
+    return (
+      <div style={{ padding: 20 }}>
+        <h2>No Data Found</h2>
+        <button onClick={onBack}>Back</button>
+      </div>
+    );
+  }
+
+  const editorPanel = (
+    <>
+      <div className="editor-toolbar">
+        <div className="toolbar-section">
+          <p className="toolbar-title">STYLES</p>
+          <div className="toolbar-chip-row">
+            {["H1", "H2", "H3", "SH1", "SH2", "SH3", "T"].map((btn) => (
+              <button
+                key={btn}
+                className="toolbar-chip"
+                type="button"
+                disabled={isViewMode}
+                onMouseDown={handleToolbarAction(() => {
+                  if (btn === "H1") applyHeading("H1");
+                  else if (btn === "H2") applyHeading("H2");
+                  else if (btn === "H3") applyHeading("H3");
+                  else if (btn === "SH1") applyHeading("H4");
+                  else if (btn === "SH2") applyHeading("H5");
+                  else if (btn === "SH3") applyHeading("H6");
+                  else applyHeading("P");
+                })}
+              >
+                {btn}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="toolbar-section toolbar-section-wide">
+          <p className="toolbar-title">CUSTOM OPTIONS</p>
+          <div className="toolbar-custom-row">
+            <div className="tool-group">
+              <button className="tool-btn" type="button" aria-label="Undo" disabled={isViewMode} onMouseDown={handleToolbarAction(() => getEditor()?.history.undo())}><UndoOutlinedIcon fontSize="small" /></button>
+              <button className="tool-btn" type="button" aria-label="Redo" disabled={isViewMode} onMouseDown={handleToolbarAction(() => getEditor()?.history.redo())}><RedoOutlinedIcon fontSize="small" /></button>
+            </div>
+
+            <div className="tool-divider" />
+
+            <div className="tool-group">
+              <select
+                className="tool-select-native"
+                value={fontFamily}
+                disabled={isViewMode}
+                onChange={(event) => {
+                  const nextFont = event.target.value;
+                  setFontFamily(nextFont);
+                  runFormat("font", nextFont);
+                }}
+              >
+                {FONT_OPTIONS.map((font) => (
+                  <option key={font} value={font}>
+                    {font}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                className="tool-select-native"
+                value={textTransformMode}
+                disabled={isViewMode}
+                onChange={(event) => applyTextTransform(event.target.value)}
+              >
+                <option value="none">Tt</option>
+                <option value="upper">UPPER</option>
+                <option value="lower">lower</option>
+                <option value="title">Title</option>
+              </select>
+            </div>
+
+            <div className="tool-divider" />
+
+            <div className="tool-group">
+              <button
+                className="tool-btn"
+                type="button"
+                disabled={isViewMode}
+                onMouseDown={handleToolbarAction(() => {
+                  setFontSize((prev) => {
+                    const nextValue = SIZE_OPTIONS[Math.max(0, SIZE_OPTIONS.indexOf(prev) - 1)] ?? prev;
+                    runFormat("size", `${nextValue}px`);
+                    return nextValue;
+                  });
+                })}
+              >
+                −
+              </button>
+              <span className="tool-value">{fontSize}</span>
+              <button
+                className="tool-btn"
+                type="button"
+                disabled={isViewMode}
+                onMouseDown={handleToolbarAction(() => {
+                  setFontSize((prev) => {
+                    const currentIndex = SIZE_OPTIONS.indexOf(prev);
+                    const nextValue = SIZE_OPTIONS[Math.min(SIZE_OPTIONS.length - 1, currentIndex + 1)] ?? prev;
+                    runFormat("size", `${nextValue}px`);
+                    return nextValue;
+                  });
+                })}
+              >
+                +
+              </button>
+            </div>
+
+            <div className="tool-divider" />
+
+            <div className="tool-group">
+              <button className="tool-btn" type="button" disabled={isViewMode} onMouseDown={handleToolbarAction(() => runFormat("bold", true))}><FormatBoldIcon fontSize="small" /></button>
+              <button className="tool-btn" type="button" disabled={isViewMode} onMouseDown={handleToolbarAction(() => runFormat("italic", true))}><FormatItalicIcon fontSize="small" /></button>
+              <button className="tool-btn" type="button" disabled={isViewMode} onMouseDown={handleToolbarAction(() => runFormat("underline", true))}><FormatUnderlinedIcon fontSize="small" /></button>
+              <button className="tool-btn" type="button" disabled={isViewMode} onMouseDown={handleToolbarAction(() => applyTextTransform("title"))}>Tt</button>
+              <button className="tool-btn" type="button" disabled={isViewMode} onMouseDown={handleToolbarAction(() => colorInputRef.current?.click())}><FormatColorTextIcon fontSize="small" /></button>
+              <input
+                ref={colorInputRef}
+                type="color"
+                className="hidden-color-input"
+                onChange={(event) => runFormat("color", event.target.value)}
+              />
+            </div>
+
+            <div className="tool-divider" />
+
+            <div className="tool-group">
+              <button className="tool-btn" type="button" disabled={isViewMode} onMouseDown={handleToolbarAction(() => runFormat("align", "left"))}><FormatAlignLeftIcon fontSize="small" /></button>
+              <button className="tool-btn" type="button" disabled={isViewMode} onMouseDown={handleToolbarAction(() => runFormat("align", "center"))}><FormatAlignCenterIcon fontSize="small" /></button>
+              <button className="tool-btn" type="button" disabled={isViewMode} onMouseDown={handleToolbarAction(() => runFormat("align", "right"))}><FormatAlignRightIcon fontSize="small" /></button>
+              <button className="tool-btn" type="button" disabled={isViewMode} onMouseDown={handleToolbarAction(() => runFormat("list", "bullet"))}><FormatListBulletedIcon fontSize="small" /></button>
+              <button className="tool-btn" type="button" disabled={isViewMode} onMouseDown={handleToolbarAction(() => runFormat("list", "ordered"))}><FormatListNumberedIcon fontSize="small" /></button>
+              <button className="tool-btn" type="button" disabled={isViewMode} onMouseDown={handleToolbarAction(() => applyInlineQuotes())}><FormatQuoteIcon fontSize="small" /></button>
+              <button className="tool-btn" type="button" disabled={isViewMode} onMouseDown={handleToolbarAction(() => runFormat("strike", true))}><StrikethroughSIcon fontSize="small" /></button>
+              <button className="tool-btn" type="button" disabled={isViewMode} onMouseDown={handleToolbarAction(() => {
+                const editor = getEditor();
+                const range = getActiveRange();
+                if (editor && range) {
+                  editor.removeFormat(range.index, range.length);
+                }
+              })}><FormatClearIcon fontSize="small" /></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="editor-box">
+        <ReactQuill
+          ref={quillRef}
+          theme="snow"
+          className="editor-main-text quill-clean"
+          readOnly={isViewMode}
+          value={reportHtml}
+          onChange={(value) => setReportHtml(value)}
+          onChangeSelection={(range) => {
+            if (range) {
+              lastRangeRef.current = { index: range.index, length: range.length };
+            }
+          }}
+          modules={quillModules}
+          formats={[
+            "header",
+            "font",
+            "size",
+            "bold",
+            "italic",
+            "underline",
+            "strike",
+            "color",
+            "align",
+            "list",
+            "blockquote",
+          ]}
+        />
+      </div>
+
+      <div className="editor-footer">
+        <div className="top-row">
+          <input
+            placeholder="Suggestion Note"
+            value={suggestionNote}
+            onChange={(event) => setSuggestionNote(event.target.value)}
+            readOnly={isViewMode}
+          />
+          <input
+            placeholder="Foot Note"
+            value={footNote}
+            onChange={(event) => setFootNote(event.target.value)}
+            readOnly={isViewMode}
+          />
+        </div>
+
+        <div className="bottom-row">
+          <select
+            value={referredBy}
+            onChange={(event) => setReferredBy(event.target.value)}
+            disabled={isViewMode}
+          >
+            <option value="Dr. Soniya S.">Dr. Soniya S.</option>
+            <option value="Dr. Smith R.">Dr. Smith R.</option>
+            <option value="Dr. Meera T.">Dr. Meera T.</option>
+          </select>
+          <select
+            value={pathologist}
+            onChange={(event) => setPathologist(event.target.value)}
+            disabled={isViewMode}
+          >
+            <option value="John Wick">John Wick</option>
+            <option value="Dr. Alen P.">Dr. Alen P.</option>
+            <option value="Dr. Kavya N.">Dr. Kavya N.</option>
+          </select>
+        </div>
+
+        <div className="action-buttons">
+          {isViewMode ? (
+            <button className="edit-btn" onClick={() => {
+              setIsViewMode(false);
+              setTimeout(() => getEditor()?.focus(), 0);
+            }}>
+              Edit
+            </button>
+          ) : (
+            <>
+              <button className="cancel-btn" onClick={() => setIsViewMode(true)}>
+                Cancel
+              </button>
+              <button className="save-btn" onClick={() => {
+                syncEditorHtml();
+                setIsViewMode(true);
+              }}>
+                Save
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </>
+  );
+
+  return (
+    <div className="chromosome-page">
+      <div className="chromosome-header">
+        <button className="chromosome-back" onClick={onBack}>
+          <img src={UndoIconAsset} alt="Back" className="chromosome-back-icon" />
+        </button>
+        <h2>Add Result Details</h2>
+      </div>
+
+      <div className="chromosome-patient-card">
+        <img src={Ellipse_12} alt="profile" />
+        <div className="chromosome-patient-grid">
+          <div><span>Patient Name</span><p>{data.patient}</p></div>
+          <div><span>Age</span><p>27 Years</p></div>
+          <div><span>Sex Assigned At Birth</span><p>Female</p></div>
+          <div><span>MRN</span><p>{data.details}</p></div>
+          <div><span>Allergy</span><p>No</p></div>
+          <div><span>SART ID</span><p>14SK9876432</p></div>
+          <div><span>Last Modified</span><p>{data.date}</p></div>
+        </div>
+      </div>
+
+      <div className="chromosome-main">
+        <div className="chromosome-sidebar">
+          <h4>PARAMETER</h4>
+          {[
+            "Select All",
+            "HIV (Rapid Card)",
+            "HCV (Rapid Card)",
+            "HBsAG (Rapid Card)",
+            "(CBC) Complete Blood Count",
+          ].map((item, i) => (
+            <label
+              key={item}
+              className={`check-row${selectedParamIndex === i ? " selected" : ""}`}
+              onClick={() => setSelectedParamIndex(i)}
+              style={{ cursor: "pointer" }}
+            >
+              <span className={`check-box${selectedParamIndex === i ? " checked" : ""}`}>{selectedParamIndex === i ? "✓" : ""}</span>
+              {item}
+            </label>
+          ))}
+
+          <h4 className="template-title">TEMPLATE</h4>
+          {[
+            "Y Chromosome Microdeletion",
+            "VDRL (Rapid Card)",
+            "Blood Glucose (RBS)",
+          ].map((item, i) => (
+            <label
+              key={item}
+              className={`check-row${selectedTemplateIndex === i ? " selected" : ""}`}
+              onClick={() => setSelectedTemplateIndex(i)}
+              style={{ cursor: "pointer" }}
+            >
+              <span className={`check-box${selectedTemplateIndex === i ? " checked" : ""}`}>{selectedTemplateIndex === i ? "✓" : ""}</span>
+              {item}
+            </label>
+          ))}
+
+          <button className="get-test">Get Test</button>
+        </div>
+
+        <div className="chromosome-content">
+          <div className="tabs">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                className={activeTab === tab ? "active" : ""}
+                onClick={() => {
+                  if (tab === "(CBC) Complete Blood Count") {
+                    onBack();
+                    return;
+                  }
+                  setActiveTab(tab);
+                }}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          <div className={`chromosome-workspace ${showCreate ? "editor-mode" : ""}`}>
+            {showCreate ? (
+              editorPanel
+            ) : (
+              <>
+                <button
+                  className="create-card"
+                  onClick={() => {
+                    setIsViewMode(true);
+                    setShowCreate(true);
+                  }}
+                >
+                  <FiPlusCircle />
+                  <span>Create New</span>
+                </button>
+
+                <p className="or">OR</p>
+
+                <div className="template-box">
+                  <div className="search-bar">
+                    <input value="Dr. Alex Carry" readOnly />
+                    <div className="search-actions">
+                      <FiXCircle />
+                      <FiSearch />
+                    </div>
+                  </div>
+
+                  <p className="template-list-title">
+                    List of Templates for Dr. Alex Carry :
+                  </p>
+
+                  <div className="template-list">
+                    <div><FiPlusCircle /> Y Chromosome Microdel...</div>
+                    <div><FiPlusCircle /> Karyotyping Report</div>
+                    <div><FiPlusCircle /> Male Hormone Profile</div>
+                    <div><FiPlusCircle /> Basic Semen Analysis</div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Chromosome;

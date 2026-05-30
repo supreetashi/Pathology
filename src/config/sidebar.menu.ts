@@ -33,7 +33,7 @@ export const PATHOLOGY_MENU: MenuItem[] = [
     key: "result-entry",
     label: "Result Entry",
     path: "/pathology/result-entry",
-    page: lazy(() => import("../pages/ResultEntryPage")),
+    page: lazy(() => import("../components/ResultEntry/ResultEntryView")),
   },
   {
     key: "authorization",

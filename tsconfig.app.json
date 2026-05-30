@@ -12,7 +12,7 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "typeRoots": ["./node_modules/@types"],
-    "types": ["react", "react-dom", "vite/client"],
+    "types": ["react", "react-dom"],
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
