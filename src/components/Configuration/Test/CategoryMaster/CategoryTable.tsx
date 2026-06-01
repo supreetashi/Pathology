@@ -1,60 +1,71 @@
 import { useEffect, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import EditIcon from "../../../../assets/icons/edit.svg";
 import DataTable, {
   Column,
   Toggle,
 } from "../CommonComponents/DataTable/DataTable";
-import type { CategoryRow } from "../Test";
+import {
+  fetchCategories,
+  selectCategories,
+  selectTestLoading,
+  toggleCategoryStatus,
+} from "../../../../store/testSlice";
+import type { AppDispatch } from "../../../../store";
+import type { CategoryItem } from "../../../../types/test.types";
 
 type CategoryTableProps = {
-  data: CategoryRow[];
-  setData: React.Dispatch<React.SetStateAction<CategoryRow[]>>;
   onCountChange?: (count: number) => void;
-  onEdit: (row: CategoryRow) => void;
+  onEdit: (row: CategoryItem) => void;
   searchText?: string;
 };
 
 export default function CategoryTable({
-  data,
-  setData,
   onCountChange,
   onEdit,
   searchText = "",
 }: CategoryTableProps) {
+  const dispatch = useDispatch<AppDispatch>();
+  const categories = useSelector(selectCategories);
+  const loading = useSelector(selectTestLoading);
+
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
+
   const filteredData = useMemo(() => {
     const query = searchText.trim().toLowerCase();
-    if (!query) return data;
-    return data.filter(
+    if (!query) return categories;
+    return categories.filter(
       (item) =>
         item.code.toLowerCase().includes(query) ||
         item.name.toLowerCase().includes(query),
     );
-  }, [data, searchText]);
+  }, [categories, searchText]);
 
   useEffect(() => {
     onCountChange?.(filteredData.length);
   }, [filteredData, onCountChange]);
 
-  const handleToggle = (code: string) => {
-    setData((prev) =>
-      prev.map((item) =>
-        item.code === code ? { ...item, status: !item.status } : item,
-      ),
-    );
-  };
-
-  // Figma: Code 20% | Name 44% | No. of Tests 14% | Status 16% | Edit 6%
-  const columns: Column<CategoryRow>[] = [
+  const columns: Column<CategoryItem>[] = [
     { key: "code", header: "Category Code", width: "15%" },
     { key: "name", header: "Category Name", width: "19%" },
-    { key: "tests", header: "No. of Tests", width: "50%" },
+    {
+      key: "tests",
+      header: "No. of Tests",
+      width: "50%",
+      render: (row) => <span>{row.tests.length}</span>,
+    },
     {
       key: "status",
       header: "Status",
       align: "right",
       width: "16%",
       render: (row) => (
-        <Toggle checked={row.status} onChange={() => handleToggle(row.code)} />
+        <Toggle
+          checked={row.isActive}
+          onChange={() => dispatch(toggleCategoryStatus({ id: row.id, status: !row.isActive }))}
+        />
       ),
     },
     {
@@ -79,6 +90,8 @@ export default function CategoryTable({
       ),
     },
   ];
+
+  if (loading) return <div style={{ padding: "2em", color: "#9e9e9e" }}>Loading...</div>;
 
   return <DataTable columns={columns} data={filteredData} />;
 }

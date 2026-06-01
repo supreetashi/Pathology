@@ -1,5 +1,8 @@
 import { useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchTests, fetchCategories } from "../../../store/testSlice";
 import {
   TabsHeader,
   PageToolbar,
@@ -12,6 +15,15 @@ import TemplateTable from "./TemplateMaster/TemplateTable";
 import CreateCategoryModal from "./CategoryMaster/CreateCategoryModal";
 import styles from "./Test.module.css";
 
+import {
+  createCategory,
+  updateCategory,
+  selectCategories,
+  selectTests,
+} from "../../../store/testSlice";
+import type { AppDispatch } from "../../../store";
+import type { CategoryItem } from "../../../types/test.types";
+
 const tabs = ["Parameter", "Category", "Test", "Template"] as const;
 type TabKey = (typeof tabs)[number];
 
@@ -22,149 +34,6 @@ export type CategoryRow = {
   status: boolean;
   testIds?: string[];
 };
-
-const initialCategoryData: CategoryRow[] = [
-  {
-    code: "CN-041421",
-    name: "Biochemistry",
-    tests: 6,
-    status: false,
-    testIds: ["t1", "t2", "t3", "t4", "t5", "t6"],
-  },
-  {
-    code: "CN-041422",
-    name: "Biochemistry",
-    tests: 6,
-    status: true,
-    testIds: ["t1", "t2", "t3", "t4", "t5", "t6"],
-  },
-  {
-    code: "CN-041423",
-    name: "Biochemistry",
-    tests: 6,
-    status: true,
-    testIds: ["t1", "t2", "t3", "t4", "t5", "t6"],
-  },
-  {
-    code: "CN-041424",
-    name: "Biochemistry",
-    tests: 6,
-    status: true,
-    testIds: ["t1", "t2", "t3", "t4", "t5", "t6"],
-  },
-  {
-    code: "CN-041425",
-    name: "Biochemistry",
-    tests: 6,
-    status: true,
-    testIds: ["t1", "t2", "t3", "t4", "t5", "t6"],
-  },
-  {
-    code: "CN-041426",
-    name: "Biochemistry",
-    tests: 6,
-    status: true,
-    testIds: ["t1", "t2", "t3", "t4", "t5", "t6"],
-  },
-  {
-    code: "CN-041427",
-    name: "Biochemistry",
-    tests: 6,
-    status: true,
-    testIds: ["t1", "t2", "t3", "t4", "t5", "t6"],
-  },
-  {
-    code: "CN-041428",
-    name: "Biochemistry",
-    tests: 6,
-    status: true,
-    testIds: ["t1", "t2", "t3", "t4", "t5", "t6"],
-  },
-  {
-    code: "CN-041429",
-    name: "Biochemistry",
-    tests: 6,
-    status: false,
-    testIds: ["t1", "t2", "t3", "t4", "t5", "t6"],
-  },
-  {
-    code: "CN-041430",
-    name: "Biochemistry",
-    tests: 6,
-    status: false,
-    testIds: ["t1", "t2", "t3", "t4", "t5", "t6"],
-  },
-  {
-    code: "CN-041431",
-    name: "Biochemistry",
-    tests: 6,
-    status: false,
-    testIds: ["t1", "t2", "t3", "t4", "t5", "t6"],
-  },
-  {
-    code: "CN-041432",
-    name: "Hematology",
-    tests: 5,
-    status: true,
-    testIds: ["t1", "t2", "t3", "t4", "t5"],
-  },
-  {
-    code: "CN-041433",
-    name: "Microbiology",
-    tests: 4,
-    status: true,
-    testIds: ["t1", "t2", "t3", "t4"],
-  },
-  {
-    code: "CN-041434",
-    name: "Immunology",
-    tests: 3,
-    status: true,
-    testIds: ["t1", "t2", "t3"],
-  },
-  {
-    code: "CN-041435",
-    name: "Endocrinology",
-    tests: 4,
-    status: false,
-    testIds: ["t1", "t2", "t3", "t4"],
-  },
-  {
-    code: "CN-041436",
-    name: "Pathology",
-    tests: 5,
-    status: true,
-    testIds: ["t1", "t2", "t3", "t4", "t5"],
-  },
-  {
-    code: "CN-041437",
-    name: "Serology",
-    tests: 3,
-    status: true,
-    testIds: ["t1", "t2", "t3"],
-  },
-  {
-    code: "CN-041438",
-    name: "Cytology",
-    tests: 2,
-    status: false,
-    testIds: ["t1", "t2"],
-  },
-  {
-    code: "CN-041439",
-    name: "Histopathology",
-    tests: 4,
-    status: true,
-    testIds: ["t1", "t2", "t3", "t4"],
-  },
-  {
-    code: "CN-041440",
-    name: "Molecular Diagnostics",
-    tests: 6,
-    status: true,
-    testIds: ["t1", "t2", "t3", "t4", "t5", "t6"],
-  },
-];
 
 type ToolbarConfig = {
   title: (count: number) => string;
@@ -205,11 +74,7 @@ function TestConfigurationView() {
   const [dataCount, setDataCount] = useState(0);
   const [isTemplateFilterOpen, setIsTemplateFilterOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<CategoryRow | null>(
-    null,
-  );
-  const [categoryData, setCategoryData] =
-    useState<CategoryRow[]>(initialCategoryData);
+  const [editingCategory, setEditingCategory] = useState<CategoryItem | null>(null);
 
   const [searchByTab, setSearchByTab] = useState<Record<TabKey, string>>({
     Parameter: "",
@@ -219,6 +84,19 @@ function TestConfigurationView() {
   });
 
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  useEffect(() => {
+  dispatch(fetchTests());
+  dispatch(fetchCategories());
+}, [dispatch]);
+  const categories = useSelector(selectCategories);
+  const tests = useSelector(selectTests);
+
+  // Map tests to { id: string, name: string } for the modal
+  const availableTests = tests.map((t) => ({
+    id: String(t.id),
+    name: t.name,
+  }));
 
   const handleTabChange = (tab: string) => {
     if (tab === activeTab) return;
@@ -234,7 +112,6 @@ function TestConfigurationView() {
       setIsCategoryModalOpen(true);
       return;
     }
-
     navigate(toolbarConfig[activeTab].createPath);
   };
 
@@ -249,10 +126,7 @@ function TestConfigurationView() {
             searchText={currentSearchText}
             onEdit={(row) =>
               navigate("/pathology/configuration/test/parameter/create", {
-                state: {
-                  mode: "edit",
-                  parameterData: row,
-                },
+                state: { mode: "edit", parameterData: row },
               })
             }
           />
@@ -261,8 +135,6 @@ function TestConfigurationView() {
       case "Category":
         return (
           <CategoryTable
-            data={categoryData}
-            setData={setCategoryData}
             onCountChange={setDataCount}
             searchText={currentSearchText}
             onEdit={(row) => {
@@ -279,10 +151,7 @@ function TestConfigurationView() {
             searchText={currentSearchText}
             onEdit={(row) =>
               navigate("/pathology/configuration/test/test/create", {
-                state: {
-                  mode: "edit",
-                  testData: row,
-                },
+                state: { mode: "edit", testData: row },
               })
             }
           />
@@ -297,10 +166,7 @@ function TestConfigurationView() {
             onFilterClose={() => setIsTemplateFilterOpen(false)}
             onEdit={(row) =>
               navigate("/pathology/configuration/test/template/create", {
-                state: {
-                  mode: "edit",
-                  templateData: row,
-                },
+                state: { mode: "edit", templateData: row },
               })
             }
           />
@@ -312,9 +178,7 @@ function TestConfigurationView() {
   };
 
   return (
-    <div
-      style={{ width: "100%", height: "100%", position: "absolute", inset: 0 }}
-    >
+    <div style={{ width: "100%", height: "100%", position: "absolute", inset: 0 }}>
       <div className={styles.contentContainer}>
         <TabsHeader
           tabs={[...tabs]}
@@ -328,10 +192,7 @@ function TestConfigurationView() {
           searchValue={searchByTab[activeTab]}
           createLabel={toolbarConfig[activeTab].createLabel}
           onSearch={(val: string) =>
-            setSearchByTab((prev) => ({
-              ...prev,
-              [activeTab]: val,
-            }))
+            setSearchByTab((prev) => ({ ...prev, [activeTab]: val }))
           }
           onAdd={handleAdd}
           showFilter={activeTab === "Template"}
@@ -346,43 +207,37 @@ function TestConfigurationView() {
             setIsCategoryModalOpen(false);
             setEditingCategory(null);
           }}
-          existingCodes={categoryData.map((item) => item.code)}
+          existingCodes={categories.map((item) => item.code)}
+          availableTests={availableTests}
           initialData={
             editingCategory
               ? {
                   code: editingCategory.code,
                   name: editingCategory.name,
-                  testIds: editingCategory.testIds ?? [],
+                  testIds: editingCategory.tests.map(String),
                 }
               : undefined
           }
           onSave={(formData) => {
             if (editingCategory) {
-              setCategoryData((prev) =>
-                prev.map((item) =>
-                  item.code === editingCategory.code
-                    ? {
-                        ...item,
-                        code: formData.categoryCode,
-                        name: formData.categoryName,
-                        tests: formData.testIds.length,
-                        testIds: formData.testIds,
-                      }
-                    : item,
-                ),
+              dispatch(
+                updateCategory({
+                  id: editingCategory.id,
+                  category_code: formData.categoryCode,
+                  category_name: formData.categoryName,
+                  tests: formData.testIds.map(Number),
+                }),
               );
             } else {
-              const newCategory: CategoryRow = {
-                code: formData.categoryCode,
-                name: formData.categoryName,
-                tests: formData.testIds.length,
-                status: true,
-                testIds: formData.testIds,
-              };
-
-              setCategoryData((prev) => [newCategory, ...prev]);
+              dispatch(
+                createCategory({
+                  category_code: formData.categoryCode,
+                  category_name: formData.categoryName,
+                  status: true,
+                  tests: formData.testIds.map(Number),
+                }),
+              );
             }
-
             setIsCategoryModalOpen(false);
             setEditingCategory(null);
           }}
