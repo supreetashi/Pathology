@@ -3,6 +3,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import styles from "./CreateTestPage.module.css";
 import BackIcon from "../../../../assets/icons/back_icon.svg";
 import CloseCircleIcon from "../../../../assets/icons/close-circle.svg";
+import { useDispatch } from "react-redux";
+import { createTest, updateTest } from "../../../../store/testSlice";
+import type { AppDispatch } from "../../../../store";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -34,12 +37,17 @@ type FormState = {
 };
 
 type TestEditData = {
+  id: number;
   code: string;
   name: string;
   printName: string;
-  category: string;
-  noOfParameter: number;
-  status: boolean;
+  serviceName: string;
+  testCompletionTime: string;
+  isSensitive: boolean;
+  suggestionNote: string;
+  disclaimer: string;
+  reportType: string;
+  isActive: boolean;
 };
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
@@ -76,7 +84,7 @@ const CATEGORY_OPTIONS = [
   "Microbiology",
   "Immunology",
 ];
-const SERVICE_OPTIONS = ["Natural Killer Self Panel", "Panel A", "Panel B"];
+const SERVICE_OPTIONS = ["", "Natural Killer Self Panel", "Panel A", "Panel B"];
 const TUBE_OPTIONS = [
   "Purple Top - K2 - EDTA",
   "Red Top",
@@ -130,7 +138,9 @@ function FloatSelect({
           onChange={(e) => onChange(e.target.value)}
         >
           {options.map((o) => (
-            <option key={o}>{o}</option>
+            <option key={o} value={o}>
+              {o || "Select..."}
+            </option>
           ))}
         </select>
       </div>
@@ -289,6 +299,7 @@ function FigmaDropdown({
 export default function CreateTestPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch<AppDispatch>();
 
   const editData = location.state?.testData as TestEditData | undefined;
   const isEditMode = location.state?.mode === "edit";
@@ -297,16 +308,19 @@ export default function CreateTestPage() {
     testCode: editData?.code ?? "",
     testName: editData?.name ?? "",
     printName: editData?.printName ?? "",
-    category: editData?.category ?? "Biochemistry",
-    serviceName: "Natural Killer Self Panel",
+    category: "Biochemistry",
+    serviceName: editData?.serviceName ?? "",
     tubeName: "Purple Top - K2 - EDTA",
-    testCompletionTime: "",
-    isSensitive: false,
-    suggestionNote: "",
-    disclaimer: "",
+    testCompletionTime: editData?.testCompletionTime ?? "",
+    isSensitive: editData?.isSensitive ?? false,
+    suggestionNote: editData?.suggestionNote ?? "",
+    disclaimer: editData?.disclaimer ?? "",
   });
 
-  const [reportMode, setReportMode] = useState<ReportMode>("ByParameter");
+  const [reportMode, setReportMode] = useState<ReportMode>(
+    editData?.reportType === "TEMPLATE" ? "ByTemplate" : "ByParameter",
+  );
+
   const [selectedParamIds, setSelectedParamIds] = useState<string[]>([
     "p1",
     "p2",
@@ -375,23 +389,23 @@ export default function CreateTestPage() {
     samplePairs.push(sampleRows.slice(i, i + 2));
   }
 
-  const handleSave = () => {
-    if (isEditMode) {
-      console.log("UPDATE TEST:", {
-        form,
-        reportMode,
-        selectedParamIds,
-        selectedTemplateIds,
-        sampleRows,
-      });
+  const handleSave = async () => {
+    const payload = {
+      test_code: form.testCode,
+      test_name: form.testName,
+      print_name: form.printName,
+      service_name: form.serviceName,
+      test_completion_time: form.testCompletionTime,
+      is_sensitive: form.isSensitive,
+      suggestion_note: form.suggestionNote,
+      disclaimer: form.disclaimer,
+      report_type: reportMode === "ByParameter" ? "PARAMETER" : "TEMPLATE",
+    };
+
+    if (isEditMode && editData) {
+      await dispatch(updateTest({ id: editData.id, ...payload }));
     } else {
-      console.log("CREATE TEST:", {
-        form,
-        reportMode,
-        selectedParamIds,
-        selectedTemplateIds,
-        sampleRows,
-      });
+      await dispatch(createTest(payload));
     }
     navigate("/pathology/configuration/test");
   };

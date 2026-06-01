@@ -124,7 +124,7 @@ type DataTableProps<T> = {
   itemsPerPage?: number;
 };
 
-export default function DataTable<T extends { [key: string]: unknown }>({
+export default function DataTable<T extends object>({
   columns,
   data,
   itemsPerPage: fixedItemsPerPage,
@@ -227,7 +227,7 @@ export default function DataTable<T extends { [key: string]: unknown }>({
                   >
                     {col.render
                       ? col.render(row)
-                      : (row[col.key as keyof T] as React.ReactNode)}
+                      : String(row[col.key as keyof T] ?? "")}
                   </td>
                 ))}
               </tr>

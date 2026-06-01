@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import styles from "./OrdersView.module.css";
 import FilterIcon from "../../assets/icons/filter.svg";
 import SearchIcon from "../../assets/icons/search.png";
+import Calendar from "../../assets/icons/calendar2.svg";
 import ViewOrderDetails from "./ViewOrderDetails";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -52,349 +53,28 @@ const ORDER_STATUSES = ["", "Pending", "Partial", "Complete"];
 const PATIENT_TYPES = ["", "Walk-In", "Registered"];
 
 const ALL_ORDERS: OrderRow[] = [
-  {
-    id: "o1",
-    date: "04/02/2024",
-    time: "10:30 AM",
-    patientName: "Emilia Williamson",
-    patientAge: 27,
-    mrn: "PCC-1719",
-    gender: "Female",
-    patientType: "Walk-In",
-    doctorName: "Dr. Emilia Clarke",
-    billNo: "PCC/25/OP/000134",
-    netAmt: 5463,
-    billStatus: "Paid",
-    totalTests: 16,
-    orderStatus: "Pending",
-    type: "inhouse",
-  },
-  {
-    id: "o2",
-    date: "04/02/2024",
-    time: "10:30 AM",
-    patientName: "Olivia Anderson",
-    patientAge: 29,
-    mrn: "PCC-1719",
-    gender: "Female",
-    patientType: "Registered",
-    doctorName: "Dr. Olivia Bennett",
-    billNo: "PCC/25/OP/000134",
-    netAmt: 5463,
-    billStatus: "Paid",
-    totalTests: 16,
-    orderStatus: "Pending",
-    type: "inhouse",
-  },
-  {
-    id: "o3",
-    date: "04/02/2024",
-    time: "10:30 AM",
-    patientName: "Mia Thompson",
-    patientAge: 32,
-    mrn: "PCC-1719",
-    gender: "Female",
-    patientType: "Registered",
-    doctorName: "Dr. Lucas Harper",
-    billNo: "PCC/25/OP/000134",
-    netAmt: 5463,
-    billStatus: "Paid",
-    totalTests: 16,
-    orderStatus: "Partial",
-    type: "inhouse",
-  },
-  {
-    id: "o4",
-    date: "04/02/2024",
-    time: "10:30 AM",
-    patientName: "Isabella Martinez",
-    patientAge: 33,
-    mrn: "PCC-1719",
-    gender: "Female",
-    patientType: "Walk-In",
-    doctorName: "Dr. Mia Thompson",
-    billNo: "PCC/25/OP/000134",
-    netAmt: 5463,
-    billStatus: "Paid",
-    totalTests: 16,
-    orderStatus: "Partial",
-    type: "inhouse",
-  },
-  {
-    id: "o5",
-    date: "04/02/2024",
-    time: "10:30 AM",
-    patientName: "Sophia Wilson",
-    patientAge: 34,
-    mrn: "PCC-1719",
-    gender: "Female",
-    patientType: "Registered",
-    doctorName: "Dr. Ethan Carter",
-    billNo: "PCC/25/OP/000134",
-    netAmt: 5463,
-    billStatus: "Paid",
-    totalTests: 5,
-    orderStatus: "Complete",
-    type: "inhouse",
-  },
-  {
-    id: "o6",
-    date: "04/02/2024",
-    time: "10:30 AM",
-    patientName: "Charlotte Anderson",
-    patientAge: 28,
-    mrn: "PCC-1719",
-    gender: "Female",
-    patientType: "Walk-In",
-    doctorName: "Dr. Ava Johnson",
-    billNo: "PCC/25/OP/000134",
-    netAmt: 5463,
-    billStatus: "Paid",
-    totalTests: 5,
-    orderStatus: "Complete",
-    type: "inhouse",
-  },
-  {
-    id: "o7",
-    date: "04/02/2024",
-    time: "10:30 AM",
-    patientName: "Ava Wilson",
-    patientAge: 31,
-    mrn: "PCC-1719",
-    gender: "Female",
-    patientType: "Walk-In",
-    doctorName: "Dr. Noah Smith",
-    billNo: "PCC/25/OP/000134",
-    netAmt: 5463,
-    billStatus: "Paid",
-    totalTests: 5,
-    orderStatus: "Complete",
-    type: "inhouse",
-  },
-  {
-    id: "o8",
-    date: "04/02/2024",
-    time: "10:30 AM",
-    patientName: "Olivia Anderson",
-    patientAge: 29,
-    mrn: "PCC-1719",
-    gender: "Female",
-    patientType: "Registered",
-    doctorName: "Dr. Olivia Bennett",
-    billNo: "PCC/25/OP/000134",
-    netAmt: 5463,
-    billStatus: "Paid",
-    totalTests: 5,
-    orderStatus: "Complete",
-    type: "inhouse",
-  },
-  {
-    id: "o9",
-    date: "04/02/2024",
-    time: "10:30 AM",
-    patientName: "Olivia Anderson",
-    patientAge: 29,
-    mrn: "PCC-1719",
-    gender: "Female",
-    patientType: "Registered",
-    doctorName: "Dr. Olivia Bennett",
-    billNo: "PCC/25/OP/000134",
-    netAmt: 5463,
-    billStatus: "Paid",
-    totalTests: 5,
-    orderStatus: "Complete",
-    type: "inhouse",
-  },
-  {
-    id: "o10",
-    date: "04/02/2024",
-    time: "10:30 AM",
-    patientName: "Emilia Williamson",
-    patientAge: 27,
-    mrn: "PCC-1719",
-    gender: "Female",
-    patientType: "Walk-In",
-    doctorName: "Dr. Emilia Clarke",
-    billNo: "PCC/25/OP/000134",
-    netAmt: 5463,
-    billStatus: "Paid",
-    totalTests: 9,
-    orderStatus: "Pending",
-    type: "outsource",
-  },
-  {
-    id: "o11",
-    date: "04/02/2024",
-    time: "10:30 AM",
-    patientName: "Olivia Anderson",
-    patientAge: 29,
-    mrn: "PCC-1719",
-    gender: "Female",
-    patientType: "Registered",
-    doctorName: "Dr. Olivia Bennett",
-    billNo: "PCC/25/OP/000134",
-    netAmt: 5463,
-    billStatus: "Paid",
-    totalTests: 9,
-    orderStatus: "Pending",
-    type: "outsource",
-  },
-  {
-    id: "o12",
-    date: "04/02/2024",
-    time: "10:30 AM",
-    patientName: "Mia Thompson",
-    patientAge: 32,
-    mrn: "PCC-1719",
-    gender: "Female",
-    patientType: "Registered",
-    doctorName: "Dr. Lucas Harper",
-    billNo: "PCC/25/OP/000134",
-    netAmt: 5463,
-    billStatus: "Paid",
-    totalTests: 9,
-    orderStatus: "Partial",
-    type: "outsource",
-  },
-  {
-    id: "o13",
-    date: "04/02/2024",
-    time: "10:30 AM",
-    patientName: "Isabella Martinez",
-    patientAge: 33,
-    mrn: "PCC-1719",
-    gender: "Female",
-    patientType: "Walk-In",
-    doctorName: "Dr. Mia Thompson",
-    billNo: "PCC/25/OP/000134",
-    netAmt: 5463,
-    billStatus: "Paid",
-    totalTests: 9,
-    orderStatus: "Partial",
-    type: "outsource",
-  },
-  {
-    id: "o14",
-    date: "04/02/2024",
-    time: "10:30 AM",
-    patientName: "Sophia Wilson",
-    patientAge: 34,
-    mrn: "PCC-1719",
-    gender: "Female",
-    patientType: "Registered",
-    doctorName: "Dr. Ethan Carter",
-    billNo: "PCC/25/OP/000134",
-    netAmt: 5463,
-    billStatus: "Paid",
-    totalTests: 2,
-    orderStatus: "Complete",
-    type: "outsource",
-  },
-  {
-    id: "o15",
-    date: "04/02/2024",
-    time: "10:30 AM",
-    patientName: "Charlotte Anderson",
-    patientAge: 28,
-    mrn: "PCC-1719",
-    gender: "Female",
-    patientType: "Walk-In",
-    doctorName: "Dr. Ava Johnson",
-    billNo: "PCC/25/OP/000134",
-    netAmt: 5463,
-    billStatus: "Paid",
-    totalTests: 2,
-    orderStatus: "Complete",
-    type: "outsource",
-  },
-  {
-    id: "o16",
-    date: "04/02/2024",
-    time: "10:30 AM",
-    patientName: "Ava Wilson",
-    patientAge: 31,
-    mrn: "PCC-1719",
-    gender: "Female",
-    patientType: "Walk-In",
-    doctorName: "Dr. Noah Smith",
-    billNo: "PCC/25/OP/000134",
-    netAmt: 5463,
-    billStatus: "Paid",
-    totalTests: 2,
-    orderStatus: "Complete",
-    type: "outsource",
-  },
-  {
-    id: "o17",
-    date: "04/02/2024",
-    time: "10:30 AM",
-    patientName: "Ava Wilson",
-    patientAge: 31,
-    mrn: "PCC-1719",
-    gender: "Female",
-    patientType: "Walk-In",
-    doctorName: "Dr. Noah Smith",
-    billNo: "PCC/25/OP/000134",
-    netAmt: 5463,
-    billStatus: "Paid",
-    totalTests: 2,
-    orderStatus: "Complete",
-    type: "outsource",
-  },
-  {
-    id: "o18",
-    date: "04/02/2024",
-    time: "10:30 AM",
-    patientName: "Ava Wilson",
-    patientAge: 31,
-    mrn: "PCC-1719",
-    gender: "Female",
-    patientType: "Walk-In",
-    doctorName: "Dr. Noah Smith",
-    billNo: "PCC/25/OP/000134",
-    netAmt: 5463,
-    billStatus: "Paid",
-    totalTests: 2,
-    orderStatus: "Complete",
-    type: "outsource",
-  },
-  {
-    id: "o19",
-    date: "04/02/2024",
-    time: "10:30 AM",
-    patientName: "Ava Wilson",
-    patientAge: 31,
-    mrn: "PCC-1719",
-    gender: "Female",
-    patientType: "Walk-In",
-    doctorName: "Dr. Noah Smith",
-    billNo: "PCC/25/OP/000134",
-    netAmt: 5463,
-    billStatus: "Paid",
-    totalTests: 2,
-    orderStatus: "Complete",
-    type: "outsource",
-  },
-  {
-    id: "o20",
-    date: "04/02/2024",
-    time: "10:30 AM",
-    patientName: "Ava Wilson",
-    patientAge: 31,
-    mrn: "PCC-1719",
-    gender: "Female",
-    patientType: "Walk-In",
-    doctorName: "Dr. Noah Smith",
-    billNo: "PCC/25/OP/000134",
-    netAmt: 5463,
-    billStatus: "Paid",
-    totalTests: 2,
-    orderStatus: "Complete",
-    type: "outsource",
-  },
+  { id: "o1",  date: "04/02/2024", time: "10:30 AM", patientName: "Emilia Williamson",  patientAge: 27, mrn: "PCC-1719", gender: "Female", patientType: "Walk-In",    doctorName: "Dr. Emilia Clarke",  billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 16, orderStatus: "Pending",  type: "inhouse"   },
+  { id: "o2",  date: "04/02/2024", time: "10:30 AM", patientName: "Olivia Anderson",    patientAge: 29, mrn: "PCC-1719", gender: "Female", patientType: "Registered", doctorName: "Dr. Olivia Bennett", billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 16, orderStatus: "Pending",  type: "inhouse"   },
+  { id: "o3",  date: "04/02/2024", time: "10:30 AM", patientName: "Mia Thompson",       patientAge: 32, mrn: "PCC-1719", gender: "Female", patientType: "Registered", doctorName: "Dr. Lucas Harper",   billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 16, orderStatus: "Partial",  type: "inhouse"   },
+  { id: "o4",  date: "04/02/2024", time: "10:30 AM", patientName: "Isabella Martinez",  patientAge: 33, mrn: "PCC-1719", gender: "Female", patientType: "Walk-In",    doctorName: "Dr. Mia Thompson",   billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 16, orderStatus: "Partial",  type: "inhouse"   },
+  { id: "o5",  date: "04/02/2024", time: "10:30 AM", patientName: "Sophia Wilson",      patientAge: 34, mrn: "PCC-1719", gender: "Female", patientType: "Registered", doctorName: "Dr. Ethan Carter",   billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 5,  orderStatus: "Complete", type: "inhouse"   },
+  { id: "o6",  date: "04/02/2024", time: "10:30 AM", patientName: "Charlotte Anderson", patientAge: 28, mrn: "PCC-1719", gender: "Female", patientType: "Walk-In",    doctorName: "Dr. Ava Johnson",    billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 5,  orderStatus: "Complete", type: "inhouse"   },
+  { id: "o7",  date: "04/02/2024", time: "10:30 AM", patientName: "Ava Wilson",         patientAge: 31, mrn: "PCC-1719", gender: "Female", patientType: "Walk-In",    doctorName: "Dr. Noah Smith",     billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 5,  orderStatus: "Complete", type: "inhouse"   },
+  { id: "o8",  date: "04/02/2024", time: "10:30 AM", patientName: "Olivia Anderson",    patientAge: 29, mrn: "PCC-1719", gender: "Female", patientType: "Registered", doctorName: "Dr. Olivia Bennett", billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 5,  orderStatus: "Complete", type: "inhouse"   },
+  { id: "o9",  date: "04/02/2024", time: "10:30 AM", patientName: "Olivia Anderson",    patientAge: 29, mrn: "PCC-1719", gender: "Female", patientType: "Registered", doctorName: "Dr. Olivia Bennett", billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 5,  orderStatus: "Complete", type: "inhouse"   },
+  { id: "o10", date: "04/02/2024", time: "10:30 AM", patientName: "Emilia Williamson",  patientAge: 27, mrn: "PCC-1719", gender: "Female", patientType: "Walk-In",    doctorName: "Dr. Emilia Clarke",  billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 9,  orderStatus: "Pending",  type: "outsource" },
+  { id: "o11", date: "04/02/2024", time: "10:30 AM", patientName: "Olivia Anderson",    patientAge: 29, mrn: "PCC-1719", gender: "Female", patientType: "Registered", doctorName: "Dr. Olivia Bennett", billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 9,  orderStatus: "Pending",  type: "outsource" },
+  { id: "o12", date: "04/02/2024", time: "10:30 AM", patientName: "Mia Thompson",       patientAge: 32, mrn: "PCC-1719", gender: "Female", patientType: "Registered", doctorName: "Dr. Lucas Harper",   billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 9,  orderStatus: "Partial",  type: "outsource" },
+  { id: "o13", date: "04/02/2024", time: "10:30 AM", patientName: "Isabella Martinez",  patientAge: 33, mrn: "PCC-1719", gender: "Female", patientType: "Walk-In",    doctorName: "Dr. Mia Thompson",   billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 9,  orderStatus: "Partial",  type: "outsource" },
+  { id: "o14", date: "04/02/2024", time: "10:30 AM", patientName: "Sophia Wilson",      patientAge: 34, mrn: "PCC-1719", gender: "Female", patientType: "Registered", doctorName: "Dr. Ethan Carter",   billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 2,  orderStatus: "Complete", type: "outsource" },
+  { id: "o15", date: "04/02/2024", time: "10:30 AM", patientName: "Charlotte Anderson", patientAge: 28, mrn: "PCC-1719", gender: "Female", patientType: "Walk-In",    doctorName: "Dr. Ava Johnson",    billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 2,  orderStatus: "Complete", type: "outsource" },
+  { id: "o16", date: "04/02/2024", time: "10:30 AM", patientName: "Ava Wilson",         patientAge: 31, mrn: "PCC-1719", gender: "Female", patientType: "Walk-In",    doctorName: "Dr. Noah Smith",     billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 2,  orderStatus: "Complete", type: "outsource" },
+  { id: "o17", date: "04/02/2024", time: "10:30 AM", patientName: "Ava Wilson",         patientAge: 31, mrn: "PCC-1719", gender: "Female", patientType: "Walk-In",    doctorName: "Dr. Noah Smith",     billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 2,  orderStatus: "Complete", type: "outsource" },
+  { id: "o18", date: "04/02/2024", time: "10:30 AM", patientName: "Ava Wilson",         patientAge: 31, mrn: "PCC-1719", gender: "Female", patientType: "Walk-In",    doctorName: "Dr. Noah Smith",     billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 2,  orderStatus: "Complete", type: "outsource" },
+  { id: "o19", date: "04/02/2024", time: "10:30 AM", patientName: "Ava Wilson",         patientAge: 31, mrn: "PCC-1719", gender: "Female", patientType: "Walk-In",    doctorName: "Dr. Noah Smith",     billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 2,  orderStatus: "Complete", type: "outsource" },
+  { id: "o20", date: "04/02/2024", time: "10:30 AM", patientName: "Ava Wilson",         patientAge: 31, mrn: "PCC-1719", gender: "Female", patientType: "Walk-In",    doctorName: "Dr. Noah Smith",     billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 2,  orderStatus: "Complete", type: "outsource" },
 ];
 
-// Rows per page
 const PAGE_SIZE = 10;
 
 // ─── Status Badge ─────────────────────────────────────────────────────────────
@@ -409,22 +89,13 @@ function StatusBadge({ status }: { status: OrderStatus }) {
 
 // ─── Bill Details Tooltip ─────────────────────────────────────────────────────
 
-function BillTooltip({
-  billNo,
-  netAmt,
-  billStatus,
-}: {
-  billNo: string;
-  netAmt: number;
-  billStatus: "Paid" | "Unpaid";
-}) {
+function BillTooltip({ billNo, netAmt, billStatus }: { billNo: string; netAmt: number; billStatus: "Paid" | "Unpaid" }) {
   const [show, setShow] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function onOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node))
-        setShow(false);
+      if (ref.current && !ref.current.contains(e.target as Node)) setShow(false);
     }
     document.addEventListener("mousedown", onOutside);
     return () => document.removeEventListener("mousedown", onOutside);
@@ -433,20 +104,8 @@ function BillTooltip({
   return (
     <div className={styles.billWrapper} ref={ref}>
       <span className={styles.billNo}>
-        <button
-          className={styles.billInfoBtn}
-          onClick={() => setShow((s) => !s)}
-        >
-          <svg
-            width="13"
-            height="13"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#9e9e9e"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
+        <button className={styles.billInfoBtn} onClick={() => setShow((s) => !s)}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9e9e9e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="12" />
             <line x1="12" y1="16" x2="12.01" y2="16" />
@@ -458,15 +117,11 @@ function BillTooltip({
         <div className={styles.billTooltip}>
           <div className={styles.billTooltipRow}>
             <span className={styles.billTooltipLabel}>Net Amt.</span>
-            <span className={styles.billTooltipValue}>
-              ${netAmt.toLocaleString()}.0
-            </span>
+            <span className={styles.billTooltipValue}>${netAmt.toLocaleString()}.0</span>
           </div>
           <div className={styles.billTooltipRow}>
             <span className={styles.billTooltipLabel}>Status</span>
-            <span className={`${styles.badge} ${styles[`badge${billStatus}`]}`}>
-              {billStatus}
-            </span>
+            <span className={`${styles.badge} ${styles[`badge${billStatus}`]}`}>{billStatus}</span>
           </div>
         </div>
       )}
@@ -476,14 +131,7 @@ function BillTooltip({
 
 // ─── Filter Modal ─────────────────────────────────────────────────────────────
 
-function FilterModal({
-  isOpen,
-  onClose,
-  onApply,
-  onClear,
-  values,
-  onChange,
-}: {
+function FilterModal({ isOpen, onClose, onApply, onClear, values, onChange }: {
   isOpen: boolean;
   onClose: () => void;
   onApply: () => void;
@@ -496,162 +144,87 @@ function FilterModal({
   const set = (field: keyof FilterValues, v: string) =>
     onChange({ ...values, [field]: v });
 
+  const ChevronIcon = () => (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ flexShrink: 0 }}>
+      <path fill="#9e9e9e" d="M6 8L1 3h10z" />
+    </svg>
+  );
+
   return (
     <div className={styles.filterOverlay} onClick={onClose}>
       <div className={styles.filterModal} onClick={(e) => e.stopPropagation()}>
+
+        {/* Header */}
         <div className={styles.filterHeader}>
           <span className={styles.filterTitle}>Filters</span>
           <button className={styles.filterClose} onClick={onClose}>
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <line
-                x1="1"
-                y1="1"
-                x2="11"
-                y2="11"
-                stroke="#505050"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-              <line
-                x1="11"
-                y1="1"
-                x2="1"
-                y2="11"
-                stroke="#505050"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
+              <line x1="1" y1="1" x2="11" y2="11" stroke="#505050" strokeWidth="2" strokeLinecap="round" />
+              <line x1="11" y1="1" x2="1" y2="11" stroke="#505050" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </button>
         </div>
 
+        {/* Body */}
         <div className={styles.filterBody}>
-          {/* Date row */}
-          <div className={styles.filterDateRow}>
-            <div className={styles.filterField}>
-              <span className={styles.filterLabel}>From Date</span>
-              <div className={styles.dateInputWrap}>
-                <input
-                  type="text"
-                  className={styles.filterInput}
-                  value={values.fromDate}
-                  onChange={(e) => set("fromDate", e.target.value)}
-                  placeholder="DD/MM/YYYY"
-                />
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#9e9e9e"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                  <line x1="16" y1="2" x2="16" y2="6" />
-                  <line x1="8" y1="2" x2="8" y2="6" />
-                  <line x1="3" y1="10" x2="21" y2="10" />
-                </svg>
+
+          {/* Row 1: From Date + To Date */}
+          <div className={styles.filterGrid2}>
+            <div className={styles.floatBorder}>
+              <span className={styles.floatLabel}>From Date</span>
+              <div className={styles.floatInputRow}>
+                <input className={styles.floatInput} type="text" value={values.fromDate} onChange={(e) => set("fromDate", e.target.value)} placeholder="DD/MM/YYYY" />
+                <img src={Calendar} alt="" width={16} height={16} style={{ flexShrink: 0 }} />
               </div>
             </div>
-            <div className={styles.filterField}>
-              <span className={styles.filterLabel}>To Date</span>
-              <div className={styles.dateInputWrap}>
-                <input
-                  type="text"
-                  className={styles.filterInput}
-                  value={values.toDate}
-                  onChange={(e) => set("toDate", e.target.value)}
-                  placeholder="DD/MM/YYYY"
-                />
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#9e9e9e"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                  <line x1="16" y1="2" x2="16" y2="6" />
-                  <line x1="8" y1="2" x2="8" y2="6" />
-                  <line x1="3" y1="10" x2="21" y2="10" />
-                </svg>
+            <div className={styles.floatBorder}>
+              <span className={styles.floatLabel}>To Date</span>
+              <div className={styles.floatInputRow}>
+                <input className={styles.floatInput} type="text" value={values.toDate} onChange={(e) => set("toDate", e.target.value)} placeholder="DD/MM/YYYY" />
+                <img src={Calendar} alt="" width={16} height={16} style={{ flexShrink: 0 }} />
               </div>
             </div>
           </div>
 
-          {/* Doctor */}
-          <div className={styles.filterField}>
-            <span className={styles.filterLabel}>Doctor</span>
-            <div className={styles.filterSelectWrap}>
-              <select
-                className={styles.filterSelect}
-                value={values.doctor}
-                onChange={(e) => set("doctor", e.target.value)}
-              >
-                {DOCTORS.map((d) => (
-                  <option key={d} value={d}>
-                    {d || "Select Doctor"}
-                  </option>
-                ))}
-              </select>
+          {/* Row 2: Doctor + Order Status */}
+          <div className={styles.filterGrid2}>
+            <div className={styles.floatBorder}>
+              <span className={styles.floatLabel}>Doctor</span>
+              <div className={styles.floatInputRow}>
+                <select className={styles.floatSelect} value={values.doctor} onChange={(e) => set("doctor", e.target.value)}>
+                  {DOCTORS.map((d) => <option key={d} value={d}>{d || "Select"}</option>)}
+                </select>
+                <ChevronIcon />
+              </div>
+            </div>
+            <div className={styles.floatBorder}>
+              <span className={styles.floatLabel}>Order Status</span>
+              <div className={styles.floatInputRow}>
+                <select className={styles.floatSelect} value={values.orderStatus} onChange={(e) => set("orderStatus", e.target.value)}>
+                  {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s || "Select"}</option>)}
+                </select>
+                <ChevronIcon />
+              </div>
             </div>
           </div>
 
-          {/* Order Status */}
-          <div className={styles.filterField}>
-            <span className={styles.filterLabel}>Order Status</span>
-            <div className={styles.filterSelectWrap}>
-              <select
-                className={styles.filterSelect}
-                value={values.orderStatus}
-                onChange={(e) => set("orderStatus", e.target.value)}
-              >
-                {ORDER_STATUSES.map((s) => (
-                  <option key={s} value={s}>
-                    {s || "Select Status"}
-                  </option>
-                ))}
+          {/* Row 3: Patient Type — full width */}
+          <div className={styles.floatBorder}>
+            <span className={styles.floatLabel}>Patient Type</span>
+            <div className={styles.floatInputRow}>
+              <select className={styles.floatSelect} value={values.patientType} onChange={(e) => set("patientType", e.target.value)}>
+                {PATIENT_TYPES.map((t) => <option key={t} value={t}>{t || "Select"}</option>)}
               </select>
+              <ChevronIcon />
             </div>
           </div>
 
-          {/* Patient Type */}
-          <div className={styles.filterField}>
-            <span className={styles.filterLabel}>Patient Type</span>
-            <div className={styles.filterSelectWrap}>
-              <select
-                className={styles.filterSelect}
-                value={values.patientType}
-                onChange={(e) => set("patientType", e.target.value)}
-              >
-                {PATIENT_TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {t || "Select Type"}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
         </div>
 
+        {/* Footer */}
         <div className={styles.filterFooter}>
-          <button className={styles.filterClearBtn} onClick={onClear}>
-            Clear All
-          </button>
-          <button
-            className={styles.filterApplyBtn}
-            onClick={() => {
-              onApply();
-              onClose();
-            }}
-          >
-            Apply
-          </button>
+          <button className={styles.filterClearBtn} onClick={onClear}>Clear All</button>
+          <button className={styles.filterApplyBtn} onClick={() => { onApply(); onClose(); }}>Apply</button>
         </div>
       </div>
     </div>
@@ -667,80 +240,43 @@ export default function OrdersView() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderRow | null>(null);
 
-  const [filters, setFilters] = useState<FilterValues>({
-    fromDate: "",
-    toDate: "",
-    doctor: "",
-    orderStatus: "",
-    patientType: "",
-  });
-  const [appliedFilters, setAppliedFilters] = useState<FilterValues>({
-    fromDate: "",
-    toDate: "",
-    doctor: "",
-    orderStatus: "",
-    patientType: "",
-  });
+  const [filters, setFilters] = useState<FilterValues>({ fromDate: "", toDate: "", doctor: "", orderStatus: "", patientType: "" });
+  const [appliedFilters, setAppliedFilters] = useState<FilterValues>({ fromDate: "", toDate: "", doctor: "", orderStatus: "", patientType: "" });
 
-  // Tab filtering
   const tabFiltered = useMemo(() => {
-    if (activeTab === "inhouse")
-      return ALL_ORDERS.filter((o) => o.type === "inhouse");
-    if (activeTab === "outsource")
-      return ALL_ORDERS.filter((o) => o.type === "outsource");
+    if (activeTab === "inhouse")   return ALL_ORDERS.filter((o) => o.type === "inhouse");
+    if (activeTab === "outsource") return ALL_ORDERS.filter((o) => o.type === "outsource");
     return ALL_ORDERS;
   }, [activeTab]);
 
-  // Search + filter
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return tabFiltered.filter((o) => {
-      const matchSearch =
-        !q ||
-        o.patientName.toLowerCase().includes(q) ||
-        o.mrn.toLowerCase().includes(q) ||
-        o.billNo.toLowerCase().includes(q);
-      const matchDoctor =
-        !appliedFilters.doctor || o.doctorName === appliedFilters.doctor;
-      const matchStatus =
-        !appliedFilters.orderStatus ||
-        o.orderStatus === appliedFilters.orderStatus;
-      const matchType =
-        !appliedFilters.patientType ||
-        o.patientType === appliedFilters.patientType;
+      const matchSearch = !q || o.patientName.toLowerCase().includes(q) || o.mrn.toLowerCase().includes(q) || o.billNo.toLowerCase().includes(q);
+      const matchDoctor  = !appliedFilters.doctor      || o.doctorName  === appliedFilters.doctor;
+      const matchStatus  = !appliedFilters.orderStatus || o.orderStatus === appliedFilters.orderStatus;
+      const matchType    = !appliedFilters.patientType || o.patientType === appliedFilters.patientType;
       return matchSearch && matchDoctor && matchStatus && matchType;
     });
   }, [tabFiltered, search, appliedFilters]);
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const pageRows = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages    = Math.ceil(filtered.length / PAGE_SIZE);
+  const pageRows      = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const inhouseCount  = ALL_ORDERS.filter((o) => o.type === "inhouse").length;
+  const outsourceCount= ALL_ORDERS.filter((o) => o.type === "outsource").length;
 
-  const inhouseCount = ALL_ORDERS.filter((o) => o.type === "inhouse").length;
-  const outsourceCount = ALL_ORDERS.filter(
-    (o) => o.type === "outsource",
-  ).length;
-
-  const handleTabChange = (tab: TabKey) => {
-    setActiveTab(tab);
-    setPage(1);
-  };
+  const handleTabChange = (tab: TabKey) => { setActiveTab(tab); setPage(1); };
 
   if (selectedOrder) {
-    return (
-      <ViewOrderDetails
-        order={selectedOrder}
-        onBack={() => setSelectedOrder(null)}
-      />
-    );
+    return <ViewOrderDetails order={selectedOrder} onBack={() => setSelectedOrder(null)} />;
   }
 
   return (
     <div className={styles.wrapper}>
+
       {/* ── Toolbar ─────────────────────────────────────────────────────── */}
       <div className={styles.toolbar}>
-        <h2 className={styles.title}>
-          List of Work Orders ({filtered.length})
-        </h2>
+        <h2 className={styles.title}>List of Work Orders ({filtered.length})</h2>
         <div className={styles.actions}>
           <div className={styles.searchWrap}>
             <img src={SearchIcon} className={styles.searchIcon} alt="" />
@@ -748,16 +284,10 @@ export default function OrdersView() {
               className={styles.searchInput}
               placeholder="Search by Patient Name, MRN No., Bill No."
               value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             />
           </div>
-          <button
-            className={styles.filterBtn}
-            onClick={() => setFilterOpen(true)}
-          >
+          <button className={styles.filterBtn} onClick={() => setFilterOpen(true)}>
             <img src={FilterIcon} alt="filter" width={18} height={18} />
           </button>
         </div>
@@ -765,36 +295,15 @@ export default function OrdersView() {
 
       {/* ── Tab Pills ───────────────────────────────────────────────────── */}
       <div className={styles.tabRow}>
-        <button
-          className={
-            activeTab === "all"
-              ? `${styles.tabPill} ${styles.tabPillActive}`
-              : styles.tabPill
-          }
-          onClick={() => handleTabChange("all")}
-        >
-          All Orders ({ALL_ORDERS.length})
-        </button>
-        <button
-          className={
-            activeTab === "inhouse"
-              ? `${styles.tabPill} ${styles.tabPillActive}`
-              : styles.tabPill
-          }
-          onClick={() => handleTabChange("inhouse")}
-        >
-          Inhouse ({inhouseCount})
-        </button>
-        <button
-          className={
-            activeTab === "outsource"
-              ? `${styles.tabPill} ${styles.tabPillActive}`
-              : styles.tabPill
-          }
-          onClick={() => handleTabChange("outsource")}
-        >
-          Outsource ({outsourceCount})
-        </button>
+        {(["all", "inhouse", "outsource"] as TabKey[]).map((tab) => (
+          <button
+            key={tab}
+            className={`${styles.tabPill} ${activeTab === tab ? styles.tabPillActive : ""}`}
+            onClick={() => handleTabChange(tab)}
+          >
+            {tab === "all" ? `All Orders (${ALL_ORDERS.length})` : tab === "inhouse" ? `Inhouse (${inhouseCount})` : `Outsource (${outsourceCount})`}
+          </button>
+        ))}
       </div>
 
       {/* ── Table ───────────────────────────────────────────────────────── */}
@@ -807,9 +316,9 @@ export default function OrdersView() {
               <th style={{ width: "10%" }}>Patient Type</th>
               <th style={{ width: "14%" }}>Doctor Name</th>
               <th style={{ width: "16%" }}>Bill Details</th>
-              <th style={{ width: "8%" }}>Total Tests</th>
+              <th style={{ width: "8%"  }}>Total Tests</th>
               <th style={{ width: "12%", textAlign: "right" }}>Order Status</th>
-              <th style={{ width: "7%" }}></th>
+              <th style={{ width: "7%"  }}></th>
             </tr>
           </thead>
           <tbody className={styles.scrollBody}>
@@ -825,42 +334,22 @@ export default function OrdersView() {
                   </td>
                   <td>
                     <div className={styles.patientCell}>
-                      <span className={styles.patientName}>
-                        {row.patientName} | {row.patientAge}
-                      </span>
-                      <span className={styles.patientSub}>
-                        {row.mrn} | {row.gender}
-                      </span>
+                      <span className={styles.patientName}>{row.patientName} | {row.patientAge}</span>
+                      <span className={styles.patientSub}>{row.mrn} | {row.gender}</span>
                     </div>
                   </td>
                   <td>{row.patientType}</td>
                   <td>{row.doctorName}</td>
                   <td>
-                    <BillTooltip
-                      billNo={row.billNo}
-                      netAmt={row.netAmt}
-                      billStatus={row.billStatus}
-                    />
+                    <BillTooltip billNo={row.billNo} netAmt={row.netAmt} billStatus={row.billStatus} />
                   </td>
                   <td>{row.totalTests}</td>
                   <td style={{ textAlign: "right" }}>
                     <StatusBadge status={row.orderStatus} />
                   </td>
                   <td style={{ textAlign: "right", paddingRight: "1em" }}>
-                    <button
-                      className={styles.viewBtn}
-                      onClick={() => setSelectedOrder(row)} // ← add this
-                    >
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="#9e9e9e"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
+                    <button className={styles.viewBtn} onClick={() => setSelectedOrder(row)}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9e9e9e" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="12" cy="12" r="3" />
                         <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z" />
                       </svg>
@@ -869,9 +358,7 @@ export default function OrdersView() {
                 </tr>
               ) : (
                 <tr key={`empty-${i}`} className={styles.row}>
-                  {Array.from({ length: 8 }, (_, j) => (
-                    <td key={j} />
-                  ))}
+                  {Array.from({ length: 8 }, (_, j) => <td key={j} />)}
                 </tr>
               );
             })}
@@ -882,50 +369,22 @@ export default function OrdersView() {
       {/* ── Footer / Pagination ─────────────────────────────────────────── */}
       <div className={styles.footer}>
         <span>
-          Showing {(page - 1) * PAGE_SIZE + 1} to{" "}
-          {Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}{" "}
-          entries
+          Showing {(page - 1) * PAGE_SIZE + 1} to {Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} entries
         </span>
         <div className={styles.pagination}>
-          <button
-            className={styles.pageBtn}
-            disabled={page === 1}
-            onClick={() => setPage((p) => p - 1)}
-          >
+          <button className={styles.pageBtn} disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
             <svg width="7" height="11" viewBox="0 0 7 11" fill="none">
-              <path
-                d="M6 1L1 5.5L6 10"
-                stroke="#505050"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
+              <path d="M6 1L1 5.5L6 10" stroke="#505050" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-          {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map(
-            (p) => (
-              <button
-                key={p}
-                className={`${styles.pageNumBtn} ${p === page ? styles.pageNumActive : ""}`}
-                onClick={() => setPage(p)}
-              >
-                {p}
-              </button>
-            ),
-          )}
-          <button
-            className={styles.pageBtn}
-            disabled={page === totalPages}
-            onClick={() => setPage((p) => p + 1)}
-          >
+          {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((p) => (
+            <button key={p} className={`${styles.pageNumBtn} ${p === page ? styles.pageNumActive : ""}`} onClick={() => setPage(p)}>
+              {p}
+            </button>
+          ))}
+          <button className={styles.pageBtn} disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}>
             <svg width="7" height="11" viewBox="0 0 7 11" fill="none">
-              <path
-                d="M1 1L6 5.5L1 10"
-                stroke="#505050"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
+              <path d="M1 1L6 5.5L1 10" stroke="#505050" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
         </div>
@@ -937,13 +396,7 @@ export default function OrdersView() {
         onClose={() => setFilterOpen(false)}
         onApply={() => setAppliedFilters(filters)}
         onClear={() => {
-          const empty = {
-            fromDate: "",
-            toDate: "",
-            doctor: "",
-            orderStatus: "",
-            patientType: "",
-          };
+          const empty = { fromDate: "", toDate: "", doctor: "", orderStatus: "", patientType: "" };
           setFilters(empty);
           setAppliedFilters(empty);
         }}

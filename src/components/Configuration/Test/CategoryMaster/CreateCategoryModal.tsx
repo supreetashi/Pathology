@@ -23,25 +23,17 @@ type Props = {
     name: string;
     testIds?: string[];
   };
+  availableTests?: TestItem[];
 };
-
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-
-const ALL_TESTS: TestItem[] = [
-  { id: "t1", name: "Complete Blood Count" },
-  { id: "t2", name: "HIV (Rapid Card)" },
-  { id: "t3", name: "Y Chromosome Microdeletion" },
-  { id: "t4", name: "RBC - Red Blood Cells" },
-  { id: "t5", name: "Liver Function Test" },
-  { id: "t6", name: "Thyroid Profile" },
-];
 
 // ─── Tests Dropdown ───────────────────────────────────────────────────────────
 
 function TestsDropdown({
+  items,
   selectedIds,
   onToggle,
 }: {
+  items: TestItem[];
   selectedIds: string[];
   onToggle: (id: string) => void;
 }) {
@@ -78,40 +70,45 @@ function TestsDropdown({
       {open && (
         <div className={styles.dropdownPanel}>
           <div className={styles.dropdownList} ref={listRef}>
-            {ALL_TESTS.map((item, idx) => (
-              <div key={item.id}>
-                <div
-                  className={styles.dropdownRow}
-                  onClick={() => onToggle(item.id)}
-                >
-                  <span
-                    className={
-                      selectedIds.includes(item.id)
-                        ? styles.roundCheckOn
-                        : styles.roundCheckOff
-                    }
-                  >
-                    {selectedIds.includes(item.id) && (
-                      <svg width="11" height="11" viewBox="0 0 12 12">
-                        <polyline
-                          points="2,6 5,9 10,3"
-                          stroke="#2E7D32"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          fill="none"
-                        />
-                      </svg>
-                    )}
-                  </span>
-                  <span className={styles.dropdownRowLabel}>{item.name}</span>
-                </div>
-
-                {idx < ALL_TESTS.length - 1 && (
-                  <div className={styles.dropdownDivider} />
-                )}
+            {items.length === 0 ? (
+              <div style={{ padding: "0.75em 1em", color: "#9e9e9e", fontSize: "0.88em" }}>
+                No tests available
               </div>
-            ))}
+            ) : (
+              items.map((item, idx) => (
+                <div key={item.id}>
+                  <div
+                    className={styles.dropdownRow}
+                    onClick={() => onToggle(item.id)}
+                  >
+                    <span
+                      className={
+                        selectedIds.includes(item.id)
+                          ? styles.roundCheckOn
+                          : styles.roundCheckOff
+                      }
+                    >
+                      {selectedIds.includes(item.id) && (
+                        <svg width="11" height="11" viewBox="0 0 12 12">
+                          <polyline
+                            points="2,6 5,9 10,3"
+                            stroke="#2E7D32"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            fill="none"
+                          />
+                        </svg>
+                      )}
+                    </span>
+                    <span className={styles.dropdownRowLabel}>{item.name}</span>
+                  </div>
+                  {idx < items.length - 1 && (
+                    <div className={styles.dropdownDivider} />
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}
@@ -127,6 +124,7 @@ export default function CreateCategoryModal({
   onSave,
   existingCodes = [],
   initialData,
+  availableTests = [],
 }: Props) {
   const [categoryCode, setCategoryCode] = useState("");
   const [categoryName, setCategoryName] = useState("");
@@ -166,11 +164,7 @@ export default function CreateCategoryModal({
       const updated = prev.includes(id)
         ? prev.filter((x) => x !== id)
         : [...prev, id];
-
-      if (errors.testIds) {
-        setErrors((prevErr) => ({ ...prevErr, testIds: "" }));
-      }
-
+      if (errors.testIds) setErrors((e) => ({ ...e, testIds: "" }));
       return updated;
     });
   };
@@ -178,11 +172,7 @@ export default function CreateCategoryModal({
   const removeTest = (id: string) => {
     setSelectedTestIds((prev) => {
       const updated = prev.filter((x) => x !== id);
-
-      if (errors.testIds) {
-        setErrors((prevErr) => ({ ...prevErr, testIds: "" }));
-      }
-
+      if (errors.testIds) setErrors((e) => ({ ...e, testIds: "" }));
       return updated;
     });
   };
@@ -216,7 +206,6 @@ export default function CreateCategoryModal({
     }
 
     setErrors(nextErrors);
-
     if (Object.keys(nextErrors).length > 0) return;
 
     onSave({
@@ -228,7 +217,9 @@ export default function CreateCategoryModal({
     onClose();
   };
 
-  const selectedTests = ALL_TESTS.filter((t) => selectedTestIds.includes(t.id));
+  const selectedTests = availableTests.filter((t) =>
+    selectedTestIds.includes(t.id),
+  );
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -239,24 +230,8 @@ export default function CreateCategoryModal({
           </h2>
           <button type="button" className={styles.closeBtn} onClick={onClose}>
             <svg width="14" height="14" viewBox="0 0 12 12" fill="none">
-              <line
-                x1="1"
-                y1="1"
-                x2="11"
-                y2="11"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-              <line
-                x1="11"
-                y1="1"
-                x2="1"
-                y2="11"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
+              <line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              <line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </button>
         </div>
@@ -270,17 +245,13 @@ export default function CreateCategoryModal({
                 value={categoryCode}
                 onChange={(e) => {
                   setCategoryCode(e.target.value);
-                  if (errors.categoryCode) {
-                    setErrors((prev) => ({ ...prev, categoryCode: "" }));
-                  }
+                  if (errors.categoryCode) setErrors((prev) => ({ ...prev, categoryCode: "" }));
                 }}
                 placeholder="CN-041421"
               />
             </div>
             {errors.categoryCode && (
-              <p
-                style={{ marginTop: "6px", fontSize: "12px", color: "#d32f2f" }}
-              >
+              <p style={{ marginTop: "6px", fontSize: "12px", color: "#d32f2f" }}>
                 {errors.categoryCode}
               </p>
             )}
@@ -294,17 +265,13 @@ export default function CreateCategoryModal({
                 value={categoryName}
                 onChange={(e) => {
                   setCategoryName(e.target.value);
-                  if (errors.categoryName) {
-                    setErrors((prev) => ({ ...prev, categoryName: "" }));
-                  }
+                  if (errors.categoryName) setErrors((prev) => ({ ...prev, categoryName: "" }));
                 }}
                 placeholder="Biochemistry"
               />
             </div>
             {errors.categoryName && (
-              <p
-                style={{ marginTop: "6px", fontSize: "12px", color: "#d32f2f" }}
-              >
+              <p style={{ marginTop: "6px", fontSize: "12px", color: "#d32f2f" }}>
                 {errors.categoryName}
               </p>
             )}
@@ -312,13 +279,12 @@ export default function CreateCategoryModal({
 
           <div>
             <TestsDropdown
+              items={availableTests}
               selectedIds={selectedTestIds}
               onToggle={toggleTest}
             />
             {errors.testIds && (
-              <p
-                style={{ marginTop: "6px", fontSize: "12px", color: "#d32f2f" }}
-              >
+              <p style={{ marginTop: "6px", fontSize: "12px", color: "#d32f2f" }}>
                 {errors.testIds}
               </p>
             )}
@@ -334,12 +300,7 @@ export default function CreateCategoryModal({
                     className={styles.chipRemove}
                     onClick={() => removeTest(t.id)}
                   >
-                    <img
-                      src={CloseCircleIcon}
-                      alt="remove"
-                      width={16}
-                      height={16}
-                    />
+                    <img src={CloseCircleIcon} alt="remove" width={16} height={16} />
                   </button>
                 </span>
               ))}
