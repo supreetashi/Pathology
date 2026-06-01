@@ -39,10 +39,6 @@
     cursor: pointer;
 }
 
-.body {
-    padding-top: 16px;
-}
-
 .fieldWrapper {
     position: relative;
     margin-top: 20px;
@@ -91,4 +87,14 @@
     background: #5b5b5b;
     color: white;
     font-weight: 600;
-    cursor: pointer; }
+    cursor: pointer;
+}
+.saveButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.saveButton:disabled:hover {
+    opacity: 0.5;
+    transform: none;
+}

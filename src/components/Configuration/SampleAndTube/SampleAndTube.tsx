@@ -14,13 +14,26 @@ import {
   selectTubes,
   toggleSampleStatus,
   toggleTubeStatus,
+  updateSample,
+  updateTube,
 } from "../../../store/sampleTubeSlice";
-import { SampleTubeTab } from "../../../types/sampleTube.types";
+import {
+  SampleTubeItem,
+  SampleTubeSortField,
+  SampleTubeTab,
+  SortOrder,
+} from "../../../types/sampleTube.types";
 import styles from "../../../styles/Configuration/SampleTube/sampleAndTube.module.css";
-import { AppDispatch } from "../../../store";
+import { AppDispatch, RootState } from "../../../store";
 import CreateSampleTubeModal from "./CreateSampleTubeModal";
+import {
+  SAMPLE_TUBE_PAGE_SIZE,
+  SAMPLE_TUBE_TABS,
+} from "../../../constants/sampleTube";
+import { toast } from "react-toastify";
 
-const tabs: SampleTubeTab[] = ["Sample", "Tube"];
+const tabs = SAMPLE_TUBE_TABS;
+const itemsPerPage = SAMPLE_TUBE_PAGE_SIZE;
 
 function SampleAndTube() {
   const [activeTab, setActiveTab] = useState<SampleTubeTab>("Sample");
@@ -30,25 +43,47 @@ function SampleAndTube() {
 
   const sampleData = useSelector(selectSamples);
   const tubeData = useSelector(selectTubes);
+  const error = useSelector((state: RootState) => state.sampleTube.error);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<SampleTubeItem | null>(null);
 
-  const itemsPerPage = 10;
+  const [sortField, setSortField] = useState<SampleTubeSortField | null>(null);
+
+  const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
 
   const activeData = activeTab === "Sample" ? sampleData : tubeData;
 
   const filteredRows = useMemo(() => {
     const query = searchText.trim().toLowerCase();
 
-    if (!query) {
-      return activeData;
+    let rows = [...activeData];
+
+    if (query) {
+      rows = rows.filter(
+        (item) =>
+          item.code.toLowerCase().includes(query) ||
+          item.name.toLowerCase().includes(query),
+      );
     }
 
-    return activeData.filter(
-      (item) =>
-        item.code.toLowerCase().includes(query) ||
-        item.name.toLowerCase().includes(query),
-    );
-  }, [searchText, activeData]);
+    if (sortField) {
+      rows.sort((a, b) => {
+        let result = 0;
+
+        if (sortField === "status") {
+          result = Number(a.isActive) - Number(b.isActive);
+        } else {
+          result = a[sortField]
+            .toLowerCase()
+            .localeCompare(b[sortField].toLowerCase());
+        }
+
+        return sortOrder === "asc" ? result : -result;
+      });
+    }
+
+    return rows;
+  }, [searchText, activeData, sortField, sortOrder]);
 
   const totalItems = filteredRows.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
@@ -70,11 +105,95 @@ function SampleAndTube() {
     setCurrentPage(1);
   };
 
-  const toggleStatus = (id: number) => {
+  const handleSort = (field: SampleTubeSortField) => {
+    if (sortField === field) {
+      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortOrder("asc");
+    }
+  };
+
+  const getSortIcon = (field: SampleTubeSortField) =>
+    sortField === field ? (sortOrder === "asc" ? " ▲" : " ▼") : "";
+
+  const handleStatusToggle = (id: number, currentStatus: boolean) => {
+    const newStatus = !currentStatus;
+
     if (activeTab === "Sample") {
       dispatch(toggleSampleStatus(id));
+
+      toast.success(
+        `Sample ${newStatus ? "activated" : "deactivated"} successfully`,
+      );
     } else {
       dispatch(toggleTubeStatus(id));
+
+      toast.success(
+        `Tube ${newStatus ? "activated" : "deactivated"} successfully`,
+      );
+    }
+  };
+
+  const handleSave = async (code: string, name: string) => {
+    try {
+      if (editingItem) {
+        if (activeTab === "Sample") {
+          await dispatch(
+            updateSample({
+              id: editingItem.id,
+              payload: {
+                sample_code: code,
+                sample_name: name,
+                frequency: 1,
+              },
+            }),
+          ).unwrap();
+
+          toast.success("Sample updated successfully");
+        } else {
+          await dispatch(
+            updateTube({
+              id: editingItem.id,
+              payload: {
+                tube_code: code,
+                tube_name: name,
+              },
+            }),
+          ).unwrap();
+
+          toast.success("Tube updated successfully");
+        }
+      } else {
+        if (activeTab === "Sample") {
+          await dispatch(
+            createSample({
+              sample_code: code,
+              sample_name: name,
+              frequency: 1,
+            }),
+          ).unwrap();
+
+          toast.success("Sample created successfully");
+        } else {
+          await dispatch(
+            createTube({
+              tube_code: code,
+              tube_name: name,
+            }),
+          ).unwrap();
+
+          toast.success("Tube created successfully");
+        }
+      }
+
+      setEditingItem(null);
+    } catch {
+      toast.error(
+        `Failed to ${
+          editingItem ? "update" : "create"
+        } ${activeTab.toLowerCase()}`,
+      );
     }
   };
 
@@ -83,15 +202,16 @@ function SampleAndTube() {
     dispatch(fetchTubes());
   }, [dispatch]);
 
+  useEffect(() => {
+    if (!error) return;
+
+    toast.error(error);
+  }, [error]);
+
   return (
     <div className={styles.container}>
       <div className={styles.tabs}>
         {tabs.map((tab) => {
-          // const tabStyle =
-          //   activeTab === tab
-          //     ? { ...styles.tabButton, ...styles.tabButtonActive }
-          //     : styles.tabButton;
-
           return (
             <button
               key={tab}
@@ -143,69 +263,105 @@ function SampleAndTube() {
         </div>
 
         <div className={styles.tableWrap}>
-          <table className={styles.table}>
-            <thead className={styles.tableHead}>
-              <tr>
-                <th className={styles.th}>{`${activeTab} Code`}</th>
-                <th className={styles.th}>{`${activeTab} Name`}</th>
-                <th className={`${styles.th} ${styles.statusHeader}`}>
-                  {" "}
-                  Status
-                </th>
-                <th className={`${styles.th} ${styles.actionHeader}`}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedRows.length === 0 ? (
+          <div className={styles.tableBody}>
+            <table className={styles.table}>
+              <thead className={styles.tableHead}>
                 <tr>
-                  <td className={`${styles.td} ${styles.mutedTd}`} colSpan={4}>
-                    No {activeTab.toLowerCase()} records found.
-                  </td>
+                  <th
+                    className={`${styles.th} ${styles.codeColumn} ${styles.sortableHeader}`}
+                    onClick={() => handleSort("code")}
+                  >
+                    {`${activeTab} Code`}
+                    {getSortIcon("code")}
+                  </th>
+
+                  <th
+                    className={`${styles.th} ${styles.nameColumn} ${styles.sortableHeader}`}
+                    onClick={() => handleSort("name")}
+                  >
+                    {`${activeTab} Name`}
+                    {getSortIcon("name")}
+                  </th>
+                  <th
+                    className={`${styles.th} ${styles.statusHeader} ${styles.sortableHeader}`}
+                    onClick={() => handleSort("status")}
+                  >
+                    Status
+                    {getSortIcon("status")}
+                  </th>
+                  <th className={`${styles.th} ${styles.actionHeader}`}></th>
                 </tr>
-              ) : (
-                paginatedRows.map((row) => (
-                  <tr key={row.id}>
-                    <td className={styles.td}>{row.code}</td>
-                    <td className={styles.td}>{row.name}</td>
-                    <td className={`${styles.td} ${styles.statusCell}`}>
-                      <label className={styles.switchLabel}>
-                        <input
-                          type="checkbox"
-                          checked={row.isActive}
-                          onChange={() => toggleStatus(row.id)}
-                          className={styles.switchInput}
-                        />
-                        <span
-                          className={
-                            row.isActive
-                              ? `${styles.slider} ${styles.sliderOn}`
-                              : styles.slider
-                          }
-                        >
+              </thead>
+              <tbody>
+                {paginatedRows.length === 0 ? (
+                  <tr>
+                    <td
+                      className={`${styles.td} ${styles.mutedTd}`}
+                      colSpan={4}
+                    >
+                      No {activeTab.toLowerCase()} records found.
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedRows.map((row) => (
+                    <tr key={row.id}>
+                      <td className={`${styles.td} ${styles.codeColumn}`}>
+                        {row.code}
+                      </td>
+
+                      <td className={`${styles.td} ${styles.nameColumn}`}>
+                        {row.name}
+                      </td>
+                      <td className={`${styles.td} ${styles.statusCell}`}>
+                        <label className={styles.switchLabel}>
+                          <input
+                            type="checkbox"
+                            checked={row.isActive}
+                            onChange={() =>
+                              handleStatusToggle(row.id, row.isActive)
+                            }
+                            className={styles.switchInput}
+                          />
                           <span
                             className={
                               row.isActive
-                                ? `${styles.knob} ${styles.knobOn}`
-                                : styles.knob
+                                ? `${styles.slider} ${styles.sliderOn}`
+                                : styles.slider
                             }
+                          >
+                            <span
+                              className={
+                                row.isActive
+                                  ? `${styles.knob} ${styles.knobOn}`
+                                  : styles.knob
+                              }
+                            />
+                          </span>
+                        </label>
+                      </td>
+                      <td className={`${styles.td} ${styles.actionCell}`}>
+                        <button
+                          type="button"
+                          className={styles.iconButton}
+                          onClick={() => {
+                            setEditingItem(row);
+                            setIsModalOpen(true);
+                          }}
+                        >
+                          <img
+                            src={EditIcon}
+                            alt="edit"
+                            width={14}
+                            height={14}
                           />
-                        </span>
-                      </label>
-                    </td>
-                    <td className={`${styles.td} ${styles.actionCell}`}>
-                      <button
-                        type="button"
-                        className={styles.iconButton}
-                        aria-label={`Edit ${row.name}`}
-                      >
-                        <img src={EditIcon} alt="edit" width={14} height={14} />
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
 
           <div className={styles.tableFooter}>
             <span>
@@ -267,29 +423,17 @@ function SampleAndTube() {
           </div>
         </div>
 
-        {/* STEP 4 — ADD HERE */}
         <CreateSampleTubeModal
           isOpen={isModalOpen}
           type={activeTab}
-          onClose={() => setIsModalOpen(false)}
-          onSave={(code, name) => {
-            if (activeTab === "Sample") {
-              dispatch(
-                createSample({
-                  sample_code: code,
-                  sample_name: name,
-                  frequency: 1,
-                }),
-              );
-            } else {
-              dispatch(
-                createTube({
-                  tube_code: code,
-                  tube_name: name,
-                }),
-              );
-            }
+          mode={editingItem ? "edit" : "create"}
+          initialCode={editingItem?.code}
+          initialName={editingItem?.name}
+          onClose={() => {
+            setIsModalOpen(false);
+            setEditingItem(null);
           }}
+          onSave={handleSave}
         />
       </div>
     </div>

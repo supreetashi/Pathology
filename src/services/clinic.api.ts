@@ -1,4 +1,4 @@
-import type { Clinic } from "../types/clinic.types";
+import type { Clinic, ClinicListResponse } from "../types/clinic.types";
 import { http } from "./http";
 
 // =====================================================
@@ -9,5 +9,5 @@ export const clinicApi = {
   getById: (id: number) => http.get<Clinic>(`/clinics/${id}/`),
 
   // Fetch all clinics
-  getAll: () => http.get<Clinic[]>("/clinics/"),
+  getAll: () => http.get<ClinicListResponse>("/clinics/"),
 };

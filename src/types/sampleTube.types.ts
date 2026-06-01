@@ -15,6 +15,10 @@ export interface SampleTubeItem {
 
 export type SampleTubeTab = "Sample" | "Tube";
 
+export type SortOrder = "asc" | "desc";
+
+export type SampleTubeSortField = "code" | "name" | "status";
+
 // =====================================================
 // Redux State
 // =====================================================

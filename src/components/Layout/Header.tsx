@@ -17,7 +17,7 @@ import CalendarIcon from "../../assets/icons/calendar.svg";
 import UserAvatarIcon from "../../assets/icons/Ellipse_12.svg";
 import { PATHOLOGY_MENU } from "../../config/sidebar.menu";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchClinic, selectClinic } from "../../store/clinicSlice";
+import { fetchClinics, selectClinics } from "../../store/clinicSlice";
 import { AppDispatch } from "../../store";
 
 type HeaderUser = {
@@ -61,9 +61,8 @@ const Header = () => {
     last_name: "Russell",
     designation_label: "Receptionist",
   };
-  const clinic = useSelector(selectClinic);
-
-  const clinicName = clinic?.clinic_name ?? "Select Clinic";
+  const clinics = useSelector(selectClinics);
+  const clinicName = clinics[0]?.clinic_name ?? "Select Clinic";
   const activeBreadcrumb = getActiveMenuLabel(location.pathname);
   const [clinicAnchor, setClinicAnchor] = useState<null | HTMLElement>(null);
 
@@ -101,7 +100,7 @@ const Header = () => {
   };
 
   useEffect(() => {
-    dispatch(fetchClinic(1));
+    dispatch(fetchClinics());
   }, [dispatch]);
 
   const iconMenus = [{ icon: CalendarIcon, type: "calendar" }] as const;
@@ -173,7 +172,11 @@ const Header = () => {
               open={Boolean(clinicAnchor)}
               onClose={handleClinicClose}
             >
-              <MenuItem disabled>{clinicName}</MenuItem>
+              {clinics?.map((clinic) => (
+                <MenuItem key={clinic.id} onClick={handleClinicClose}>
+                  {clinic.clinic_name}
+                </MenuItem>
+              ))}
             </Menu>
           </Box>
 

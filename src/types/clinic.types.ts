@@ -12,3 +12,10 @@ export interface Department {
   clinic_id: number;
   created_at: string;
 }
+
+export interface ClinicListResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Clinic[];
+}

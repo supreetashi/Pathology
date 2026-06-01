@@ -56,6 +56,42 @@ export const createTube = createAsyncThunk(
   },
 );
 
+export const updateSample = createAsyncThunk(
+  "sampleTube/updateSample",
+  async (
+    {
+      id,
+      payload,
+    }: {
+      id: number;
+      payload: CreateSamplePayload;
+    },
+    { dispatch },
+  ) => {
+    await sampleTubeApi.updateSample(id, payload);
+
+    dispatch(fetchSamples());
+  },
+);
+
+export const updateTube = createAsyncThunk(
+  "sampleTube/updateTube",
+  async (
+    {
+      id,
+      payload,
+    }: {
+      id: number;
+      payload: CreateTubePayload;
+    },
+    { dispatch },
+  ) => {
+    await sampleTubeApi.updateTube(id, payload);
+
+    dispatch(fetchTubes());
+  },
+);
+
 // =====================================================
 // Reducer
 // =====================================================

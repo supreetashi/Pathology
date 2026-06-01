@@ -20,4 +20,10 @@ export const sampleTubeApi = {
 
   // Create tube
   createTube: (payload: CreateTubePayload) => http.post("/tubes/", payload),
+
+  updateSample: (id: number, payload: CreateSamplePayload) =>
+    http.put(`/samples/${id}/`, payload),
+
+  updateTube: (id: number, payload: CreateTubePayload) =>
+    http.put(`/tubes/${id}/`, payload),
 };
