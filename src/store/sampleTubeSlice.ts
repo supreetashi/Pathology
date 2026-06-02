@@ -142,7 +142,7 @@ const sampleTubeSlice = createSlice({
       .addCase(fetchSamples.fulfilled, (state, action) => {
         state.loading = false;
 
-        state.samples = action.payload.map((item: any) => ({
+        state.samples = action.payload.results.map((item: any) => ({
           id: item.id,
           code: item.sample_code,
           name: item.sample_name,
@@ -153,7 +153,7 @@ const sampleTubeSlice = createSlice({
       .addCase(fetchTubes.fulfilled, (state, action) => {
         state.loading = false;
 
-        state.tubes = action.payload.map((item: any) => ({
+        state.tubes = action.payload.results.map((item: any) => ({
           id: item.id,
           code: item.tube_code,
           name: item.tube_name,
