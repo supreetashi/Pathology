@@ -8,6 +8,7 @@ export interface TestItem {
   name: string;
   printName: string;
   serviceName: string;
+  tubeName: string | null;  // UUID string or null
   testCompletionTime: string;
   isSensitive: boolean;
   suggestionNote: string;
@@ -21,7 +22,7 @@ export interface CategoryItem {
   code: string;
   name: string;
   isActive: boolean;
-  tests: number[];
+  tests: string[];
 }
 
 // =====================================================
@@ -31,7 +32,8 @@ export interface CategoryItem {
 export interface TestState {
   tests: TestItem[];
   categories: CategoryItem[];
-  loading: boolean;
+  testsLoading: boolean;
+  categoriesLoading: boolean;
   error: string | null;
 }
 
@@ -40,33 +42,45 @@ export interface TestState {
 // =====================================================
 
 export interface CreateTestPayload {
+  clinic: string;
+
   test_code: string;
   test_name: string;
   print_name: string;
-  service_name?: string;
-  tube_name_id?: number | null;
-  test_completion_time?: string;
-  is_sensitive?: boolean;
-  suggestion_note?: string;
-  disclaimer?: string;
-  status?: boolean;
-  report_type?: string;
+
+  service_name: string;
+  tube_name?: string | null;
+
+  test_completion_time: number;
+
+  is_sensitive: boolean;
+  suggestion_note: string;
+  disclaimer: string;
+
+  report_type: string;
 }
 
 export interface CreateCategoryPayload {
   category_code: string;
   category_name: string;
   status?: boolean;
-  tests?: number[];
+  tests?: string[];
 }
 
 export interface UpdateTestPayload {
   id: number;
+
+  clinic?: string;
+
   test_code: string;
   test_name: string;
   print_name: string;
+
   service_name?: string;
-  test_completion_time?: string;
+  tube_name?: string | null;
+
+  test_completion_time?: number;
+
   is_sensitive?: boolean;
   suggestion_note?: string;
   disclaimer?: string;

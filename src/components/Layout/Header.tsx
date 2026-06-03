@@ -17,7 +17,7 @@ import CalendarIcon from "../../assets/icons/calendar.svg";
 import UserAvatarIcon from "../../assets/icons/Ellipse_12.svg";
 import { PATHOLOGY_MENU } from "../../config/sidebar.menu";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchClinic, selectClinic } from "../../store/clinicSlice";
+import { selectClinic, fetchFirstClinic } from "../../store/clinicSlice";
 import { AppDispatch } from "../../store";
 
 type HeaderUser = {
@@ -101,7 +101,7 @@ const Header = () => {
   };
 
   useEffect(() => {
-    dispatch(fetchClinic(1));
+    dispatch(fetchFirstClinic());
   }, [dispatch]);
 
   const iconMenus = [{ icon: CalendarIcon, type: "calendar" }] as const;

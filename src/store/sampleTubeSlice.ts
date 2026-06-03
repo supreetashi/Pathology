@@ -65,22 +65,14 @@ const sampleTubeSlice = createSlice({
 
   reducers: {
     // TODO: Replace with backend status API
-    toggleSampleStatus: (state, action: PayloadAction<number>) => {
-      const sample = state.samples.find((item) => item.id === action.payload);
-
-      if (sample) {
-        sample.isActive = !sample.isActive;
-      }
-    },
-
-    // TODO: Replace with backend status API
-    toggleTubeStatus: (state, action: PayloadAction<number>) => {
-      const tube = state.tubes.find((item) => item.id === action.payload);
-
-      if (tube) {
-        tube.isActive = !tube.isActive;
-      }
-    },
+    toggleSampleStatus: (state, action: PayloadAction<string>) => {  // ← string
+  const sample = state.samples.find((item) => item.id === action.payload);
+  if (sample) sample.isActive = !sample.isActive;
+},
+toggleTubeStatus: (state, action: PayloadAction<string>) => {  // ← string
+  const tube = state.tubes.find((item) => item.id === action.payload);
+  if (tube) tube.isActive = !tube.isActive;
+},
   },
   extraReducers: (builder) => {
     builder
@@ -104,26 +96,26 @@ const sampleTubeSlice = createSlice({
       })
 
       .addCase(fetchSamples.fulfilled, (state, action) => {
-        state.loading = false;
-
-        state.samples = action.payload.map((item: any) => ({
-          id: item.id,
-          code: item.sample_code,
-          name: item.sample_name,
-          isActive: item.status,
-        }));
+  state.loading = false;
+  const results = action.payload.results ?? [];
+  state.samples = results.map((item: any) => ({
+    id: item.id,
+    code: item.sample_code,
+    name: item.sample_name,
+    isActive: item.status ?? true,
+  }));
       })
 
       .addCase(fetchTubes.fulfilled, (state, action) => {
-        state.loading = false;
-
-        state.tubes = action.payload.map((item: any) => ({
-          id: item.id,
-          code: item.tube_code,
-          name: item.tube_name,
-          isActive: item.status,
-        }));
-      });
+  state.loading = false;
+  const results = action.payload.results ?? [];
+  state.tubes = results.map((item: any) => ({
+    id: item.id,
+    code: item.tube_code,
+    name: item.tube_name,
+    isActive: item.status ?? true,
+  }));
+})
   },
 });
 

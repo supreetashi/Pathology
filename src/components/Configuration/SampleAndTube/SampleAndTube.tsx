@@ -19,6 +19,7 @@ import { SampleTubeTab } from "../../../types/sampleTube.types";
 import styles from "../../../styles/Configuration/SampleTube/sampleAndTube.module.css";
 import { AppDispatch } from "../../../store";
 import CreateSampleTubeModal from "./CreateSampleTubeModal";
+import { selectClinic } from "../../../store/clinicSlice";
 
 const tabs: SampleTubeTab[] = ["Sample", "Tube"];
 
@@ -27,6 +28,7 @@ function SampleAndTube() {
   const [searchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const dispatch = useDispatch<AppDispatch>();
+  const clinic = useSelector(selectClinic);
 
   const sampleData = useSelector(selectSamples);
   const tubeData = useSelector(selectTubes);
@@ -269,28 +271,35 @@ function SampleAndTube() {
 
         {/* STEP 4 — ADD HERE */}
         <CreateSampleTubeModal
-          isOpen={isModalOpen}
-          type={activeTab}
-          onClose={() => setIsModalOpen(false)}
-          onSave={(code, name) => {
-            if (activeTab === "Sample") {
-              dispatch(
-                createSample({
-                  sample_code: code,
-                  sample_name: name,
-                  frequency: 1,
-                }),
-              );
-            } else {
-              dispatch(
-                createTube({
-                  tube_code: code,
-                  tube_name: name,
-                }),
-              );
-            }
-          }}
-        />
+  isOpen={isModalOpen}
+  type={activeTab}
+  onClose={() => setIsModalOpen(false)}
+  onSave={(code, name) => {
+    if (!clinic?.id) {
+      console.error("Clinic not loaded");
+      return;
+    }
+
+    if (activeTab === "Sample") {
+      dispatch(
+        createSample({
+          clinic: clinic.id,
+          sample_code: code,
+          sample_name: name,
+          frequency: 1,
+        }),
+      );
+    } else {
+      dispatch(
+        createTube({
+          clinic: clinic.id,
+          tube_code: code,
+          tube_name: name,
+        }),
+      );
+    }
+  }}
+/>
       </div>
     </div>
   );

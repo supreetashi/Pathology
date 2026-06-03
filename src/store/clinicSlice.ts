@@ -18,10 +18,19 @@ const initialState: ClinicState = {
 // Fetch clinic once when app loads
 export const fetchClinic = createAsyncThunk(
   "clinic/fetchClinic",
-  async (clinicId: number) => {
+  async (clinicId: string) => {
     const res = await clinicApi.getById(clinicId);
     return res.data;
   },
+);
+
+// In clinicSlice.ts add a new thunk:
+export const fetchFirstClinic = createAsyncThunk(
+  "clinic/fetchFirstClinic",
+  async () => {
+    const res = await clinicApi.getAll();
+    return res.data.results[0];
+  }
 );
 
 const clinicSlice = createSlice({
@@ -41,6 +50,10 @@ const clinicSlice = createSlice({
       .addCase(fetchClinic.rejected, (state) => {
         state.loading = false;
         state.error = "Failed to load clinic";
+      })
+      .addCase(fetchFirstClinic.fulfilled, (state, action) => {
+        state.loading = false;
+        state.data = action.payload;
       });
   },
 });

@@ -8,7 +8,7 @@ import DataTable, {
 import {
   fetchTests,
   selectTests,
-  selectTestLoading,
+  selectTestsLoading,
   toggleTestStatus,
 } from "../../../../store/testSlice";
 import type { AppDispatch } from "../../../../store";
@@ -40,7 +40,7 @@ export default function TestTable({
 }: TestTableProps) {
   const dispatch = useDispatch<AppDispatch>();
   const tests = useSelector(selectTests);
-  const loading = useSelector(selectTestLoading);
+  const loading = useSelector(selectTestsLoading);
 
   useEffect(() => {
     dispatch(fetchTests());

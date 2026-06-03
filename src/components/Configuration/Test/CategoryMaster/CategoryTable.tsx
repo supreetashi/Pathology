@@ -8,7 +8,7 @@ import DataTable, {
 import {
   fetchCategories,
   selectCategories,
-  selectTestLoading,
+  selectCategoriesLoading,
   toggleCategoryStatus,
 } from "../../../../store/testSlice";
 import type { AppDispatch } from "../../../../store";
@@ -27,7 +27,7 @@ export default function CategoryTable({
 }: CategoryTableProps) {
   const dispatch = useDispatch<AppDispatch>();
   const categories = useSelector(selectCategories);
-  const loading = useSelector(selectTestLoading);
+  const loading = useSelector(selectCategoriesLoading);
 
   useEffect(() => {
     dispatch(fetchCategories());

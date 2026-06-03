@@ -6,6 +6,9 @@ import CloseCircleIcon from "../../../../assets/icons/close-circle.svg";
 import { useDispatch } from "react-redux";
 import { createTest, updateTest } from "../../../../store/testSlice";
 import type { AppDispatch } from "../../../../store";
+import { useSelector } from "react-redux";
+import { selectClinic } from "../../../../store/clinicSlice";
+import { selectTubes, fetchTubes } from "../../../../store/sampleTubeSlice";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -42,6 +45,7 @@ type TestEditData = {
   name: string;
   printName: string;
   serviceName: string;
+  tubeName: string;
   testCompletionTime: string;
   isSensitive: boolean;
   suggestionNote: string;
@@ -300,6 +304,12 @@ export default function CreateTestPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch<AppDispatch>();
+  const clinic = useSelector(selectClinic);
+  const tubes = useSelector(selectTubes);
+
+  useEffect(() => {
+  dispatch(fetchTubes());
+}, [dispatch]);
 
   const editData = location.state?.testData as TestEditData | undefined;
   const isEditMode = location.state?.mode === "edit";
@@ -310,7 +320,7 @@ export default function CreateTestPage() {
     printName: editData?.printName ?? "",
     category: "Biochemistry",
     serviceName: editData?.serviceName ?? "",
-    tubeName: "Purple Top - K2 - EDTA",
+   tubeName: editData?.tubeName ?? "Purple Top - K2 - EDTA",
     testCompletionTime: editData?.testCompletionTime ?? "",
     isSensitive: editData?.isSensitive ?? false,
     suggestionNote: editData?.suggestionNote ?? "",
@@ -390,25 +400,57 @@ export default function CreateTestPage() {
   }
 
   const handleSave = async () => {
-    const payload = {
-      test_code: form.testCode,
-      test_name: form.testName,
-      print_name: form.printName,
-      service_name: form.serviceName,
-      test_completion_time: form.testCompletionTime,
-      is_sensitive: form.isSensitive,
-      suggestion_note: form.suggestionNote,
-      disclaimer: form.disclaimer,
-      report_type: reportMode === "ByParameter" ? "PARAMETER" : "TEMPLATE",
-    };
+  if (!clinic?.id) {
+    alert("Please select a clinic first");
+    return;
+  }
 
-    if (isEditMode && editData) {
-      await dispatch(updateTest({ id: editData.id, ...payload }));
-    } else {
-      await dispatch(createTest(payload));
-    }
-    navigate("/pathology/configuration/test");
+  const payload = {
+    clinic: clinic.id,
+
+    test_code: form.testCode,
+    test_name: form.testName,
+    print_name: form.printName,
+    service_name: form.serviceName,
+    tube_name: form.tubeName || null,  // sends UUID or null
+    test_completion_time: Number(form.testCompletionTime),
+
+    is_sensitive: form.isSensitive,
+    suggestion_note: form.suggestionNote,
+    disclaimer: form.disclaimer,
+
+    report_type:
+      reportMode === "ByParameter"
+        ? "PARAMETER"
+        : "TEMPLATE",
   };
+
+  if (isEditMode && editData) {
+    await dispatch(
+  updateTest({
+    id: editData.id,
+    clinic: clinic.id,
+    test_code: form.testCode,
+    test_name: form.testName,
+    print_name: form.printName,
+    service_name: form.serviceName,
+    tube_name: form.tubeName,
+    test_completion_time: Number(form.testCompletionTime),
+    is_sensitive: form.isSensitive,
+    suggestion_note: form.suggestionNote,
+    disclaimer: form.disclaimer,
+    report_type:
+      reportMode === "ByParameter"
+        ? "PARAMETER"
+        : "TEMPLATE",
+  })
+);
+  } else {
+    await dispatch(createTest(payload));
+  }
+
+  navigate("/pathology/configuration/test");
+};
 
   return (
     <div className={styles.page}>
@@ -461,12 +503,23 @@ export default function CreateTestPage() {
                 options={SERVICE_OPTIONS}
                 onChange={(v) => set("serviceName", v)}
               />
-              <FloatSelect
-                label="Tube Name"
-                value={form.tubeName}
-                options={TUBE_OPTIONS}
-                onChange={(v) => set("tubeName", v)}
-              />
+              <div className={styles.formGroup}>
+  <div className={styles.fieldBorder}>
+    <span className={styles.floatLabel}>Tube Name</span>
+    <select
+      className={styles.floatSelect}
+      value={form.tubeName}
+      onChange={(e) => set("tubeName", e.target.value)}
+    >
+      <option value="">Select...</option>
+      {tubes.map((t) => (
+        <option key={t.id} value={t.id}>
+          {t.name}
+        </option>
+      ))}
+    </select>
+  </div>
+</div>
 
               <div className={styles.formGroup}>
                 <div className={styles.fieldBorder}>
