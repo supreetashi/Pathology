@@ -34,7 +34,7 @@ function PathologyProfile() {
 
     return pathologyProfilesData.filter(
       (item) =>
-        item.name.toLowerCase().includes(query),
+        item.service_name.toLowerCase().includes(query),
     );
   }, [searchText, pathologyProfilesData]);
 
@@ -117,7 +117,7 @@ function PathologyProfile() {
               ) : (
                 paginatedRows.map((row) => (
                   <tr key={row.id}>
-                    <td className={styles.td}>{row.name}</td>
+                    <td className={styles.td}>{row.service_name}</td>
                     <td className={styles.td}>{row.tests}</td>
                     <td className={`${styles.td} ${styles.statusCell}`}>
                       <label className={styles.switchLabel}>
@@ -148,7 +148,7 @@ function PathologyProfile() {
                       <button
                         type="button"
                         className={styles.iconButton}
-                        aria-label={`Edit ${row.name}`}
+                        aria-label={`Edit ${row.service_name}`}
                       >
                         <img src={EditIcon} alt="edit" width={14} height={14} />
                       </button>
