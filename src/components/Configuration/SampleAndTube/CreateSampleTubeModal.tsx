@@ -1,18 +1,31 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "../../../styles/Configuration/SampleTube/CreateSampleTubeModal.module.css";
-
+import { IconButton } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 interface Props {
   isOpen: boolean;
   type: "Sample" | "Tube";
+  mode?: "create" | "edit";
+
+  initialCode?: string;
+  initialName?: string;
+
   onClose: () => void;
+
   onSave: (code: string, name: string) => void;
 }
 
-function CreateSampleTubeModal({ isOpen, type, onClose, onSave }: Props) {
-  const [code, setCode] = useState("");
-  const [name, setName] = useState("");
-
-  if (!isOpen) return null;
+function CreateSampleTubeModal({
+  isOpen,
+  type,
+  mode,
+  initialCode,
+  initialName,
+  onClose,
+  onSave,
+}: Props) {
+  const [code, setCode] = useState(initialCode || "");
+  const [name, setName] = useState(initialName || "");
 
   const handleSave = () => {
     if (!code.trim() || !name.trim()) return;
@@ -25,19 +38,24 @@ function CreateSampleTubeModal({ isOpen, type, onClose, onSave }: Props) {
     onClose();
   };
 
+  useEffect(() => {
+    setCode(initialCode || "");
+    setName(initialName || "");
+  }, [initialCode, initialName, isOpen]);
+
+  if (!isOpen) return null;
+
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
-          <span className={styles.title}>Create New {type}</span>
+          <span className={styles.title}>
+            {mode === "edit" ? `Edit ${type}` : `Create New ${type}`}
+          </span>
 
-          <button
-            type="button"
-            className={styles.closeButton}
-            onClick={onClose}
-          >
-            ×
-          </button>
+          <IconButton size="small" onClick={onClose}>
+            <CloseIcon fontSize="small" />
+          </IconButton>
         </div>
 
         <div className={styles.body}>
@@ -77,6 +95,7 @@ function CreateSampleTubeModal({ isOpen, type, onClose, onSave }: Props) {
             <button
               type="button"
               className={styles.saveButton}
+              disabled={!code.trim() || !name.trim()}
               onClick={handleSave}
             >
               Save

@@ -34,9 +34,8 @@
     display: flex;
     flex-direction: column;
     gap: 14px;
-    padding: 20px;
-    flex: 1;
-    min-height: 0;
+    padding: 14px;
+    height: 100%;
 }
 
 .toolbar {
@@ -99,30 +98,15 @@
     border: 1px solid #edf0f4;
     border-top: none;
     border-radius: 12px;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-}
-
-.tableBody {
-    flex: 1;
-    overflow-y: auto;
-    min-height: 0;
-}
-
-.tableHead th {
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    background: #f8f9fb;
+    min-height: 420px;
 }
 
 .table {
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed;
 }
 
 .tableHead {
@@ -134,15 +118,14 @@
     font-size: 14px;
     color: #7d828b;
     font-weight: 600;
-    padding: 14px 18px;
+    padding: 12px 14px;
     border-bottom: 1px solid #edf0f4;
-    cursor: default;
 }
 
 .td {
     font-size: 14px;
     color: #373b43;
-    padding: 16px 18px;
+    padding: 13px 14px;
     border-bottom: 1px solid #f2f4f7;
 }
 
@@ -153,13 +136,11 @@
 
 .statusCell {
     text-align: center;
-    vertical-align: middle;
 }
 
 .actionCell {
-    width: 60px;
     text-align: center;
-    vertical-align: middle;
+    width: 40px;
 }
 
 .tableFooter {
@@ -193,28 +174,17 @@
 }
 
 .codeColumn {
-    width: 170px;
-}
-
-.nameColumn {
-    width: auto;
-}
-
-.statusHeader,
-.statusCell {
-    width: 120px;
-    text-align: center;
+    width: 140px;
 }
 
 .statusHeader {
     text-align: center;
-    /* width: 90px; */
+    width: 90px;
 }
 
-.actionHeader,
-.actionCell {
-    width: 60px;
+.actionHeader {
     text-align: center;
+    width: 40px;
 }
 
 .switchLabel {
@@ -222,11 +192,6 @@
     display: inline-block;
     width: 30px;
     height: 16px;
-    cursor: pointer;
-}
-
-.switchLabel:hover .slider {
-    box-shadow: 0 0 0 4px rgba(75, 181, 105, 0.08);
 }
 
 .switchInput {
@@ -270,37 +235,4 @@
     cursor: pointer;
     padding: 0;
     line-height: 0;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }
-
-.sortableHeader {
-    cursor: pointer;
-    user-select: none;
-}
-
-.sortableHeader:hover {
-    color: #23262b;
-}
-
-.createButton,
-.pageButton,
-.iconButton,
-.switchLabel {
-    transition: all 0.2s ease;
-}
-
-.createButton:hover {
-    opacity: 0.9;
-}
-
-.pageButton:hover:not(:disabled) {
-    background: #f5f6f8;
-}
-
-.iconButton:hover {
-    opacity: 0.7;
-}
-

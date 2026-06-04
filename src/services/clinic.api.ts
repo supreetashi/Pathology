@@ -1,4 +1,4 @@
-import type { Clinic ,PaginatedResponse } from "../types/clinic.types";
+import type { Clinic ,PaginatedResponse,  } from "../types/clinic.types";
 import { http } from "./http";
 
 // =====================================================
@@ -9,6 +9,6 @@ export const clinicApi = {
   getById: (id: string) => http.get<Clinic>(`/clinics/${id}/`),
 
   // Fetch all clinics
-  getAll: () =>
-  http.get<PaginatedResponse<Clinic>>("/clinics"),
+getAll: () => http.get<PaginatedResponse<Clinic>>("/clinics/"),
+  // getAll: () => http.get<ClinicListResponse>("/clinics/"),
 };

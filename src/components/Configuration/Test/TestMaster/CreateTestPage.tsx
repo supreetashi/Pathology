@@ -7,7 +7,7 @@ import { useDispatch } from "react-redux";
 import { createTest, updateTest } from "../../../../store/testSlice";
 import type { AppDispatch } from "../../../../store";
 import { useSelector } from "react-redux";
-import { selectClinic } from "../../../../store/clinicSlice";
+import { selectClinic,fetchFirstClinic } from "../../../../store/clinicSlice";
 import { selectTubes, fetchTubes } from "../../../../store/sampleTubeSlice";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -89,12 +89,6 @@ const CATEGORY_OPTIONS = [
   "Immunology",
 ];
 const SERVICE_OPTIONS = ["", "Natural Killer Self Panel", "Panel A", "Panel B"];
-const TUBE_OPTIONS = [
-  "Purple Top - K2 - EDTA",
-  "Red Top",
-  "Blue Top",
-  "Green Top",
-];
 
 // ─── Floating-label helpers ───────────────────────────────────────────────────
 
@@ -311,6 +305,12 @@ export default function CreateTestPage() {
   dispatch(fetchTubes());
 }, [dispatch]);
 
+useEffect(() => {
+  if (!clinic) {
+    dispatch(fetchFirstClinic());
+  }
+}, [dispatch, clinic]);
+
   const editData = location.state?.testData as TestEditData | undefined;
   const isEditMode = location.state?.mode === "edit";
 
@@ -400,55 +400,28 @@ export default function CreateTestPage() {
   }
 
   const handleSave = async () => {
-  if (!clinic?.id) {
-    alert("Please select a clinic first");
-    return;
-  }
+  const clinicId = clinic?.id;
+  if (!clinicId) return; // silently return, clinic is still loading
 
   const payload = {
-    clinic: clinic.id,
-
+    clinic: clinicId,
     test_code: form.testCode,
     test_name: form.testName,
     print_name: form.printName,
     service_name: form.serviceName,
-    tube_name: form.tubeName || null,  // sends UUID or null
+    tube_name: form.tubeName || null,
     test_completion_time: Number(form.testCompletionTime),
-
     is_sensitive: form.isSensitive,
     suggestion_note: form.suggestionNote,
     disclaimer: form.disclaimer,
-
-    report_type:
-      reportMode === "ByParameter"
-        ? "PARAMETER"
-        : "TEMPLATE",
+    report_type: reportMode === "ByParameter" ? "PARAMETER" : "TEMPLATE",
   };
 
   if (isEditMode && editData) {
-    await dispatch(
-  updateTest({
-    id: editData.id,
-    clinic: clinic.id,
-    test_code: form.testCode,
-    test_name: form.testName,
-    print_name: form.printName,
-    service_name: form.serviceName,
-    tube_name: form.tubeName,
-    test_completion_time: Number(form.testCompletionTime),
-    is_sensitive: form.isSensitive,
-    suggestion_note: form.suggestionNote,
-    disclaimer: form.disclaimer,
-    report_type:
-      reportMode === "ByParameter"
-        ? "PARAMETER"
-        : "TEMPLATE",
-  })
-);
+    await dispatch(updateTest({ id: editData.id, ...payload }));
   } else {
     await dispatch(createTest(payload));
   }
-
   navigate("/pathology/configuration/test");
 };
 

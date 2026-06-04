@@ -56,6 +56,42 @@ export const createTube = createAsyncThunk(
   },
 );
 
+export const updateSample = createAsyncThunk(
+  "sampleTube/updateSample",
+  async (
+    {
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: CreateSamplePayload;
+    },
+    { dispatch },
+  ) => {
+    await sampleTubeApi.updateSample(String(id), payload);
+
+    dispatch(fetchSamples());
+  },
+);
+
+export const updateTube = createAsyncThunk(
+  "sampleTube/updateTube",
+  async (
+    {
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: CreateTubePayload;
+    },
+    { dispatch },
+  ) => {
+    await sampleTubeApi.updateTube(String(id), payload);
+
+    dispatch(fetchTubes());
+  },
+);
+
 // =====================================================
 // Reducer
 // =====================================================
@@ -65,11 +101,13 @@ const sampleTubeSlice = createSlice({
 
   reducers: {
     // TODO: Replace with backend status API
-    toggleSampleStatus: (state, action: PayloadAction<string>) => {  // ← string
+    toggleSampleStatus: (state, action: PayloadAction<string>) => {
   const sample = state.samples.find((item) => item.id === action.payload);
   if (sample) sample.isActive = !sample.isActive;
 },
-toggleTubeStatus: (state, action: PayloadAction<string>) => {  // ← string
+
+    // TODO: Replace with backend status API
+   toggleTubeStatus: (state, action: PayloadAction<string>) => {
   const tube = state.tubes.find((item) => item.id === action.payload);
   if (tube) tube.isActive = !tube.isActive;
 },
@@ -96,26 +134,26 @@ toggleTubeStatus: (state, action: PayloadAction<string>) => {  // ← string
       })
 
       .addCase(fetchSamples.fulfilled, (state, action) => {
-  state.loading = false;
-  const results = action.payload.results ?? [];
-  state.samples = results.map((item: any) => ({
-    id: item.id,
-    code: item.sample_code,
-    name: item.sample_name,
-    isActive: item.status ?? true,
-  }));
+        state.loading = false;
+
+        state.samples = action.payload.results.map((item: any) => ({
+          id: item.id,
+          code: item.sample_code,
+          name: item.sample_name,
+          isActive: item.status,
+        }));
       })
 
       .addCase(fetchTubes.fulfilled, (state, action) => {
-  state.loading = false;
-  const results = action.payload.results ?? [];
-  state.tubes = results.map((item: any) => ({
-    id: item.id,
-    code: item.tube_code,
-    name: item.tube_name,
-    isActive: item.status ?? true,
-  }));
-})
+        state.loading = false;
+
+        state.tubes = action.payload.results.map((item: any) => ({
+          id: item.id,
+          code: item.tube_code,
+          name: item.tube_name,
+          isActive: item.status,
+        }));
+      });
   },
 });
 

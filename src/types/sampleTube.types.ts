@@ -15,6 +15,10 @@ export interface SampleTubeItem {
 
 export type SampleTubeTab = "Sample" | "Tube";
 
+export type SortOrder = "asc" | "desc";
+
+export type SampleTubeSortField = "code" | "name" | "status";
+
 // =====================================================
 // Redux State
 // =====================================================
@@ -31,14 +35,14 @@ export interface SampleTubeState {
 // =====================================================
 
 export interface CreateSamplePayload {
-  clinic: string;
+  clinic: string; 
   sample_code: string;
   sample_name: string;
   frequency: number;
 }
 
 export interface CreateTubePayload {
-  clinic: string;
+  clinic: string; 
   tube_code: string;
   tube_name: string;
 }
