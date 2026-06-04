@@ -3,7 +3,7 @@
 // =====================================================
 
 export interface SampleTubeItem {
-  id: number;
+  id: string;
   code: string;
   name: string;
   isActive: boolean;
@@ -35,12 +35,14 @@ export interface SampleTubeState {
 // =====================================================
 
 export interface CreateSamplePayload {
+  clinic: string; 
   sample_code: string;
   sample_name: string;
   frequency: number;
 }
 
 export interface CreateTubePayload {
+  clinic: string; 
   tube_code: string;
   tube_name: string;
 }

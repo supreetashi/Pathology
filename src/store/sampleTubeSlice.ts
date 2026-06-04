@@ -63,12 +63,12 @@ export const updateSample = createAsyncThunk(
       id,
       payload,
     }: {
-      id: number;
+      id: string;
       payload: CreateSamplePayload;
     },
     { dispatch },
   ) => {
-    await sampleTubeApi.updateSample(id, payload);
+    await sampleTubeApi.updateSample(String(id), payload);
 
     dispatch(fetchSamples());
   },
@@ -81,12 +81,12 @@ export const updateTube = createAsyncThunk(
       id,
       payload,
     }: {
-      id: number;
+      id: string;
       payload: CreateTubePayload;
     },
     { dispatch },
   ) => {
-    await sampleTubeApi.updateTube(id, payload);
+    await sampleTubeApi.updateTube(String(id), payload);
 
     dispatch(fetchTubes());
   },
@@ -101,22 +101,16 @@ const sampleTubeSlice = createSlice({
 
   reducers: {
     // TODO: Replace with backend status API
-    toggleSampleStatus: (state, action: PayloadAction<number>) => {
-      const sample = state.samples.find((item) => item.id === action.payload);
-
-      if (sample) {
-        sample.isActive = !sample.isActive;
-      }
-    },
+    toggleSampleStatus: (state, action: PayloadAction<string>) => {
+  const sample = state.samples.find((item) => item.id === action.payload);
+  if (sample) sample.isActive = !sample.isActive;
+},
 
     // TODO: Replace with backend status API
-    toggleTubeStatus: (state, action: PayloadAction<number>) => {
-      const tube = state.tubes.find((item) => item.id === action.payload);
-
-      if (tube) {
-        tube.isActive = !tube.isActive;
-      }
-    },
+   toggleTubeStatus: (state, action: PayloadAction<string>) => {
+  const tube = state.tubes.find((item) => item.id === action.payload);
+  if (tube) tube.isActive = !tube.isActive;
+},
   },
   extraReducers: (builder) => {
     builder

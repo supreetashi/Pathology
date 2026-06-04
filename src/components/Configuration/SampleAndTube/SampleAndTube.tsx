@@ -31,6 +31,7 @@ import {
   SAMPLE_TUBE_TABS,
 } from "../../../constants/sampleTube";
 import { toast } from "react-toastify";
+import { selectClinic, fetchFirstClinic } from "../../../store/clinicSlice";
 
 const tabs = SAMPLE_TUBE_TABS;
 const itemsPerPage = SAMPLE_TUBE_PAGE_SIZE;
@@ -40,6 +41,7 @@ function SampleAndTube() {
   const [searchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const dispatch = useDispatch<AppDispatch>();
+  const clinic = useSelector(selectClinic);
 
   const sampleData = useSelector(selectSamples);
   const tubeData = useSelector(selectTubes);
@@ -117,7 +119,7 @@ function SampleAndTube() {
   const getSortIcon = (field: SampleTubeSortField) =>
     sortField === field ? (sortOrder === "asc" ? " ▲" : " ▼") : "";
 
-  const handleStatusToggle = (id: number, currentStatus: boolean) => {
+  const handleStatusToggle = (id: string, currentStatus: boolean) => {
     const newStatus = !currentStatus;
 
     if (activeTab === "Sample") {
@@ -136,6 +138,10 @@ function SampleAndTube() {
   };
 
   const handleSave = async (code: string, name: string) => {
+    if (!clinic?.id) {
+    toast.error("Clinic not loaded. Please wait and try again.");
+    return;
+  }
     try {
       if (editingItem) {
         if (activeTab === "Sample") {
@@ -143,6 +149,7 @@ function SampleAndTube() {
             updateSample({
               id: editingItem.id,
               payload: {
+                clinic: clinic?.id ?? "",
                 sample_code: code,
                 sample_name: name,
                 frequency: 1,
@@ -156,6 +163,7 @@ function SampleAndTube() {
             updateTube({
               id: editingItem.id,
               payload: {
+                clinic: clinic?.id ?? "",
                 tube_code: code,
                 tube_name: name,
               },
@@ -168,6 +176,7 @@ function SampleAndTube() {
         if (activeTab === "Sample") {
           await dispatch(
             createSample({
+              clinic: clinic?.id ?? "",
               sample_code: code,
               sample_name: name,
               frequency: 1,
@@ -178,6 +187,7 @@ function SampleAndTube() {
         } else {
           await dispatch(
             createTube({
+              clinic: clinic?.id ?? "",
               tube_code: code,
               tube_name: name,
             }),
@@ -198,9 +208,12 @@ function SampleAndTube() {
   };
 
   useEffect(() => {
-    dispatch(fetchSamples());
-    dispatch(fetchTubes());
-  }, [dispatch]);
+  dispatch(fetchSamples());
+  dispatch(fetchTubes());
+  if (!clinic) {
+    dispatch(fetchFirstClinic());
+  }
+}, [dispatch, clinic]);
 
   useEffect(() => {
     if (!error) return;

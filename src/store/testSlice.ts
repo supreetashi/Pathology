@@ -1,5 +1,4 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-
 import type {
   CreateCategoryPayload,
   CreateTestPayload,
@@ -17,9 +16,18 @@ import { testApi } from "../services/test.api";
 const initialState: TestState = {
   tests: [],
   categories: [],
-  loading: false,
+
+  testsLoading: false,
+  categoriesLoading: false,
+
   error: null,
 };
+
+// =====================================================
+// Helpers
+// =====================================================
+
+const getResults = (payload: any) => payload?.results ?? [];
 
 // =====================================================
 // Thunks — Tests
@@ -35,7 +43,7 @@ export const createTest = createAsyncThunk(
   async (payload: CreateTestPayload, { dispatch }) => {
     await testApi.createTest(payload);
     dispatch(fetchTests());
-  },
+  }
 );
 
 export const updateTest = createAsyncThunk(
@@ -43,7 +51,7 @@ export const updateTest = createAsyncThunk(
   async (payload: UpdateTestPayload, { dispatch }) => {
     await testApi.updateTest(payload);
     dispatch(fetchTests());
-  },
+  }
 );
 
 export const deleteTest = createAsyncThunk(
@@ -51,27 +59,44 @@ export const deleteTest = createAsyncThunk(
   async (id: number, { dispatch }) => {
     await testApi.deleteTest(id);
     dispatch(fetchTests());
-  },
+  }
 );
 
 export const toggleTestStatus = createAsyncThunk(
   "test/toggleTestStatus",
   async (
     { id, status }: { id: number; status: boolean },
-    { dispatch, getState },
+    { dispatch, getState }
   ) => {
     const state = getState() as RootState;
+
     const test = state.test.tests.find((t) => t.id === id);
-    if (!test) return;
+    const clinic = state.clinic.data;
+
+    if (!test || !clinic) return;
+
     await testApi.updateTest({
       id,
+      clinic: clinic.id,
+
       test_code: test.code,
       test_name: test.name,
       print_name: test.printName,
+
+      service_name: test.serviceName,
+      test_completion_time: Number(test.testCompletionTime),
+
+      is_sensitive: test.isSensitive,
+      suggestion_note: test.suggestionNote,
+      disclaimer: test.disclaimer,
+
+      report_type: test.reportType,
+
       status,
     });
+
     dispatch(fetchTests());
-  },
+  }
 );
 
 // =====================================================
@@ -83,7 +108,7 @@ export const fetchCategories = createAsyncThunk(
   async () => {
     const res = await testApi.getCategories();
     return res.data;
-  },
+  }
 );
 
 export const createCategory = createAsyncThunk(
@@ -91,7 +116,7 @@ export const createCategory = createAsyncThunk(
   async (payload: CreateCategoryPayload, { dispatch }) => {
     await testApi.createCategory(payload);
     dispatch(fetchCategories());
-  },
+  }
 );
 
 export const updateCategory = createAsyncThunk(
@@ -99,7 +124,7 @@ export const updateCategory = createAsyncThunk(
   async (payload: UpdateCategoryPayload, { dispatch }) => {
     await testApi.updateCategory(payload);
     dispatch(fetchCategories());
-  },
+  }
 );
 
 export const deleteCategory = createAsyncThunk(
@@ -107,7 +132,7 @@ export const deleteCategory = createAsyncThunk(
   async (id: number, { dispatch }) => {
     await testApi.deleteCategory(id);
     dispatch(fetchCategories());
-  },
+  }
 );
 
 export const toggleCategoryStatus = createAsyncThunk(
@@ -115,7 +140,7 @@ export const toggleCategoryStatus = createAsyncThunk(
   async ({ id, status }: { id: number; status: boolean }, { dispatch }) => {
     await testApi.updateCategoryStatus(id, status);
     dispatch(fetchCategories());
-  },
+  }
 );
 
 // =====================================================
@@ -126,25 +151,29 @@ const testSlice = createSlice({
   name: "test",
   initialState,
   reducers: {},
+
   extraReducers: (builder) => {
     builder
-      // ── Tests ───────────────────────────────────────
+
+      // =========================
+      // TESTS
+      // =========================
       .addCase(fetchTests.pending, (state) => {
-        state.loading = true;
+        state.testsLoading = true;
         state.error = null;
       })
-      .addCase(fetchTests.rejected, (state) => {
-        state.loading = false;
-        state.error = "Failed to load tests";
-      })
       .addCase(fetchTests.fulfilled, (state, action) => {
-        state.loading = false;
-        state.tests = action.payload.map((item: any) => ({
+        state.testsLoading = false;
+
+        const results = getResults(action.payload);
+
+        state.tests = results.map((item: any) => ({
           id: item.id,
           code: item.test_code,
           name: item.test_name,
           printName: item.print_name,
           serviceName: item.service_name ?? "",
+          tubeName: item.tube_name ?? null,
           testCompletionTime: item.test_completion_time ?? "",
           isSensitive: item.is_sensitive ?? false,
           suggestionNote: item.suggestion_note ?? "",
@@ -153,25 +182,34 @@ const testSlice = createSlice({
           isActive: item.status ?? true,
         }));
       })
+      .addCase(fetchTests.rejected, (state) => {
+        state.testsLoading = false;
+        state.error = "Failed to load tests";
+      })
 
-      // ── Categories ──────────────────────────────────
+      // =========================
+      // CATEGORIES
+      // =========================
       .addCase(fetchCategories.pending, (state) => {
-        state.loading = true;
+        state.categoriesLoading = true;
         state.error = null;
       })
-      .addCase(fetchCategories.rejected, (state) => {
-        state.loading = false;
-        state.error = "Failed to load categories";
-      })
       .addCase(fetchCategories.fulfilled, (state, action) => {
-        state.loading = false;
-        state.categories = action.payload.map((item: any) => ({
+        state.categoriesLoading = false;
+
+        const results = getResults(action.payload);
+
+        state.categories = results.map((item: any) => ({
           id: item.id,
           code: item.category_code,
           name: item.category_name,
           isActive: item.status ?? true,
           tests: item.tests ?? [],
         }));
+      })
+      .addCase(fetchCategories.rejected, (state) => {
+        state.categoriesLoading = false;
+        state.error = "Failed to load categories";
       });
   },
 });
@@ -184,5 +222,11 @@ export default testSlice.reducer;
 
 export const selectTests = (state: RootState) => state.test.tests;
 export const selectCategories = (state: RootState) => state.test.categories;
-export const selectTestLoading = (state: RootState) => state.test.loading;
+
+export const selectTestsLoading = (state: RootState) =>
+  state.test.testsLoading;
+
+export const selectCategoriesLoading = (state: RootState) =>
+  state.test.categoriesLoading;
+
 export const selectTestError = (state: RootState) => state.test.error;

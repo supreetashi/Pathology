@@ -225,7 +225,7 @@ function TestConfigurationView() {
                   id: editingCategory.id,
                   category_code: formData.categoryCode,
                   category_name: formData.categoryName,
-                  tests: formData.testIds.map(Number),
+                  tests: formData.testIds,
                 }),
               );
             } else {
@@ -234,7 +234,7 @@ function TestConfigurationView() {
                   category_code: formData.categoryCode,
                   category_name: formData.categoryName,
                   status: true,
-                  tests: formData.testIds.map(Number),
+                  tests: formData.testIds,
                 }),
               );
             }

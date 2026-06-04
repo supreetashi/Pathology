@@ -17,7 +17,7 @@ import CalendarIcon from "../../assets/icons/calendar.svg";
 import UserAvatarIcon from "../../assets/icons/Ellipse_12.svg";
 import { PATHOLOGY_MENU } from "../../config/sidebar.menu";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchClinics, selectClinics } from "../../store/clinicSlice";
+import { fetchClinics, selectClinics, fetchFirstClinic, fetchClinic, selectClinic } from "../../store/clinicSlice";
 import { AppDispatch } from "../../store";
 
 type HeaderUser = {
@@ -61,8 +61,9 @@ const Header = () => {
     last_name: "Russell",
     designation_label: "Receptionist",
   };
+  const clinic = useSelector(selectClinic); 
   const clinics = useSelector(selectClinics);
-  const clinicName = clinics[0]?.clinic_name ?? "Select Clinic";
+  const clinicName = clinic?.clinic_name ?? "Select Clinic";  
   const activeBreadcrumb = getActiveMenuLabel(location.pathname);
   const [clinicAnchor, setClinicAnchor] = useState<null | HTMLElement>(null);
 
@@ -100,6 +101,7 @@ const Header = () => {
   };
 
   useEffect(() => {
+    dispatch(fetchFirstClinic());
     dispatch(fetchClinics());
   }, [dispatch]);
 
@@ -173,7 +175,10 @@ const Header = () => {
               onClose={handleClinicClose}
             >
               {clinics?.map((clinic) => (
-                <MenuItem key={clinic.id} onClick={handleClinicClose}>
+                <MenuItem key={clinic.id} onClick={() => {
+                  dispatch(fetchClinic(clinic.id));
+                  handleClinicClose();
+                }}>
                   {clinic.clinic_name}
                 </MenuItem>
               ))}
