@@ -1,8 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import styles from "./CreateParameterPage.module.css";
 import EditIcon from "../../../../assets/icons/edit.svg";
 import BackIcon from "../../../../assets/icons/back_icon.svg";
+import {
+  createParameter,
+  updateParameter,
+  fetchReferenceRanges,
+  createReferenceRange,
+  updateReferenceRange,
+  deleteReferenceRange,
+  selectReferenceRanges,
+} from "../../../../store/parameterSlice";
+import type { AppDispatch } from "../../../../store";
+import type { ParameterItem } from "../../../../types/parameter.types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -26,6 +38,7 @@ type ReferenceRange = {
   panicValue2: string;
   varyingRefRanges: string;
   notes: string;
+  isNew?: boolean; // track if not yet saved to backend
 };
 
 type FormState = {
@@ -40,65 +53,60 @@ type FormState = {
   executionCalendarLinking: string;
 };
 
-type ParameterEditData = {
-  code: string;
-  name: string;
-  printName: string;
-  unit: string;
-  status: boolean;
-};
+// ─── Constants ────────────────────────────────────────────────────────────────
 
-// ─── Initial Data ─────────────────────────────────────────────────────────────
-
-const initialRanges: ReferenceRange[] = [
-  {
-    id: 1,
-    category: "Male",
-    machine: "COBAS C311 - Clinical Chemistry",
-    minRef: "0.09",
-    maxRef: "0.3",
-    minAuthZ: "0.09",
-    maxAuthZ: "0.3",
-    isAgeApplicable: true,
-    ageLowerLimit: "0",
-    ageUpperLimit: "0",
-    improbableValue1: "0",
-    improbableValue2: "0",
-    isReflex: true,
-    reflexValue1: "0",
-    reflexValue2: "0",
-    panicValue1: "0",
-    panicValue2: "0",
-    varyingRefRanges: "Female : 12-16.1 g/dL\nNewborn : 14-22.0 g/dL",
-    notes:
-      "A partial deletion in the AZFc region is identified, which may be associated with impaired sperm production and infertility.",
-  },
-  {
-    id: 2,
-    category: "Female",
-    machine: "COBAS C311 - Clinical Chemistry",
-    minRef: "0.09",
-    maxRef: "0.3",
-    minAuthZ: "0.09",
-    maxAuthZ: "0.3",
-    isAgeApplicable: true,
-    ageLowerLimit: "0",
-    ageUpperLimit: "0",
-    improbableValue1: "0",
-    improbableValue2: "0",
-    isReflex: false,
-    reflexValue1: "0",
-    reflexValue2: "0",
-    panicValue1: "0",
-    panicValue2: "0",
-    varyingRefRanges: "Female : 12-16.1 g/dL\nNewborn : 14-22.0 g/dL",
-    notes:
-      "A partial deletion in the AZFc region is identified, which may be associated with impaired sperm production and infertility.",
-  },
+const UNITS = [
+  "mL",
+  "mg/dL",
+  "cells/hpf",
+  "%",
+  "IU/L",
+  "NA",
+  "IU/mL",
+  "meq/L",
+  "mmol/L",
+  "ng/mL",
+  "g/dL",
+  "pg",
+  "ug/mL",
+  "mm in 1st hour",
+  "pg/mL",
+  "pmol/dL",
+  "pmol/L",
+  "nmol/L",
+  "umol/mL",
+  "x10^6 cells/cumm",
+  "U/L",
+  "x10^3 cells/cumm",
+  "uIU/mL",
+  "umol/L",
+  "x10^12/L",
+  "x10^9/L",
+  "fL",
+  "sec",
+  "mg/L",
+  "mIU/mL",
+  "ng/dL",
+  "mIU/L",
+  "ug/dL",
+  "Mil/mL",
+  "mic/sec",
+  "Mil/ejac",
+  "min",
+  "Units",
+  "Quality Score",
+  "Days",
+  "Qualitative",
+  "cells/cumm.",
+  "µg/mL",
 ];
 
-const UNITS = ["ML", "g/dL", "mg/dL", "mmol/L", "IU/L", "U/L"];
-const CATEGORIES = ["Male", "Female", "Both", "Pediatric"];
+const CATEGORIES = ["MALE", "FEMALE", "BOTH"];
+const CATEGORY_LABELS: Record<string, string> = {
+  MALE: "Male",
+  FEMALE: "Female",
+  BOTH: "Both",
+};
 const MACHINES = [
   "COBAS C311 - Clinical Chemistry",
   "Sysmex XN-1000",
@@ -107,7 +115,30 @@ const MACHINES = [
 const CALENDAR_OPTIONS = ["Lorem Ipsum", "Option 2", "Option 3"];
 const FORMULA_PARAMS = ["Sample Value 1", "Sample Value 2", "Sample Value 3"];
 
-// ─── Floating-label field helpers ─────────────────────────────────────────────
+const emptyRange = (): ReferenceRange => ({
+  id: Date.now(),
+  category: "MALE",
+  machine: MACHINES[0],
+  minRef: "",
+  maxRef: "",
+  minAuthZ: "",
+  maxAuthZ: "",
+  isAgeApplicable: false,
+  ageLowerLimit: "",
+  ageUpperLimit: "",
+  improbableValue1: "",
+  improbableValue2: "",
+  isReflex: false,
+  reflexValue1: "",
+  reflexValue2: "",
+  panicValue1: "",
+  panicValue2: "",
+  varyingRefRanges: "",
+  notes: "",
+  isNew: true,
+});
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function FloatInput({
   label,
@@ -153,7 +184,9 @@ function FloatSelect({
           onChange={(e) => onChange(e.target.value)}
         >
           {options.map((o) => (
-            <option key={o}>{o}</option>
+            <option key={o} value={o}>
+              {o}
+            </option>
           ))}
         </select>
       </div>
@@ -161,35 +194,71 @@ function FloatSelect({
   );
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function CreateParameterPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch<AppDispatch>();
 
-  const editData = location.state?.parameterData as
-    | ParameterEditData
-    | undefined;
+  const editData = location.state?.parameterData as ParameterItem | undefined;
   const isEditMode = location.state?.mode === "edit";
+
+  const reduxRanges = useSelector(selectReferenceRanges);
 
   const [form, setForm] = useState<FormState>({
     parameterCode: editData?.code ?? "",
     parameterName: editData?.name ?? "",
     parameterPrintName: editData?.printName ?? "",
-    typeOfValue: "Numeric",
-    isSkipNumeric: false,
-    parameterUnit: editData?.unit ?? "ML",
-    deltaCheckPercentage: "",
-    techniqueUsed: "",
-    executionCalendarLinking: "Lorem Ipsum",
+    typeOfValue: editData?.typeOfValue === "TEXT" ? "Text" : "Numeric",
+    isSkipNumeric: editData?.skipNumericResultEntry ?? false,
+    parameterUnit: editData?.unit ?? "mL",
+    deltaCheckPercentage: editData?.deltaCheckPercentage ?? "",
+    techniqueUsed: editData?.techniqueUsed ?? "",
+    executionCalendarLinking:
+      editData?.executionCalendarLinking ?? "Lorem Ipsum",
   });
 
-  const [ranges, setRanges] = useState<ReferenceRange[]>(initialRanges);
+  const [localRanges, setLocalRanges] = useState<ReferenceRange[]>([]);
   const [editingRange, setEditingRange] = useState<ReferenceRange | null>(null);
-  const [nextId, setNextId] = useState(3);
-
   const [formulaParam1, setFormulaParam1] = useState("Sample Value 1");
   const [formulaParam2, setFormulaParam2] = useState("Sample Value 2");
+
+  // Fetch reference ranges when editing
+  useEffect(() => {
+    if (isEditMode && editData?.id) {
+      dispatch(fetchReferenceRanges(editData.id));
+    }
+  }, [dispatch, isEditMode, editData?.id]);
+
+  // Sync redux ranges to local state when editing
+  useEffect(() => {
+    if (isEditMode && reduxRanges.length > 0) {
+      setLocalRanges(
+        reduxRanges.map((r) => ({
+          id: r.id,
+          category: r.gender ?? "MALE",
+          machine: r.machineName,
+          minRef: r.minRef,
+          maxRef: r.maxRef,
+          minAuthZ: r.minAuthz,
+          maxAuthZ: r.maxAuthz,
+          isAgeApplicable: r.isAgeApplicable,
+          ageLowerLimit: String(r.ageLowerLimit ?? ""),
+          ageUpperLimit: String(r.ageUpperLimit ?? ""),
+          improbableValue1: r.improbableValueLess,
+          improbableValue2: r.improbableValueGreater,
+          isReflex: r.isReflex,
+          reflexValue1: r.reflexValueLess,
+          reflexValue2: r.reflexValueGreater,
+          panicValue1: r.panicValueLess,
+          panicValue2: r.panicValueGreater,
+          varyingRefRanges: r.varyingReferenceRange,
+          notes: r.notes,
+        })),
+      );
+    }
+  }, [reduxRanges, isEditMode]);
 
   const handleFormChange = (
     field: keyof FormState,
@@ -198,34 +267,16 @@ export default function CreateParameterPage() {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleDeleteRange = (id: number) => {
-    setRanges((prev) => prev.filter((r) => r.id !== id));
+  const handleDeleteRange = async (id: number) => {
+    const range = localRanges.find((r) => r.id === id);
+    if (!range?.isNew && isEditMode && editData?.id) {
+      await dispatch(deleteReferenceRange({ id, parameterId: editData.id }));
+    }
+    setLocalRanges((prev) => prev.filter((r) => r.id !== id));
   };
 
   const handleAddRange = () => {
-    const newRange: ReferenceRange = {
-      id: nextId,
-      category: "Male",
-      machine: MACHINES[0],
-      minRef: "0",
-      maxRef: "0",
-      minAuthZ: "0",
-      maxAuthZ: "0",
-      isAgeApplicable: false,
-      ageLowerLimit: "0",
-      ageUpperLimit: "0",
-      improbableValue1: "0",
-      improbableValue2: "0",
-      isReflex: false,
-      reflexValue1: "0",
-      reflexValue2: "0",
-      panicValue1: "0",
-      panicValue2: "0",
-      varyingRefRanges: "",
-      notes: "",
-    };
-
-    setEditingRange(newRange);
+    setEditingRange(emptyRange());
   };
 
   const handleEditRange = (range: ReferenceRange) => {
@@ -234,33 +285,87 @@ export default function CreateParameterPage() {
 
   const handleSaveRange = () => {
     if (!editingRange) return;
-
-    const alreadyExists = ranges.some((r) => r.id === editingRange.id);
-
+    const alreadyExists = localRanges.some((r) => r.id === editingRange.id);
     if (alreadyExists) {
-      setRanges((prev) =>
+      setLocalRanges((prev) =>
         prev.map((r) => (r.id === editingRange.id ? editingRange : r)),
       );
     } else {
-      setRanges((prev) => [...prev, editingRange]);
-      setNextId((n) => n + 1);
+      setLocalRanges((prev) => [...prev, editingRange]);
     }
-
     setEditingRange(null);
   };
 
-  const handleSave = () => {
-    if (isEditMode) {
-      console.log("UPDATE PARAMETER:", { form, ranges });
+  const handleSave = async () => {
+    const payload = {
+      parameter_code: form.parameterCode,
+      parameter_name: form.parameterName,
+      parameter_print_name: form.parameterPrintName,
+      type_of_value:
+        form.typeOfValue === "Numeric"
+          ? "NUMERIC"
+          : ("TEXT" as "NUMERIC" | "TEXT"),
+      unit: form.parameterUnit,
+      delta_check_percentage: form.deltaCheckPercentage || null,
+      technique_used: form.techniqueUsed,
+      execution_calendar_linking: form.executionCalendarLinking,
+      skip_numeric_result_entry: form.isSkipNumeric,
+    };
+
+    let parameterId: string | undefined;
+
+    if (isEditMode && editData) {
+      await dispatch(updateParameter({ id: editData.id, ...payload }));
+      parameterId = editData.id;
     } else {
-      console.log("CREATE PARAMETER:", { form, ranges });
+      const result = await dispatch(createParameter(payload));
+      // get created parameter id from result if available
+      parameterId = (result.payload as any)?.id as string;
     }
+
+    // Save reference ranges
+    if (parameterId) {
+      for (const range of localRanges) {
+        const rangePayload = {
+          parameter: parameterId,
+          gender: range.category as "MALE" | "FEMALE" | "BOTH",
+          machine_name: range.machine,
+          min_ref: range.minRef || null,
+          max_ref: range.maxRef || null,
+          min_authz: range.minAuthZ || null,
+          max_authz: range.maxAuthZ || null,
+          is_age_applicable: range.isAgeApplicable,
+          age_lower_limit: range.ageLowerLimit
+            ? Number(range.ageLowerLimit)
+            : null,
+          age_upper_limit: range.ageUpperLimit
+            ? Number(range.ageUpperLimit)
+            : null,
+          improbable_value_less: range.improbableValue1 || null,
+          improbable_value_greater: range.improbableValue2 || null,
+          is_reflex: range.isReflex,
+          reflex_value_less: range.reflexValue1 || null,
+          reflex_value_greater: range.reflexValue2 || null,
+          panic_value_less: range.panicValue1 || null,
+          panic_value_greater: range.panicValue2 || null,
+          varying_reference_range: range.varyingRefRanges,
+          notes: range.notes,
+        };
+
+        if (range.isNew) {
+          await dispatch(createReferenceRange(rangePayload));
+        } else if (isEditMode) {
+          await dispatch(
+            updateReferenceRange({ id: range.id, ...rangePayload }),
+          );
+        }
+      }
+    }
+
     navigate("/pathology/configuration/test");
   };
 
-  const handleCancel = () => {
-    navigate("/pathology/configuration/test");
-  };
+  const handleCancel = () => navigate("/pathology/configuration/test");
 
   return (
     <div className={styles.page}>
@@ -281,7 +386,6 @@ export default function CreateParameterPage() {
         <div className={styles.content}>
           <div className={styles.section}>
             <p className={styles.sectionTitle}>Basic Details</p>
-
             <div className={styles.formGrid}>
               <FloatInput
                 label="Parameter Code"
@@ -402,7 +506,6 @@ export default function CreateParameterPage() {
                 value={form.techniqueUsed}
                 onChange={(v) => handleFormChange("techniqueUsed", v)}
               />
-
               <FloatSelect
                 label="Execution Calendar Linking"
                 value={form.executionCalendarLinking}
@@ -453,7 +556,7 @@ export default function CreateParameterPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {ranges.map((row) => (
+                  {localRanges.map((row) => (
                     <tr key={row.id}>
                       <td>
                         <button
@@ -464,7 +567,7 @@ export default function CreateParameterPage() {
                           ✕
                         </button>
                       </td>
-                      <td>{row.category}</td>
+                      <td>{CATEGORY_LABELS[row.category] ?? row.category}</td>
                       <td>{row.machine}</td>
                       <td>{row.minRef}</td>
                       <td>{row.maxRef}</td>
@@ -560,9 +663,7 @@ export default function CreateParameterPage() {
                   <span className={styles.formulaText}>100</span>
                 </div>
               </div>
-
               <div className={styles.formulaDivider} />
-
               <div className={styles.formulaControls}>
                 <div className={styles.formulaRow}>
                   {["(", ")", "+", "-", "*"].map((op) => (
@@ -622,7 +723,7 @@ export default function CreateParameterPage() {
           >
             <div className={styles.sidePanelHeader}>
               <h3 className={styles.sidePanelTitle}>
-                {ranges.some((r) => r.id === editingRange.id)
+                {localRanges.some((r) => r.id === editingRange.id)
                   ? "Edit Reference Ranges & Rules"
                   : "Add New Reference Ranges & Rules"}
               </h3>
@@ -650,7 +751,9 @@ export default function CreateParameterPage() {
                     }
                   >
                     {CATEGORIES.map((c) => (
-                      <option key={c}>{c}</option>
+                      <option key={c} value={c}>
+                        {CATEGORY_LABELS[c]}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -674,58 +777,26 @@ export default function CreateParameterPage() {
               </div>
 
               <div className={styles.sidePanelGrid}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Min. Ref.</label>
-                  <input
-                    className={styles.input}
-                    value={editingRange.minRef}
-                    onChange={(e) =>
-                      setEditingRange({
-                        ...editingRange,
-                        minRef: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Max. Ref.</label>
-                  <input
-                    className={styles.input}
-                    value={editingRange.maxRef}
-                    onChange={(e) =>
-                      setEditingRange({
-                        ...editingRange,
-                        maxRef: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Min. AuthZ</label>
-                  <input
-                    className={styles.input}
-                    value={editingRange.minAuthZ}
-                    onChange={(e) =>
-                      setEditingRange({
-                        ...editingRange,
-                        minAuthZ: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Max. AuthZ</label>
-                  <input
-                    className={styles.input}
-                    value={editingRange.maxAuthZ}
-                    onChange={(e) =>
-                      setEditingRange({
-                        ...editingRange,
-                        maxAuthZ: e.target.value,
-                      })
-                    }
-                  />
-                </div>
+                {[
+                  ["minRef", "Min. Ref."],
+                  ["maxRef", "Max. Ref."],
+                  ["minAuthZ", "Min. AuthZ"],
+                  ["maxAuthZ", "Max. AuthZ"],
+                ].map(([field, label]) => (
+                  <div key={field} className={styles.formGroup}>
+                    <label className={styles.label}>{label}</label>
+                    <input
+                      className={styles.input}
+                      value={(editingRange as any)[field]}
+                      onChange={(e) =>
+                        setEditingRange({
+                          ...editingRange,
+                          [field]: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                ))}
               </div>
 
               <label className={styles.checkboxLabel}>
@@ -743,61 +814,45 @@ export default function CreateParameterPage() {
               </label>
 
               <div className={styles.sidePanelGrid}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Age - Lower Limit</label>
-                  <input
-                    className={styles.input}
-                    value={editingRange.ageLowerLimit}
-                    onChange={(e) =>
-                      setEditingRange({
-                        ...editingRange,
-                        ageLowerLimit: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Age - Upper Limit</label>
-                  <input
-                    className={styles.input}
-                    value={editingRange.ageUpperLimit}
-                    onChange={(e) =>
-                      setEditingRange({
-                        ...editingRange,
-                        ageUpperLimit: e.target.value,
-                      })
-                    }
-                  />
-                </div>
+                {[
+                  ["ageLowerLimit", "Age - Lower Limit"],
+                  ["ageUpperLimit", "Age - Upper Limit"],
+                ].map(([field, label]) => (
+                  <div key={field} className={styles.formGroup}>
+                    <label className={styles.label}>{label}</label>
+                    <input
+                      className={styles.input}
+                      value={(editingRange as any)[field]}
+                      onChange={(e) =>
+                        setEditingRange({
+                          ...editingRange,
+                          [field]: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                ))}
               </div>
 
               <div className={styles.sidePanelGrid}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Improbable Value 1</label>
-                  <input
-                    className={styles.input}
-                    value={editingRange.improbableValue1}
-                    onChange={(e) =>
-                      setEditingRange({
-                        ...editingRange,
-                        improbableValue1: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Improbable Value 2</label>
-                  <input
-                    className={styles.input}
-                    value={editingRange.improbableValue2}
-                    onChange={(e) =>
-                      setEditingRange({
-                        ...editingRange,
-                        improbableValue2: e.target.value,
-                      })
-                    }
-                  />
-                </div>
+                {[
+                  ["improbableValue1", "Improbable Value 1"],
+                  ["improbableValue2", "Improbable Value 2"],
+                ].map(([field, label]) => (
+                  <div key={field} className={styles.formGroup}>
+                    <label className={styles.label}>{label}</label>
+                    <input
+                      className={styles.input}
+                      value={(editingRange as any)[field]}
+                      onChange={(e) =>
+                        setEditingRange({
+                          ...editingRange,
+                          [field]: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                ))}
               </div>
 
               <div className={styles.divider} />
@@ -817,61 +872,26 @@ export default function CreateParameterPage() {
               </label>
 
               <div className={styles.sidePanelGrid}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Reflex Value 1</label>
-                  <input
-                    className={styles.input}
-                    value={editingRange.reflexValue1}
-                    onChange={(e) =>
-                      setEditingRange({
-                        ...editingRange,
-                        reflexValue1: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Reflex Value 2</label>
-                  <input
-                    className={styles.input}
-                    value={editingRange.reflexValue2}
-                    onChange={(e) =>
-                      setEditingRange({
-                        ...editingRange,
-                        reflexValue2: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className={styles.sidePanelGrid}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Panic Value 1</label>
-                  <input
-                    className={styles.input}
-                    value={editingRange.panicValue1}
-                    onChange={(e) =>
-                      setEditingRange({
-                        ...editingRange,
-                        panicValue1: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Panic Value 2</label>
-                  <input
-                    className={styles.input}
-                    value={editingRange.panicValue2}
-                    onChange={(e) =>
-                      setEditingRange({
-                        ...editingRange,
-                        panicValue2: e.target.value,
-                      })
-                    }
-                  />
-                </div>
+                {[
+                  ["reflexValue1", "Reflex Value 1"],
+                  ["reflexValue2", "Reflex Value 2"],
+                  ["panicValue1", "Panic Value 1"],
+                  ["panicValue2", "Panic Value 2"],
+                ].map(([field, label]) => (
+                  <div key={field} className={styles.formGroup}>
+                    <label className={styles.label}>{label}</label>
+                    <input
+                      className={styles.input}
+                      value={(editingRange as any)[field]}
+                      onChange={(e) =>
+                        setEditingRange({
+                          ...editingRange,
+                          [field]: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                ))}
               </div>
 
               <div className={styles.formGroup}>
@@ -894,10 +914,7 @@ export default function CreateParameterPage() {
                   className={styles.textarea}
                   value={editingRange.notes}
                   onChange={(e) =>
-                    setEditingRange({
-                      ...editingRange,
-                      notes: e.target.value,
-                    })
+                    setEditingRange({ ...editingRange, notes: e.target.value })
                   }
                 />
               </div>

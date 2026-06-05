@@ -3,7 +3,7 @@
 // =====================================================
 
 export interface ParameterItem {
-  id: number;
+  id: string;
   code: string;
   name: string;
   printName: string;
@@ -71,11 +71,11 @@ export interface CreateParameterPayload {
 }
 
 export interface UpdateParameterPayload extends CreateParameterPayload {
-  id: number;
+   id: string;
 }
 
 export interface CreateReferenceRangePayload {
-  parameter: number;
+  parameter: string;
   gender?: "MALE" | "FEMALE" | "BOTH" | "";
   machine_name?: string;
   min_ref?: string | null;

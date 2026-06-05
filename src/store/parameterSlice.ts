@@ -30,15 +30,16 @@ export const fetchParameters = createAsyncThunk(
   async () => {
     const res = await parameterApi.getParameters();
     return res.data;
-  }
+  },
 );
 
 export const createParameter = createAsyncThunk(
   "parameter/createParameter",
   async (payload: CreateParameterPayload, { dispatch }) => {
-    await parameterApi.createParameter(payload);
+    const res = await parameterApi.createParameter(payload);
     dispatch(fetchParameters());
-  }
+    return res.data; // ← return created parameter
+  },
 );
 
 export const updateParameter = createAsyncThunk(
@@ -46,12 +47,14 @@ export const updateParameter = createAsyncThunk(
   async (payload: UpdateParameterPayload, { dispatch }) => {
     await parameterApi.updateParameter(payload);
     dispatch(fetchParameters());
-  }
+  },
 );
 
 export const toggleParameterStatus = createAsyncThunk(
   "parameter/toggleParameterStatus",
-  async ({ id, status }: { id: number; status: boolean }, { dispatch, getState }) => {
+  async ({ id, status }: { id: string; status: boolean }, 
+    { dispatch, getState },
+  ) => {
     const state = getState() as RootState;
     const param = state.parameter.parameters.find((p) => p.id === id);
     if (!param) return;
@@ -65,15 +68,15 @@ export const toggleParameterStatus = createAsyncThunk(
       status,
     });
     dispatch(fetchParameters());
-  }
+  },
 );
 
 export const deleteParameter = createAsyncThunk(
   "parameter/deleteParameter",
-  async (id: number, { dispatch }) => {
+  async (id: string, { dispatch }) => {
     await parameterApi.deleteParameter(id);
     dispatch(fetchParameters());
-  }
+  },
 );
 
 // =====================================================
@@ -82,10 +85,10 @@ export const deleteParameter = createAsyncThunk(
 
 export const fetchReferenceRanges = createAsyncThunk(
   "parameter/fetchReferenceRanges",
-  async (parameterId?: number) => {
+  async (parameterId?: string) => {
     const res = await parameterApi.getReferenceRanges(parameterId);
     return res.data;
-  }
+  },
 );
 
 export const createReferenceRange = createAsyncThunk(
@@ -93,7 +96,7 @@ export const createReferenceRange = createAsyncThunk(
   async (payload: CreateReferenceRangePayload, { dispatch }) => {
     await parameterApi.createReferenceRange(payload);
     dispatch(fetchReferenceRanges(payload.parameter));
-  }
+  },
 );
 
 export const updateReferenceRange = createAsyncThunk(
@@ -101,15 +104,17 @@ export const updateReferenceRange = createAsyncThunk(
   async (payload: UpdateReferenceRangePayload, { dispatch }) => {
     await parameterApi.updateReferenceRange(payload);
     dispatch(fetchReferenceRanges(payload.parameter));
-  }
+  },
 );
 
 export const deleteReferenceRange = createAsyncThunk(
   "parameter/deleteReferenceRange",
-  async ({ id, parameterId }: { id: number; parameterId: number }, { dispatch }) => {
+  async ({ id, parameterId }: { id: number; parameterId: string },
+    { dispatch },
+  ) => {
     await parameterApi.deleteReferenceRange(id);
     dispatch(fetchReferenceRanges(parameterId));
-  }
+  },
 );
 
 // =====================================================
@@ -131,9 +136,9 @@ const parameterSlice = createSlice({
         state.loading = false;
         state.error = "Failed to load parameters";
       })
-     .addCase(fetchParameters.fulfilled, (state, action) => {
-  state.loading = false;
-  state.parameters = action.payload.results.map((item: any) =>({
+      .addCase(fetchParameters.fulfilled, (state, action) => {
+        state.loading = false;
+        state.parameters = action.payload.results.map((item: any) => ({
           id: item.id,
           code: item.parameter_code,
           name: item.parameter_name,
@@ -160,7 +165,8 @@ const parameterSlice = createSlice({
       })
       .addCase(fetchReferenceRanges.fulfilled, (state, action) => {
         state.loading = false;
-        state.referenceRanges = action.payload.map((item: any) => ({
+        const items = action.payload?.results ?? action.payload ?? []; // ← handle both
+        state.referenceRanges = items.map((item: any) => ({
           id: item.id,
           parameterId: item.parameter,
           gender: item.gender ?? "",
@@ -193,7 +199,10 @@ export default parameterSlice.reducer;
 // Selectors
 // =====================================================
 
-export const selectParameters = (state: RootState) => state.parameter.parameters;
-export const selectReferenceRanges = (state: RootState) => state.parameter.referenceRanges;
-export const selectParameterLoading = (state: RootState) => state.parameter.loading;
+export const selectParameters = (state: RootState) =>
+  state.parameter.parameters;
+export const selectReferenceRanges = (state: RootState) =>
+  state.parameter.referenceRanges;
+export const selectParameterLoading = (state: RootState) =>
+  state.parameter.loading;
 export const selectParameterError = (state: RootState) => state.parameter.error;
