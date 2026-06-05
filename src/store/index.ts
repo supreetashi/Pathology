@@ -4,6 +4,7 @@ import sampleTubeReducer from "./sampleTubeSlice";
 import pathologyProfileReducer from "./pathologyProfileSlice";
 import testReducer from "./testSlice";
 import parameterReducer from "./parameterSlice";
+import machineReducer from "./MachineSlice";
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     pathologyProfile: pathologyProfileReducer,
     test: testReducer,
     parameter: parameterReducer,
+    machine: machineReducer,
   },
 });
 

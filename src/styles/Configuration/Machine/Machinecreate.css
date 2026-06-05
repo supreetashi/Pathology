@@ -1,0 +1,241 @@
+/* ── Overlay ── */
+.machine-create-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(23, 26, 31, 0.36);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  z-index: 1400;
+}
+
+/* ── Modal ── */
+.machine-create-modal {
+  width: 100%;
+  max-width: 380px;
+  border-radius: 16px;
+  background-color: #ffffff;
+  box-shadow: 0 16px 40px rgba(20, 24, 32, 0.18);
+  overflow: hidden;
+}
+
+/* ── Header ── */
+.machine-create-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e6e9ef;
+}
+
+.machine-create-title {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.15;
+  font-weight: 700;
+  color: #262a31;
+}
+
+.machine-create-close-button {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+/* ── Body ── */
+.machine-create-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── Field ── */
+.machine-create-field-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.machine-create-label {
+  font-size: 15px;
+  color: #6f747d;
+  font-weight: 500;
+}
+
+.machine-create-input {
+  width: 100%;
+  height: 56px;
+  border-radius: 10px;
+  border: 1px solid #d7dbe3;
+  padding: 0 14px;
+  font-size: 14px;
+  color: #2b3038;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.machine-create-input--error {
+  border-color: #e34a4a;
+}
+
+.machine-create-error-text {
+  font-size: 12px;
+  color: #e34a4a;
+  margin-top: 2px;
+}
+
+/* ── Select button ── */
+.machine-create-select-button {
+  width: 100%;
+  min-height: 56px;
+  border-radius: 10px;
+  border: 1px solid #d7dbe3;
+  background-color: #ffffff;
+  padding: 0 14px;
+  font-size: 14px;
+  color: #8a909a;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  text-align: left;
+}
+
+.machine-create-caret {
+  width: 10px;
+  height: 10px;
+  border-bottom: 2px solid #2e333a;
+  border-right: 2px solid #2e333a;
+  transform: rotate(45deg);
+  margin-top: -6px;
+  flex-shrink: 0;
+}
+
+/* ── Options dropdown ── */
+.machine-create-options-box {
+  border: 1px solid #d7dbe3;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.machine-create-options-list {
+  max-height: 170px;
+  overflow-y: auto;
+}
+
+.machine-create-option {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid #f0f2f5;
+  background-color: #ffffff;
+  text-align: left;
+  padding: 11px 12px;
+  font-size: 14px;
+  color: #2f343c;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.machine-create-option--empty {
+  cursor: default;
+  color: #8a909a;
+}
+
+.machine-create-option-indicator {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #d0d5dd;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  font-size: 12px;
+  flex-shrink: 0;
+  background-color: transparent;
+}
+
+.machine-create-option-indicator--selected {
+  border-color: #a8dcb7;
+  background-color: #8fd3a5;
+}
+
+/* ── Chips ── */
+.machine-create-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.machine-create-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 9px;
+  background-color: #f7efef;
+  color: #444a53;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.machine-create-chip-remove {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid #e34a4a;
+  color: #e34a4a;
+  background-color: transparent;
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+/* ── Footer ── */
+.machine-create-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.machine-create-cancel-button {
+  border: none;
+  border-radius: 10px;
+  height: 36px;
+  background-color: #efeff0;
+  color: #484d55;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.machine-create-save-button {
+  border: none;
+  border-radius: 10px;
+  height: 36px;
+  background-color: #59595b;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.machine-create-save-button:disabled,
+.machine-create-cancel-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

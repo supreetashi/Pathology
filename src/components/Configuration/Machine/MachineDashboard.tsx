@@ -1,14 +1,21 @@
-import { useMemo, useState } from "react";
-import MachineCreate, { type MachineFormPayload } from "./MachineCreate";
-import MachineList from "./MachineList";
+import { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch } from "../../../store";
 import {
-  machineMockData,
-  machineParameterMockData,
-  type MachineItem,
-  type MachineParameterItem,
-} from "./MachinemockData";
-import ParameterCreate, { type ParameterFormPayload } from "./ParameterCreate";
+  fetchMachines,
+  fetchMachineParameters,
+  selectMachines,
+  selectMachineParameters,
+  updateMachine,
+  updateMachineParameter,
+} from "../../../store/MachineSlice";
+import { selectClinics } from "../../../store/clinicSlice";
+import type { MachineItem, MachineParameterItem } from "../../../types/Machine.types";
+import MachineCreate from "./MachineCreate";
+import MachineList from "./MachineList";
+import ParameterCreate from "./ParameterCreate";
 import ParameterList from "./ParameterList";
+import "../../../styles/Configuration/Machine/MachineDashboard.css";
 
 type ActiveTab = "machine" | "parameter";
 
@@ -17,16 +24,17 @@ const tabs: { key: ActiveTab; label: string }[] = [
   { key: "parameter", label: "Machine-Parameters" },
 ];
 
-function getNextId(items: { id: number }[]) {
-  return items.reduce((max, item) => Math.max(max, item.id), 0) + 1;
-}
-
 function MachineDashboard() {
+  const dispatch = useDispatch<AppDispatch>();
+
+  const machines = useSelector(selectMachines);
+  const machineParameters = useSelector(selectMachineParameters);
+  const clinics = useSelector(selectClinics);
+
+  // Mirror exactly what the Header does — use the first clinic in the list
+  const clinicId = String(clinics[0]?.id ?? "");
+
   const [activeTab, setActiveTab] = useState<ActiveTab>("machine");
-  const [machines, setMachines] = useState<MachineItem[]>(machineMockData);
-  const [parameters, setParameters] = useState<MachineParameterItem[]>(
-    machineParameterMockData,
-  );
 
   const [machineModal, setMachineModal] = useState<{
     isOpen: boolean;
@@ -40,17 +48,26 @@ function MachineDashboard() {
     value: MachineParameterItem | null;
   }>({ isOpen: false, mode: "create", value: null });
 
+  useEffect(() => {
+    dispatch(fetchMachines());
+    dispatch(fetchMachineParameters());
+  }, [dispatch]);
+
   const parameterOptions = useMemo(
     () =>
-      parameters.map((parameter) => ({
-        id: parameter.id,
-        name: parameter.name,
+      machineParameters.map((p: MachineParameterItem) => ({
+        id: p.id,
+        name: p.machineParameterName,
       })),
-    [parameters],
+    [machineParameters],
   );
 
   const machineOptions = useMemo(
-    () => machines.map((machine) => ({ id: machine.id, name: machine.name })),
+    () =>
+      machines.map((m: MachineItem) => ({
+        id: m.id,
+        name: m.machineName,
+      })),
     [machines],
   );
 
@@ -60,174 +77,96 @@ function MachineDashboard() {
   const closeParameterModal = () =>
     setParameterModal({ isOpen: false, mode: "create", value: null });
 
-  const handleSaveMachine = (payload: MachineFormPayload) => {
-    const editingMachine =
-      machineModal.mode === "edit" ? machineModal.value : null;
-    const machineId = editingMachine ? editingMachine.id : getNextId(machines);
-
-    const nextMachines = editingMachine
-      ? machines.map((machine) =>
-          machine.id === machineId
-            ? {
-                ...machine,
-                code: payload.code,
-                name: payload.name,
-                linkedParameterIds: payload.linkedParameterIds,
-              }
-            : machine,
-        )
-      : [
-          ...machines,
-          {
-            id: machineId,
-            code: payload.code,
-            name: payload.name,
-            linkedParameterIds: payload.linkedParameterIds,
-            isActive: true,
-          },
-        ];
-
-    setMachines(nextMachines);
-    setParameters((prev) =>
-      prev.map((parameter) => ({
-        ...parameter,
-        linkedMachineIds: nextMachines
-          .filter((machine) =>
-            machine.linkedParameterIds.includes(parameter.id),
-          )
-          .map((machine) => machine.id),
-      })),
-    );
-
-    closeMachineModal();
+  const handleToggleMachineStatus = (id: string) => {
+    const machine = machines.find((m: MachineItem) => m.id === id);
+    if (!machine) return;
+    dispatch(updateMachine({ id, payload: { status: !machine.isActive } }));
   };
 
-  const handleSaveParameter = (payload: ParameterFormPayload) => {
-    const editingParameter =
-      parameterModal.mode === "edit" ? parameterModal.value : null;
-    const parameterId = editingParameter
-      ? editingParameter.id
-      : getNextId(parameters);
-
-    const nextParameters = editingParameter
-      ? parameters.map((parameter) =>
-          parameter.id === parameterId
-            ? {
-                ...parameter,
-                code: payload.code,
-                name: payload.name,
-                linkedMachineIds: payload.linkedMachineIds,
-              }
-            : parameter,
-        )
-      : [
-          ...parameters,
-          {
-            id: parameterId,
-            code: payload.code,
-            name: payload.name,
-            linkedMachineIds: payload.linkedMachineIds,
-            isActive: true,
-          },
-        ];
-
-    setParameters(nextParameters);
-    setMachines((prev) =>
-      prev.map((machine) => ({
-        ...machine,
-        linkedParameterIds: nextParameters
-          .filter((parameter) =>
-            parameter.linkedMachineIds.includes(machine.id),
-          )
-          .map((parameter) => parameter.id),
-      })),
+  const handleToggleParameterStatus = (id: string) => {
+    const parameter = machineParameters.find(
+      (p: MachineParameterItem) => p.id === id,
     );
-
-    closeParameterModal();
+    if (!parameter) return;
+    dispatch(
+      updateMachineParameter({ id, payload: { status: !parameter.isActive } }),
+    );
   };
+
+  const machineRows = useMemo(
+    () =>
+      machines.map((m: MachineItem) => ({
+        ...m,
+        code: m.machineCode,
+        name: m.machineName,
+        linkedParameterIds: m.machineParameterIds,
+      })),
+    [machines],
+  );
+
+  const parameterRows = useMemo(
+    () =>
+      machineParameters.map((p: MachineParameterItem) => ({
+        ...p,
+        code: p.machineParameterCode,
+        name: p.machineParameterName,
+        linkedMachineIds: machines
+          .filter((m: MachineItem) => m.machineParameterIds.includes(p.id))
+          .map((m: MachineItem) => m.id),
+      })),
+    [machines, machineParameters],
+  );
 
   return (
-    <section
-      style={{
-        backgroundColor: "#ffffff",
-        border: "1px solid #e8ebf0",
-        borderRadius: "14px",
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        minHeight: 0,
-        overflow: "hidden",
-      }}
-    >
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          borderBottom: "1px solid #edf0f4",
-        }}
-      >
+    <section className="machine-dashboard">
+      <div className="machine-dashboard-tabs">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             type="button"
             onClick={() => setActiveTab(tab.key)}
-            style={{
-              height: "50px",
-              border: "none",
-              backgroundColor: "#ffffff",
-              borderBottom:
-                activeTab === tab.key
-                  ? "2px solid #f06d4f"
-                  : "2px solid transparent",
-              fontSize: "18px",
-              fontWeight: 600,
-              color: activeTab === tab.key ? "#2f343c" : "#a1a7b1",
-              cursor: "pointer",
-            }}
+            className={`machine-dashboard-tab${
+              activeTab === tab.key ? " machine-dashboard-tab--active" : ""
+            }`}
           >
             {tab.label}
           </button>
         ))}
       </div>
 
-      <div style={{ flex: 1, minHeight: 0 }}>
+      <div className="machine-dashboard-content">
         {activeTab === "machine" ? (
           <MachineList
-            rows={machines}
+            rows={machineRows}
             onAdd={() =>
               setMachineModal({ isOpen: true, mode: "create", value: null })
             }
             onEdit={(row) =>
-              setMachineModal({ isOpen: true, mode: "edit", value: row })
+              setMachineModal({
+                isOpen: true,
+                mode: "edit",
+                value: machines.find((m: MachineItem) => m.id === row.id) ?? null,
+              })
             }
-            onToggleStatus={(id) =>
-              setMachines((prev) =>
-                prev.map((machine) =>
-                  machine.id === id
-                    ? { ...machine, isActive: !machine.isActive }
-                    : machine,
-                ),
-              )
-            }
+            onToggleStatus={handleToggleMachineStatus}
           />
         ) : (
           <ParameterList
-            rows={parameters}
+            rows={parameterRows}
             onAdd={() =>
               setParameterModal({ isOpen: true, mode: "create", value: null })
             }
             onEdit={(row) =>
-              setParameterModal({ isOpen: true, mode: "edit", value: row })
+              setParameterModal({
+                isOpen: true,
+                mode: "edit",
+                value:
+                  machineParameters.find(
+                    (p: MachineParameterItem) => p.id === row.id,
+                  ) ?? null,
+              })
             }
-            onToggleStatus={(id) =>
-              setParameters((prev) =>
-                prev.map((parameter) =>
-                  parameter.id === id
-                    ? { ...parameter, isActive: !parameter.isActive }
-                    : parameter,
-                ),
-              )
-            }
+            onToggleStatus={handleToggleParameterStatus}
           />
         )}
       </div>
@@ -236,18 +175,20 @@ function MachineDashboard() {
         isOpen={machineModal.isOpen}
         mode={machineModal.mode}
         initialValue={machineModal.value}
+        clinicId={clinicId}
         parameterOptions={parameterOptions}
         onClose={closeMachineModal}
-        onSave={handleSaveMachine}
+        onSave={closeMachineModal}
       />
 
       <ParameterCreate
         isOpen={parameterModal.isOpen}
         mode={parameterModal.mode}
         initialValue={parameterModal.value}
+        machines={machines}
         machineOptions={machineOptions}
         onClose={closeParameterModal}
-        onSave={handleSaveParameter}
+        onSave={closeParameterModal}
       />
     </section>
   );

@@ -1,29 +1,37 @@
 import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
+import { useDispatch } from "react-redux";
 import CloseCircleIcon from "../../../assets/icons/close-circle.svg";
-import type { MachineParameterItem } from "./MachinemockData";
+import type { AppDispatch } from "../../../store";
+import type { MachineItem, MachineParameterItem } from "../../../types/Machine.types";
+import {
+  createMachineParameter,
+  updateMachine,
+  updateMachineParameter,
+} from "../../../store/MachineSlice";
 
+// =====================================================
+// Types
+// =====================================================
 type Option = {
-  id: number;
+  id: string;   // string — matches MachineItem.id
   name: string;
-};
-
-export type ParameterFormPayload = {
-  code: string;
-  name: string;
-  linkedMachineIds: number[];
 };
 
 type ParameterCreateProps = {
   isOpen: boolean;
   mode: "create" | "edit";
   initialValue: MachineParameterItem | null;
+  // Full machine list so we can derive which machines were previously linked
+  machines: MachineItem[];
   machineOptions: Option[];
   onClose: () => void;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onSave: (payload: ParameterFormPayload) => void;
+  onSave?: () => void;
 };
 
+// =====================================================
+// Styles
+// =====================================================
 const styles: Record<string, CSSProperties> = {
   overlay: {
     position: "fixed",
@@ -92,6 +100,15 @@ const styles: Record<string, CSSProperties> = {
     fontSize: "14px",
     color: "#2b3038",
     outline: "none",
+    boxSizing: "border-box",
+  },
+  inputError: {
+    border: "1px solid #e34a4a",
+  },
+  errorText: {
+    fontSize: "12px",
+    color: "#e34a4a",
+    marginTop: "2px",
   },
   selectButton: {
     width: "100%",
@@ -121,15 +138,6 @@ const styles: Record<string, CSSProperties> = {
     border: "1px solid #d7dbe3",
     borderRadius: "10px",
     overflow: "hidden",
-  },
-  optionSearch: {
-    width: "100%",
-    border: "none",
-    borderBottom: "1px solid #eceff3",
-    height: "44px",
-    padding: "0 12px",
-    fontSize: "14px",
-    outline: "none",
   },
   optionsList: {
     maxHeight: "170px",
@@ -218,30 +226,46 @@ const styles: Record<string, CSSProperties> = {
     fontWeight: 600,
     cursor: "pointer",
   },
+  saveButtonDisabled: {
+    opacity: 0.6,
+    cursor: "not-allowed",
+  },
 };
 
+// =====================================================
+// Component
+// =====================================================
 function ParameterCreate({
   isOpen,
   mode,
   initialValue,
+  machines,
   machineOptions,
   onClose,
   onSave,
 }: ParameterCreateProps) {
+  const dispatch = useDispatch<AppDispatch>();
+
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
-  const [selectedMachineIds, setSelectedMachineIds] = useState<number[]>([]);
+  const [selectedMachineIds, setSelectedMachineIds] = useState<string[]>([]);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [errors, setErrors] = useState<{ code?: string; name?: string }>({});
 
   useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
+    if (!isOpen) return;
 
     if (initialValue) {
-      setCode(initialValue.code);
-      setName(initialValue.name);
-      setSelectedMachineIds(initialValue.linkedMachineIds);
+      setCode(initialValue.machineParameterCode);
+      setName(initialValue.machineParameterName);
+      // Derive which machines currently link to this parameter
+      // by checking each machine's machineParameterIds array
+      setSelectedMachineIds(
+        machines
+          .filter((m) => m.machineParameterIds.includes(initialValue.id))
+          .map((m) => m.id),
+      );
     } else {
       setCode("");
       setName("");
@@ -249,29 +273,134 @@ function ParameterCreate({
     }
 
     setIsPickerOpen(false);
-  }, [isOpen, initialValue]);
-
-  const filteredOptions = useMemo(() => machineOptions, [machineOptions]);
+    setErrors({});
+  }, [isOpen, initialValue, machines]);
 
   const selectedOptions = useMemo(() => {
-    const map = new Map(
-      machineOptions.map((option) => [option.id, option.name]),
-    );
+    const map = new Map(machineOptions.map((o) => [o.id, o.name]));
     return selectedMachineIds
       .map((id) => ({ id, name: map.get(id) ?? "Unknown" }))
       .filter((item) => item.name !== "Unknown");
   }, [machineOptions, selectedMachineIds]);
 
-  if (!isOpen) {
-    return null;
-  }
+  if (!isOpen) return null;
+
+  const validate = () => {
+    const next: { code?: string; name?: string } = {};
+    if (!code.trim()) next.code = "Parameter code is required";
+    if (!name.trim()) next.name = "Parameter name is required";
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const handleSave = async () => {
+    if (!validate() || isSaving) return;
+    setIsSaving(true);
+
+    try {
+      if (mode === "edit" && initialValue) {
+        // 1. Update the parameter's own code/name
+        await dispatch(
+          updateMachineParameter({
+            id: initialValue.id,
+            payload: {
+              machine_parameter_code: code.trim(),
+              machine_parameter_name: name.trim(),
+            },
+          }),
+        );
+
+        // 2. Diff machine links: add parameter to newly selected machines,
+        //    remove it from deselected machines
+        const previousIds = new Set(
+          machines
+            .filter((m) => m.machineParameterIds.includes(initialValue.id))
+            .map((m) => m.id),
+        );
+        const nextIds = new Set(selectedMachineIds);
+
+        const toAdd = selectedMachineIds.filter((id) => !previousIds.has(id));
+        const toRemove = [...previousIds].filter((id) => !nextIds.has(id));
+
+        await Promise.all([
+          ...toAdd.map((machineId) => {
+            const machine = machines.find((m) => m.id === machineId);
+            if (!machine) return Promise.resolve();
+            return dispatch(
+              updateMachine({
+                id: machineId,
+                payload: {
+                  machine_parameter_ids: [
+                    ...machine.machineParameterIds,
+                    initialValue.id,
+                  ],
+                },
+              }),
+            );
+          }),
+          ...toRemove.map((machineId) => {
+            const machine = machines.find((m) => m.id === machineId);
+            if (!machine) return Promise.resolve();
+            return dispatch(
+              updateMachine({
+                id: machineId,
+                payload: {
+                  machine_parameter_ids: machine.machineParameterIds.filter(
+                    (pid) => pid !== initialValue.id,
+                  ),
+                },
+              }),
+            );
+          }),
+        ]);
+      } else {
+        // 1. Create the standalone parameter
+        const resultAction = await dispatch(
+          createMachineParameter({
+            machine_parameter_code: code.trim(),
+            machine_parameter_name: name.trim(),
+          }),
+        );
+
+        // 2. Link it to each selected machine
+        if (
+          createMachineParameter.fulfilled.match(resultAction) &&
+          selectedMachineIds.length > 0
+        ) {
+          const newParameterId = resultAction.payload?.id as string;
+          await Promise.all(
+            selectedMachineIds.map((machineId) => {
+              const machine = machines.find((m) => m.id === machineId);
+              if (!machine) return Promise.resolve();
+              return dispatch(
+                updateMachine({
+                  id: machineId,
+                  payload: {
+                    machine_parameter_ids: [
+                      ...machine.machineParameterIds,
+                      newParameterId,
+                    ],
+                  },
+                }),
+              );
+            }),
+          );
+        }
+      }
+
+      onSave?.();
+      onClose();
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const heading =
     mode === "create" ? "Add New Machine Parameter" : "Edit Machine Parameter";
 
   return (
     <div style={styles.overlay} onClick={onClose}>
-      <div style={styles.modal} onClick={(event) => event.stopPropagation()}>
+      <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div style={styles.head}>
           <h2 style={styles.title}>{heading}</h2>
           <button type="button" style={styles.closeButton} onClick={onClose}>
@@ -284,20 +413,28 @@ function ParameterCreate({
             <span style={styles.label}>Machine Parameter Code</span>
             <input
               value={code}
-              style={styles.input}
-              onChange={(event) => setCode(event.target.value)}
+              style={{ ...styles.input, ...(errors.code ? styles.inputError : {}) }}
+              onChange={(e) => {
+                setCode(e.target.value);
+                if (errors.code) setErrors((prev) => ({ ...prev, code: undefined }));
+              }}
               placeholder="MPN-451241"
             />
+            {errors.code && <span style={styles.errorText}>{errors.code}</span>}
           </label>
 
           <label style={styles.fieldWrap}>
             <span style={styles.label}>Machine Parameter Name</span>
             <input
               value={name}
-              style={styles.input}
-              onChange={(event) => setName(event.target.value)}
+              style={{ ...styles.input, ...(errors.name ? styles.inputError : {}) }}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
+              }}
               placeholder="ALP2L"
             />
+            {errors.name && <span style={styles.errorText}>{errors.name}</span>}
           </label>
 
           <div style={styles.fieldWrap}>
@@ -318,21 +455,16 @@ function ParameterCreate({
             {isPickerOpen && (
               <div style={styles.optionsBox}>
                 <div style={styles.optionsList}>
-                  {filteredOptions.length === 0 ? (
+                  {machineOptions.length === 0 ? (
                     <button
                       type="button"
-                      style={{
-                        ...styles.option,
-                        cursor: "default",
-                        color: "#8a909a",
-                      }}
+                      style={{ ...styles.option, cursor: "default", color: "#8a909a" }}
                     >
                       No machine found
                     </button>
                   ) : (
-                    filteredOptions.map((option) => {
+                    machineOptions.map((option) => {
                       const isSelected = selectedMachineIds.includes(option.id);
-
                       return (
                         <button
                           key={option.id}
@@ -351,9 +483,7 @@ function ParameterCreate({
                             style={{
                               ...styles.optionIndicator,
                               borderColor: isSelected ? "#a8dcb7" : "#d0d5dd",
-                              backgroundColor: isSelected
-                                ? "#8fd3a5"
-                                : "transparent",
+                              backgroundColor: isSelected ? "#8fd3a5" : "transparent",
                             }}
                           >
                             {isSelected ? "✓" : ""}
@@ -389,25 +519,24 @@ function ParameterCreate({
           </div>
 
           <div style={styles.footer}>
-            <button type="button" style={styles.cancelButton} onClick={onClose}>
+            <button
+              type="button"
+              style={styles.cancelButton}
+              onClick={onClose}
+              disabled={isSaving}
+            >
               Cancel
             </button>
             <button
               type="button"
-              style={styles.saveButton}
-              onClick={() => {
-                if (!code.trim() || !name.trim()) {
-                  return;
-                }
-
-                onSave({
-                  code: code.trim(),
-                  name: name.trim(),
-                  linkedMachineIds: selectedMachineIds,
-                });
+              style={{
+                ...styles.saveButton,
+                ...(isSaving ? styles.saveButtonDisabled : {}),
               }}
+              onClick={handleSave}
+              disabled={isSaving}
             >
-              Save
+              {isSaving ? "Saving..." : "Save"}
             </button>
           </div>
         </div>
