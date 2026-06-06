@@ -1,85 +1,29 @@
 import { useState, useMemo, useRef, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch } from "../../store";
+import { fetchOrders, selectOrders, selectOrdersLoading, setSelectedOrder, selectSelectedOrder, clearSelectedOrder } from "../../store/orders.slice";
 import styles from "./OrdersView.module.css";
 import FilterIcon from "../../assets/icons/filter.svg";
 import SearchIcon from "../../assets/icons/search.png";
 import Calendar from "../../assets/icons/calendar2.svg";
 import ViewOrderDetails from "./ViewOrderDetails";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// import shared types — no need to redefine them here
+import type { OrderRow, OrderFilters } from "../../types/orders.types";
 
-type OrderStatus = "Pending" | "Partial" | "Complete";
-type PatientType = "Walk-In" | "Registered";
+// ─── Component-only types ─────────────────────────────────────────────────────
+
 type TabKey = "all" | "inhouse" | "outsource";
 
-type OrderRow = {
-  id: string;
-  date: string;
-  time: string;
-  patientName: string;
-  patientAge: number;
-  mrn: string;
-  gender: string;
-  patientType: PatientType;
-  doctorName: string;
-  billNo: string;
-  netAmt: number;
-  billStatus: "Paid" | "Unpaid";
-  totalTests: number;
-  orderStatus: OrderStatus;
-  type: "inhouse" | "outsource";
-};
+// ─── Constants ────────────────────────────────────────────────────────────────
 
-type FilterValues = {
-  fromDate: string;
-  toDate: string;
-  doctor: string;
-  orderStatus: string;
-  patientType: string;
-};
-
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-
-const DOCTORS = [
-  "",
-  "Dr. Emilia Clarke",
-  "Dr. Olivia Bennett",
-  "Dr. Lucas Harper",
-  "Dr. Mia Thompson",
-  "Dr. Ethan Carter",
-  "Dr. Ava Johnson",
-  "Dr. Noah Smith",
-];
 const ORDER_STATUSES = ["", "Pending", "Partial", "Complete"];
-const PATIENT_TYPES = ["", "Walk-In", "Registered"];
-
-const ALL_ORDERS: OrderRow[] = [
-  { id: "o1",  date: "04/02/2024", time: "10:30 AM", patientName: "Emilia Williamson",  patientAge: 27, mrn: "PCC-1719", gender: "Female", patientType: "Walk-In",    doctorName: "Dr. Emilia Clarke",  billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 16, orderStatus: "Pending",  type: "inhouse"   },
-  { id: "o2",  date: "04/02/2024", time: "10:30 AM", patientName: "Olivia Anderson",    patientAge: 29, mrn: "PCC-1719", gender: "Female", patientType: "Registered", doctorName: "Dr. Olivia Bennett", billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 16, orderStatus: "Pending",  type: "inhouse"   },
-  { id: "o3",  date: "04/02/2024", time: "10:30 AM", patientName: "Mia Thompson",       patientAge: 32, mrn: "PCC-1719", gender: "Female", patientType: "Registered", doctorName: "Dr. Lucas Harper",   billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 16, orderStatus: "Partial",  type: "inhouse"   },
-  { id: "o4",  date: "04/02/2024", time: "10:30 AM", patientName: "Isabella Martinez",  patientAge: 33, mrn: "PCC-1719", gender: "Female", patientType: "Walk-In",    doctorName: "Dr. Mia Thompson",   billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 16, orderStatus: "Partial",  type: "inhouse"   },
-  { id: "o5",  date: "04/02/2024", time: "10:30 AM", patientName: "Sophia Wilson",      patientAge: 34, mrn: "PCC-1719", gender: "Female", patientType: "Registered", doctorName: "Dr. Ethan Carter",   billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 5,  orderStatus: "Complete", type: "inhouse"   },
-  { id: "o6",  date: "04/02/2024", time: "10:30 AM", patientName: "Charlotte Anderson", patientAge: 28, mrn: "PCC-1719", gender: "Female", patientType: "Walk-In",    doctorName: "Dr. Ava Johnson",    billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 5,  orderStatus: "Complete", type: "inhouse"   },
-  { id: "o7",  date: "04/02/2024", time: "10:30 AM", patientName: "Ava Wilson",         patientAge: 31, mrn: "PCC-1719", gender: "Female", patientType: "Walk-In",    doctorName: "Dr. Noah Smith",     billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 5,  orderStatus: "Complete", type: "inhouse"   },
-  { id: "o8",  date: "04/02/2024", time: "10:30 AM", patientName: "Olivia Anderson",    patientAge: 29, mrn: "PCC-1719", gender: "Female", patientType: "Registered", doctorName: "Dr. Olivia Bennett", billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 5,  orderStatus: "Complete", type: "inhouse"   },
-  { id: "o9",  date: "04/02/2024", time: "10:30 AM", patientName: "Olivia Anderson",    patientAge: 29, mrn: "PCC-1719", gender: "Female", patientType: "Registered", doctorName: "Dr. Olivia Bennett", billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 5,  orderStatus: "Complete", type: "inhouse"   },
-  { id: "o10", date: "04/02/2024", time: "10:30 AM", patientName: "Emilia Williamson",  patientAge: 27, mrn: "PCC-1719", gender: "Female", patientType: "Walk-In",    doctorName: "Dr. Emilia Clarke",  billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 9,  orderStatus: "Pending",  type: "outsource" },
-  { id: "o11", date: "04/02/2024", time: "10:30 AM", patientName: "Olivia Anderson",    patientAge: 29, mrn: "PCC-1719", gender: "Female", patientType: "Registered", doctorName: "Dr. Olivia Bennett", billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 9,  orderStatus: "Pending",  type: "outsource" },
-  { id: "o12", date: "04/02/2024", time: "10:30 AM", patientName: "Mia Thompson",       patientAge: 32, mrn: "PCC-1719", gender: "Female", patientType: "Registered", doctorName: "Dr. Lucas Harper",   billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 9,  orderStatus: "Partial",  type: "outsource" },
-  { id: "o13", date: "04/02/2024", time: "10:30 AM", patientName: "Isabella Martinez",  patientAge: 33, mrn: "PCC-1719", gender: "Female", patientType: "Walk-In",    doctorName: "Dr. Mia Thompson",   billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 9,  orderStatus: "Partial",  type: "outsource" },
-  { id: "o14", date: "04/02/2024", time: "10:30 AM", patientName: "Sophia Wilson",      patientAge: 34, mrn: "PCC-1719", gender: "Female", patientType: "Registered", doctorName: "Dr. Ethan Carter",   billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 2,  orderStatus: "Complete", type: "outsource" },
-  { id: "o15", date: "04/02/2024", time: "10:30 AM", patientName: "Charlotte Anderson", patientAge: 28, mrn: "PCC-1719", gender: "Female", patientType: "Walk-In",    doctorName: "Dr. Ava Johnson",    billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 2,  orderStatus: "Complete", type: "outsource" },
-  { id: "o16", date: "04/02/2024", time: "10:30 AM", patientName: "Ava Wilson",         patientAge: 31, mrn: "PCC-1719", gender: "Female", patientType: "Walk-In",    doctorName: "Dr. Noah Smith",     billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 2,  orderStatus: "Complete", type: "outsource" },
-  { id: "o17", date: "04/02/2024", time: "10:30 AM", patientName: "Ava Wilson",         patientAge: 31, mrn: "PCC-1719", gender: "Female", patientType: "Walk-In",    doctorName: "Dr. Noah Smith",     billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 2,  orderStatus: "Complete", type: "outsource" },
-  { id: "o18", date: "04/02/2024", time: "10:30 AM", patientName: "Ava Wilson",         patientAge: 31, mrn: "PCC-1719", gender: "Female", patientType: "Walk-In",    doctorName: "Dr. Noah Smith",     billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 2,  orderStatus: "Complete", type: "outsource" },
-  { id: "o19", date: "04/02/2024", time: "10:30 AM", patientName: "Ava Wilson",         patientAge: 31, mrn: "PCC-1719", gender: "Female", patientType: "Walk-In",    doctorName: "Dr. Noah Smith",     billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 2,  orderStatus: "Complete", type: "outsource" },
-  { id: "o20", date: "04/02/2024", time: "10:30 AM", patientName: "Ava Wilson",         patientAge: 31, mrn: "PCC-1719", gender: "Female", patientType: "Walk-In",    doctorName: "Dr. Noah Smith",     billNo: "PCC/25/OP/000134", netAmt: 5463, billStatus: "Paid", totalTests: 2,  orderStatus: "Complete", type: "outsource" },
-];
-
-const PAGE_SIZE = 10;
+const PATIENT_TYPES  = ["", "Walk-In", "Registered"];
+const PAGE_SIZE      = 10;
 
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 
-function StatusBadge({ status }: { status: OrderStatus }) {
+function StatusBadge({ status }: { status: OrderRow["orderStatus"] }) {
   return (
     <span className={`${styles.badge} ${styles[`badge${status}`]}`}>
       {status}
@@ -89,7 +33,7 @@ function StatusBadge({ status }: { status: OrderStatus }) {
 
 // ─── Bill Details Tooltip ─────────────────────────────────────────────────────
 
-function BillTooltip({ billNo, netAmt, billStatus }: { billNo: string; netAmt: number; billStatus: "Paid" | "Unpaid" }) {
+function BillTooltip({ billNo, netAmt, billStatus }: { billNo: string; netAmt: number; billStatus: OrderRow["billStatus"] }) {
   const [show, setShow] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -131,17 +75,18 @@ function BillTooltip({ billNo, netAmt, billStatus }: { billNo: string; netAmt: n
 
 // ─── Filter Modal ─────────────────────────────────────────────────────────────
 
-function FilterModal({ isOpen, onClose, onApply, onClear, values, onChange }: {
+function FilterModal({ isOpen, onClose, onApply, onClear, values, onChange, doctors }: {
   isOpen: boolean;
   onClose: () => void;
   onApply: () => void;
   onClear: () => void;
-  values: FilterValues;
-  onChange: (f: FilterValues) => void;
+  values: OrderFilters;
+  onChange: (f: OrderFilters) => void;
+  doctors: string[];
 }) {
   if (!isOpen) return null;
 
-  const set = (field: keyof FilterValues, v: string) =>
+  const set = (field: keyof OrderFilters, v: string) =>
     onChange({ ...values, [field]: v });
 
   const ChevronIcon = () => (
@@ -153,8 +98,6 @@ function FilterModal({ isOpen, onClose, onApply, onClear, values, onChange }: {
   return (
     <div className={styles.filterOverlay} onClick={onClose}>
       <div className={styles.filterModal} onClick={(e) => e.stopPropagation()}>
-
-        {/* Header */}
         <div className={styles.filterHeader}>
           <span className={styles.filterTitle}>Filters</span>
           <button className={styles.filterClose} onClick={onClose}>
@@ -165,10 +108,7 @@ function FilterModal({ isOpen, onClose, onApply, onClear, values, onChange }: {
           </button>
         </div>
 
-        {/* Body */}
         <div className={styles.filterBody}>
-
-          {/* Row 1: From Date + To Date */}
           <div className={styles.filterGrid2}>
             <div className={styles.floatBorder}>
               <span className={styles.floatLabel}>From Date</span>
@@ -186,13 +126,13 @@ function FilterModal({ isOpen, onClose, onApply, onClear, values, onChange }: {
             </div>
           </div>
 
-          {/* Row 2: Doctor + Order Status */}
           <div className={styles.filterGrid2}>
             <div className={styles.floatBorder}>
               <span className={styles.floatLabel}>Doctor</span>
               <div className={styles.floatInputRow}>
                 <select className={styles.floatSelect} value={values.doctor} onChange={(e) => set("doctor", e.target.value)}>
-                  {DOCTORS.map((d) => <option key={d} value={d}>{d || "Select"}</option>)}
+                  <option value="">Select</option>
+                  {doctors.map((d) => <option key={d} value={d}>{d}</option>)}
                 </select>
                 <ChevronIcon />
               </div>
@@ -208,7 +148,6 @@ function FilterModal({ isOpen, onClose, onApply, onClear, values, onChange }: {
             </div>
           </div>
 
-          {/* Row 3: Patient Type — full width */}
           <div className={styles.floatBorder}>
             <span className={styles.floatLabel}>Patient Type</span>
             <div className={styles.floatInputRow}>
@@ -218,10 +157,8 @@ function FilterModal({ isOpen, onClose, onApply, onClear, values, onChange }: {
               <ChevronIcon />
             </div>
           </div>
-
         </div>
 
-        {/* Footer */}
         <div className={styles.filterFooter}>
           <button className={styles.filterClearBtn} onClick={onClear}>Clear All</button>
           <button className={styles.filterApplyBtn} onClick={() => { onApply(); onClose(); }}>Apply</button>
@@ -234,20 +171,34 @@ function FilterModal({ isOpen, onClose, onApply, onClear, values, onChange }: {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function OrdersView() {
-  const [activeTab, setActiveTab] = useState<TabKey>("all");
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<OrderRow | null>(null);
+  const dispatch = useDispatch<AppDispatch>();
+  const orders   = useSelector(selectOrders);
+  const loading  = useSelector(selectOrdersLoading);
+  const selectedOrder = useSelector(selectSelectedOrder);
 
-  const [filters, setFilters] = useState<FilterValues>({ fromDate: "", toDate: "", doctor: "", orderStatus: "", patientType: "" });
-  const [appliedFilters, setAppliedFilters] = useState<FilterValues>({ fromDate: "", toDate: "", doctor: "", orderStatus: "", patientType: "" });
+  const [activeTab, setActiveTab]       = useState<TabKey>("all");
+  const [search, setSearch]             = useState("");
+  const [page, setPage]                 = useState(1);
+  const [filterOpen, setFilterOpen]     = useState(false);
+
+  const emptyFilters: OrderFilters = { fromDate: "", toDate: "", doctor: "", orderStatus: "", patientType: "" };
+  const [filters, setFilters]           = useState<OrderFilters>(emptyFilters);
+  const [appliedFilters, setAppliedFilters] = useState<OrderFilters>(emptyFilters);
+
+  // Fetch on mount
+  useEffect(() => { dispatch(fetchOrders()); }, [dispatch]);
+
+  // Derive unique doctor names from real data for the filter dropdown
+  const doctors = useMemo(() =>
+    [...new Set(orders.map((o) => o.doctorName).filter(Boolean))],
+    [orders]
+  );
 
   const tabFiltered = useMemo(() => {
-    if (activeTab === "inhouse")   return ALL_ORDERS.filter((o) => o.type === "inhouse");
-    if (activeTab === "outsource") return ALL_ORDERS.filter((o) => o.type === "outsource");
-    return ALL_ORDERS;
-  }, [activeTab]);
+    if (activeTab === "inhouse")   return orders.filter((o) => o.type === "inhouse");
+    if (activeTab === "outsource") return orders.filter((o) => o.type === "outsource");
+    return orders;
+  }, [activeTab, orders]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -260,21 +211,35 @@ export default function OrdersView() {
     });
   }, [tabFiltered, search, appliedFilters]);
 
-  const totalPages    = Math.ceil(filtered.length / PAGE_SIZE);
-  const pageRows      = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  const inhouseCount  = ALL_ORDERS.filter((o) => o.type === "inhouse").length;
-  const outsourceCount= ALL_ORDERS.filter((o) => o.type === "outsource").length;
+  const totalPages     = Math.ceil(filtered.length / PAGE_SIZE);
+  const pageRows       = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const inhouseCount   = orders.filter((o) => o.type === "inhouse").length;
+  const outsourceCount = orders.filter((o) => o.type === "outsource").length;
 
   const handleTabChange = (tab: TabKey) => { setActiveTab(tab); setPage(1); };
 
   if (selectedOrder) {
-    return <ViewOrderDetails order={selectedOrder} onBack={() => setSelectedOrder(null)} />;
+    return (
+      <ViewOrderDetails
+        order={{
+          patientName: selectedOrder.patientName,
+          patientAge:  selectedOrder.patientAge,
+          gender:      selectedOrder.gender,
+          mrn:         selectedOrder.mrn,
+        }}
+        onBack={() => dispatch(clearSelectedOrder())}
+      />
+    );
+  }
+
+  if (loading) {
+    return <div className={styles.wrapper} style={{ padding: "2rem" }}>Loading...</div>;
   }
 
   return (
     <div className={styles.wrapper}>
 
-      {/* ── Toolbar ─────────────────────────────────────────────────────── */}
+      {/* ── Toolbar ── */}
       <div className={styles.toolbar}>
         <h2 className={styles.title}>List of Work Orders ({filtered.length})</h2>
         <div className={styles.actions}>
@@ -293,7 +258,7 @@ export default function OrdersView() {
         </div>
       </div>
 
-      {/* ── Tab Pills ───────────────────────────────────────────────────── */}
+      {/* ── Tab Pills ── */}
       <div className={styles.tabRow}>
         {(["all", "inhouse", "outsource"] as TabKey[]).map((tab) => (
           <button
@@ -301,12 +266,12 @@ export default function OrdersView() {
             className={`${styles.tabPill} ${activeTab === tab ? styles.tabPillActive : ""}`}
             onClick={() => handleTabChange(tab)}
           >
-            {tab === "all" ? `All Orders (${ALL_ORDERS.length})` : tab === "inhouse" ? `Inhouse (${inhouseCount})` : `Outsource (${outsourceCount})`}
+            {tab === "all" ? `All Orders (${orders.length})` : tab === "inhouse" ? `Inhouse (${inhouseCount})` : `Outsource (${outsourceCount})`}
           </button>
         ))}
       </div>
 
-      {/* ── Table ───────────────────────────────────────────────────────── */}
+      {/* ── Table ── */}
       <div className={styles.tableWrapper}>
         <table className={styles.table}>
           <thead className={styles.head}>
@@ -348,7 +313,7 @@ export default function OrdersView() {
                     <StatusBadge status={row.orderStatus} />
                   </td>
                   <td style={{ textAlign: "right", paddingRight: "1em" }}>
-                    <button className={styles.viewBtn} onClick={() => setSelectedOrder(row)}>
+                    <button className={styles.viewBtn} onClick={() => dispatch(setSelectedOrder(row))}>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9e9e9e" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="12" cy="12" r="3" />
                         <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z" />
@@ -366,10 +331,10 @@ export default function OrdersView() {
         </table>
       </div>
 
-      {/* ── Footer / Pagination ─────────────────────────────────────────── */}
+      {/* ── Footer / Pagination ── */}
       <div className={styles.footer}>
         <span>
-          Showing {(page - 1) * PAGE_SIZE + 1} to {Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} entries
+          Showing {filtered.length > 0 ? (page - 1) * PAGE_SIZE + 1 : 0} to {Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} entries
         </span>
         <div className={styles.pagination}>
           <button className={styles.pageBtn} disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
@@ -390,18 +355,15 @@ export default function OrdersView() {
         </div>
       </div>
 
-      {/* ── Filter Modal ─────────────────────────────────────────────────── */}
+      {/* ── Filter Modal ── */}
       <FilterModal
         isOpen={filterOpen}
         onClose={() => setFilterOpen(false)}
         onApply={() => setAppliedFilters(filters)}
-        onClear={() => {
-          const empty = { fromDate: "", toDate: "", doctor: "", orderStatus: "", patientType: "" };
-          setFilters(empty);
-          setAppliedFilters(empty);
-        }}
+        onClear={() => { setFilters(emptyFilters); setAppliedFilters(emptyFilters); }}
         values={filters}
         onChange={setFilters}
+        doctors={doctors}
       />
     </div>
   );
