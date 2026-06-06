@@ -1,0 +1,181 @@
+/* MachineDashboard.css / MachineList.css */
+
+.machine-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  padding: 14px;
+  gap: 14px;
+}
+
+.machine-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.machine-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #2a2d33;
+}
+
+.machine-header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.machine-search-wrapper {
+  position: relative;
+}
+
+.machine-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  opacity: 0.5;
+}
+
+.machine-search-input {
+  width: 280px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid #dde1e7;
+  padding: 0 12px 0 34px;
+  font-size: 13px;
+}
+
+.machine-add-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  background-color: #4e5158;
+  color: #fff;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.machine-card {
+  border: 1px solid #edf0f4;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.machine-empty-cell {
+  padding: 40px 14px;
+  text-align: center;
+  font-size: 14px;
+  color: #8a909a;
+}
+
+.machine-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  font-size: 12px;
+  color: #8a909a;
+  border-top: 1px solid #edf0f4;
+}
+
+.machine-icon-button {
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* Table */
+
+.machine-th {
+  text-align: left;
+  font-size: 12px;
+  color: #7d828b;
+  padding: 12px 14px;
+}
+
+.machine-td {
+  padding: 13px 14px;
+  border-bottom: 1px solid #f2f4f7;
+  font-size: 14px;
+  color: #373b43;
+}
+
+/* Toggle */
+
+.toggle-track {
+  width: 28px;
+  height: 16px;
+  border-radius: 999px;
+  border: none;
+  background-color: #dbdee3;
+  position: relative;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 0.2s ease;
+}
+
+.toggle-track--active {
+  background-color: #49b86b;
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  transition: left 0.2s ease;
+}
+
+.toggle-thumb--active {
+  left: 14px;
+}
+
+/* Pagination buttons */
+
+.page-button {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #8a909a;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.page-button--active {
+  border-color: #1f232a;
+  background: #1f232a;
+  color: #fff;
+}
+
+.pagination-arrow {
+  width: 24px;
+  height: 24px;
+  border: 1px solid #d6dae2;
+  border-radius: 6px;
+  background-color: #ffffff;
+  cursor: pointer;
+}
+
+.pagination-arrow--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

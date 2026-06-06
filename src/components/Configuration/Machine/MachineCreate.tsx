@@ -1,248 +1,52 @@
 import { useEffect, useMemo, useState } from "react";
-import type { CSSProperties } from "react";
+import { useDispatch } from "react-redux";
 import CloseCircleIcon from "../../../assets/icons/close-circle.svg";
-import type { MachineItem } from "./MachinemockData";
+import type { AppDispatch } from "../../../store";
+import type { MachineItem } from "../../../types/Machine.types";
+import { createMachine, updateMachine } from "../../../store/MachineSlice";
+import "../../../styles/Configuration/Machine/Machinecreate.css";
 
 type Option = {
-  id: number;
+  id: string;
   name: string;
-};
-
-export type MachineFormPayload = {
-  code: string;
-  name: string;
-  linkedParameterIds: number[];
 };
 
 type MachineCreateProps = {
   isOpen: boolean;
   mode: "create" | "edit";
   initialValue: MachineItem | null;
+  clinicId: string;
   parameterOptions: Option[];
   onClose: () => void;
-  onSave: (payload: MachineFormPayload) => void;
-};
-
-const styles: Record<string, CSSProperties> = {
-  overlay: {
-    position: "fixed",
-    inset: 0,
-    backgroundColor: "rgba(23, 26, 31, 0.36)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "12px",
-    zIndex: 1400,
-  },
-  modal: {
-    width: "100%",
-    maxWidth: "380px",
-    borderRadius: "16px",
-    backgroundColor: "#ffffff",
-    boxShadow: "0 16px 40px rgba(20, 24, 32, 0.18)",
-    overflow: "hidden",
-  },
-  head: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "14px 16px",
-    borderBottom: "1px solid #e6e9ef",
-  },
-  title: {
-    margin: 0,
-    fontSize: "20px",
-    lineHeight: 1.15,
-    fontWeight: 700,
-    color: "#262a31",
-  },
-  closeButton: {
-    width: "28px",
-    height: "28px",
-    border: "none",
-    backgroundColor: "transparent",
-    cursor: "pointer",
-    display: "grid",
-    placeItems: "center",
-    padding: 0,
-  },
-  body: {
-    padding: "16px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "14px",
-  },
-  fieldWrap: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-  },
-  label: {
-    fontSize: "15px",
-    color: "#6f747d",
-    fontWeight: 500,
-  },
-  input: {
-    width: "100%",
-    height: "56px",
-    borderRadius: "10px",
-    border: "1px solid #d7dbe3",
-    padding: "0 14px",
-    fontSize: "14px",
-    color: "#2b3038",
-    outline: "none",
-  },
-  selectButton: {
-    width: "100%",
-    minHeight: "56px",
-    borderRadius: "10px",
-    border: "1px solid #d7dbe3",
-    backgroundColor: "#ffffff",
-    padding: "0 14px",
-    fontSize: "14px",
-    color: "#8a909a",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    cursor: "pointer",
-    textAlign: "left",
-  },
-  caret: {
-    width: "10px",
-    height: "10px",
-    borderBottom: "2px solid #2e333a",
-    borderRight: "2px solid #2e333a",
-    transform: "rotate(45deg)",
-    marginTop: "-6px",
-    flexShrink: 0,
-  },
-  optionsBox: {
-    border: "1px solid #d7dbe3",
-    borderRadius: "10px",
-    overflow: "hidden",
-  },
-  optionSearch: {
-    width: "100%",
-    border: "none",
-    borderBottom: "1px solid #eceff3",
-    height: "44px",
-    padding: "0 12px",
-    fontSize: "14px",
-    outline: "none",
-  },
-  optionsList: {
-    maxHeight: "170px",
-    overflowY: "auto",
-  },
-  option: {
-    width: "100%",
-    border: "none",
-    borderBottom: "1px solid #f0f2f5",
-    backgroundColor: "#ffffff",
-    textAlign: "left",
-    padding: "11px 12px",
-    fontSize: "14px",
-    color: "#2f343c",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: "10px",
-  },
-  optionIndicator: {
-    width: "20px",
-    height: "20px",
-    borderRadius: "50%",
-    border: "2px solid #d0d5dd",
-    display: "grid",
-    placeItems: "center",
-    color: "#ffffff",
-    fontSize: "12px",
-    flexShrink: 0,
-  },
-  chips: {
-    display: "flex",
-    gap: "8px",
-    flexWrap: "wrap",
-  },
-  chip: {
-    display: "inline-flex",
-    alignItems: "center",
-    gap: "8px",
-    height: "32px",
-    padding: "0 10px",
-    borderRadius: "9px",
-    backgroundColor: "#f7efef",
-    color: "#444a53",
-    fontSize: "14px",
-    fontWeight: 500,
-  },
-  chipRemove: {
-    width: "16px",
-    height: "16px",
-    borderRadius: "50%",
-    border: "1px solid #e34a4a",
-    color: "#e34a4a",
-    backgroundColor: "transparent",
-    cursor: "pointer",
-    fontSize: "11px",
-    lineHeight: 1,
-    display: "grid",
-    placeItems: "center",
-    padding: 0,
-  },
-  footer: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "12px",
-    marginTop: "4px",
-  },
-  cancelButton: {
-    border: "none",
-    borderRadius: "10px",
-    height: "36px",
-    backgroundColor: "#efeff0",
-    color: "#484d55",
-    fontSize: "13px",
-    fontWeight: 600,
-    cursor: "pointer",
-  },
-  saveButton: {
-    border: "none",
-    borderRadius: "10px",
-    height: "36px",
-    backgroundColor: "#59595b",
-    color: "#ffffff",
-    fontSize: "13px",
-    fontWeight: 600,
-    cursor: "pointer",
-  },
+  onSave?: () => void;
 };
 
 function MachineCreate({
   isOpen,
   mode,
   initialValue,
+  clinicId,
   parameterOptions,
   onClose,
   onSave,
 }: MachineCreateProps) {
+  const dispatch = useDispatch<AppDispatch>();
+
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
-  const [selectedParameterIds, setSelectedParameterIds] = useState<number[]>(
-    [],
-  );
+  const [selectedParameterIds, setSelectedParameterIds] = useState<string[]>([]);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [errors, setErrors] = useState<{ code?: string; name?: string; clinic?: string }>({});
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
+    if (!isOpen) return;
 
     if (initialValue) {
-      setCode(initialValue.code);
-      setName(initialValue.name);
-      setSelectedParameterIds(initialValue.linkedParameterIds);
+      setCode(initialValue.machineCode);
+      setName(initialValue.machineName);
+      setSelectedParameterIds(initialValue.machineParameterIds);
     } else {
       setCode("");
       setName("");
@@ -250,61 +54,136 @@ function MachineCreate({
     }
 
     setIsPickerOpen(false);
+    setErrors({});
+    setSaveError(null);
   }, [isOpen, initialValue]);
 
-  const filteredOptions = useMemo(() => parameterOptions, [parameterOptions]);
-
   const selectedOptions = useMemo(() => {
-    const map = new Map(
-      parameterOptions.map((option) => [option.id, option.name]),
-    );
+    const map = new Map(parameterOptions.map((o) => [o.id, o.name]));
     return selectedParameterIds
       .map((id) => ({ id, name: map.get(id) ?? "Unknown" }))
       .filter((item) => item.name !== "Unknown");
   }, [parameterOptions, selectedParameterIds]);
 
-  if (!isOpen) {
-    return null;
-  }
+  if (!isOpen) return null;
+
+  const validate = () => {
+    const next: { code?: string; name?: string; clinic?: string } = {};
+    if (!code.trim()) next.code = "Machine code is required";
+    if (!name.trim()) next.name = "Machine name is required";
+    if (!clinicId?.trim())
+      next.clinic = "No clinic selected. Please select a clinic before adding a machine.";
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const handleSave = async () => {
+    if (!validate() || isSaving) return;
+    setIsSaving(true);
+    setSaveError(null);
+
+    try {
+      let result: any;
+
+      if (mode === "edit" && initialValue) {
+        result = await dispatch(
+          updateMachine({
+            id: initialValue.id,
+            payload: {
+              clinic: initialValue.clinicId, // ← fix: required by backend on every PUT
+              machine_code: code.trim(),
+              machine_name: name.trim(),
+              machine_parameter_ids: selectedParameterIds,
+            },
+          }),
+        );
+      } else {
+        result = await dispatch(
+          createMachine({
+            clinic: clinicId.trim(),
+            machine_code: code.trim(),
+            machine_name: name.trim(),
+            machine_parameter_ids: selectedParameterIds,
+          }),
+        );
+      }
+
+      if (result?.error) {
+        setSaveError(
+          typeof result.payload === "string"
+            ? result.payload
+            : "Failed to save machine. Please check the details and try again.",
+        );
+        return;
+      }
+
+      onSave?.();
+      onClose();
+    } catch {
+      setSaveError("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const heading = mode === "create" ? "Add New Machine" : "Edit Machine";
 
   return (
-    <div style={styles.overlay} onClick={onClose}>
-      <div style={styles.modal} onClick={(event) => event.stopPropagation()}>
-        <div style={styles.head}>
-          <h2 style={styles.title}>{heading}</h2>
-          <button type="button" style={styles.closeButton} onClick={onClose}>
+    <div className="machine-create-overlay" onClick={onClose}>
+      <div className="machine-create-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="machine-create-head">
+          <h2 className="machine-create-title">{heading}</h2>
+          <button type="button" className="machine-create-close-button" onClick={onClose}>
             <img src={CloseCircleIcon} alt="Close" width={24} height={24} />
           </button>
         </div>
 
-        <div style={styles.body}>
-          <label style={styles.fieldWrap}>
-            <span style={styles.label}>Machine Code</span>
+        <div className="machine-create-body">
+          {errors.clinic && (
+            <div className="machine-create-error-banner">{errors.clinic}</div>
+          )}
+
+          {saveError && (
+            <div className="machine-create-error-banner">{saveError}</div>
+          )}
+
+          <label className="machine-create-field-wrap">
+            <span className="machine-create-label">Machine Code</span>
             <input
               value={code}
-              style={styles.input}
-              onChange={(event) => setCode(event.target.value)}
+              className={`machine-create-input${errors.code ? " machine-create-input--error" : ""}`}
+              onChange={(e) => {
+                setCode(e.target.value);
+                if (errors.code) setErrors((prev) => ({ ...prev, code: undefined }));
+              }}
               placeholder="MN-041421"
             />
+            {errors.code && (
+              <span className="machine-create-error-text">{errors.code}</span>
+            )}
           </label>
 
-          <label style={styles.fieldWrap}>
-            <span style={styles.label}>Machine Name</span>
+          <label className="machine-create-field-wrap">
+            <span className="machine-create-label">Machine Name</span>
             <input
               value={name}
-              style={styles.input}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="SIV - COLLAB C311 - Clinical Chemistry"
+              className={`machine-create-input${errors.name ? " machine-create-input--error" : ""}`}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
+              }}
+              placeholder="Clinical Chemistry Analyzer"
             />
+            {errors.name && (
+              <span className="machine-create-error-text">{errors.name}</span>
+            )}
           </label>
 
-          <div style={styles.fieldWrap}>
-            <span style={styles.label}>Link Parameter</span>
+          <div className="machine-create-field-wrap">
+            <span className="machine-create-label">Link Parameter</span>
             <button
               type="button"
-              style={styles.selectButton}
+              className="machine-create-select-button"
               onClick={() => setIsPickerOpen((prev) => !prev)}
             >
               <span>
@@ -312,34 +191,27 @@ function MachineCreate({
                   ? "Search & select parameter"
                   : "Select more parameters"}
               </span>
-              <span style={styles.caret} />
+              <span className="machine-create-caret" />
             </button>
 
             {isPickerOpen && (
-              <div style={styles.optionsBox}>
-                <div style={styles.optionsList}>
-                  {filteredOptions.length === 0 ? (
+              <div className="machine-create-options-box">
+                <div className="machine-create-options-list">
+                  {parameterOptions.length === 0 ? (
                     <button
                       type="button"
-                      style={{
-                        ...styles.option,
-                        cursor: "default",
-                        color: "#8a909a",
-                      }}
+                      className="machine-create-option machine-create-option--empty"
                     >
                       No parameter found
                     </button>
                   ) : (
-                    filteredOptions.map((option) => {
-                      const isSelected = selectedParameterIds.includes(
-                        option.id,
-                      );
-
+                    parameterOptions.map((option) => {
+                      const isSelected = selectedParameterIds.includes(option.id);
                       return (
                         <button
                           key={option.id}
                           type="button"
-                          style={styles.option}
+                          className="machine-create-option"
                           onClick={() => {
                             setSelectedParameterIds((prev) =>
                               isSelected
@@ -350,13 +222,9 @@ function MachineCreate({
                         >
                           <span>{option.name}</span>
                           <span
-                            style={{
-                              ...styles.optionIndicator,
-                              borderColor: isSelected ? "#a8dcb7" : "#d0d5dd",
-                              backgroundColor: isSelected
-                                ? "#8fd3a5"
-                                : "transparent",
-                            }}
+                            className={`machine-create-option-indicator${
+                              isSelected ? " machine-create-option-indicator--selected" : ""
+                            }`}
                           >
                             {isSelected ? "✓" : ""}
                           </span>
@@ -369,13 +237,13 @@ function MachineCreate({
             )}
 
             {selectedOptions.length > 0 && (
-              <div style={styles.chips}>
+              <div className="machine-create-chips">
                 {selectedOptions.map((option) => (
-                  <span key={option.id} style={styles.chip}>
+                  <span key={option.id} className="machine-create-chip">
                     {option.name}
                     <button
                       type="button"
-                      style={styles.chipRemove}
+                      className="machine-create-chip-remove"
                       onClick={() =>
                         setSelectedParameterIds((prev) =>
                           prev.filter((id) => id !== option.id),
@@ -390,26 +258,22 @@ function MachineCreate({
             )}
           </div>
 
-          <div style={styles.footer}>
-            <button type="button" style={styles.cancelButton} onClick={onClose}>
+          <div className="machine-create-footer">
+            <button
+              type="button"
+              className="machine-create-cancel-button"
+              onClick={onClose}
+              disabled={isSaving}
+            >
               Cancel
             </button>
             <button
               type="button"
-              style={styles.saveButton}
-              onClick={() => {
-                if (!code.trim() || !name.trim()) {
-                  return;
-                }
-
-                onSave({
-                  code: code.trim(),
-                  name: name.trim(),
-                  linkedParameterIds: selectedParameterIds,
-                });
-              }}
+              className="machine-create-save-button"
+              onClick={handleSave}
+              disabled={isSaving}
             >
-              Save
+              {isSaving ? "Saving..." : "Save"}
             </button>
           </div>
         </div>
