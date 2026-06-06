@@ -58,6 +58,7 @@ export interface CreateMachinePayload {
 }
 
 export interface UpdateMachinePayload {
+  clinic?: string;  // ← add this
   machine_code?: string;
   machine_name?: string;
   machine_parameter_ids?: string[];
@@ -71,6 +72,7 @@ export interface CreateMachineParameterPayload {
 }
 
 export interface UpdateMachineParameterPayload {
+  clinic?: string; 
   machine_parameter_code?: string;
   machine_parameter_name?: string;
   status?: boolean;

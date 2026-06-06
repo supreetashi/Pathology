@@ -71,8 +71,8 @@ function MachineCreate({
     const next: { code?: string; name?: string; clinic?: string } = {};
     if (!code.trim()) next.code = "Machine code is required";
     if (!name.trim()) next.name = "Machine name is required";
-    // Guard against a missing clinicId early — saves a round-trip 400
-    if (!clinicId?.trim()) next.clinic = "No clinic selected. Please select a clinic before adding a machine.";
+    if (!clinicId?.trim())
+      next.clinic = "No clinic selected. Please select a clinic before adding a machine.";
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -90,6 +90,7 @@ function MachineCreate({
           updateMachine({
             id: initialValue.id,
             payload: {
+              clinic: initialValue.clinicId, // ← fix: required by backend on every PUT
               machine_code: code.trim(),
               machine_name: name.trim(),
               machine_parameter_ids: selectedParameterIds,
@@ -107,9 +108,7 @@ function MachineCreate({
         );
       }
 
-      // createAsyncThunk with rejectWithValue returns { error, payload } on failure
       if (result?.error) {
-        // payload holds the readable DRF error string from MachineSlice
         setSaveError(
           typeof result.payload === "string"
             ? result.payload
@@ -140,12 +139,10 @@ function MachineCreate({
         </div>
 
         <div className="machine-create-body">
-          {/* Clinic guard — shown when parent forgot to pass a clinicId */}
           {errors.clinic && (
             <div className="machine-create-error-banner">{errors.clinic}</div>
           )}
 
-          {/* API error banner */}
           {saveError && (
             <div className="machine-create-error-banner">{saveError}</div>
           )}

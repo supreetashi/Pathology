@@ -31,7 +31,7 @@ function MachineDashboard() {
   const machineParameters = useSelector(selectMachineParameters);
   const clinics = useSelector(selectClinics);
 
-  // Mirror exactly what the Header does — use the first clinic in the list
+  // Used as fallback for create mode; edit mode always uses machine.clinicId
   const clinicId = String(clinics[0]?.id ?? "");
 
   const [activeTab, setActiveTab] = useState<ActiveTab>("machine");
@@ -77,10 +77,19 @@ function MachineDashboard() {
   const closeParameterModal = () =>
     setParameterModal({ isOpen: false, mode: "create", value: null });
 
+  // FIX: always include clinic when toggling machine status
   const handleToggleMachineStatus = (id: string) => {
     const machine = machines.find((m: MachineItem) => m.id === id);
     if (!machine) return;
-    dispatch(updateMachine({ id, payload: { status: !machine.isActive } }));
+    dispatch(
+      updateMachine({
+        id,
+        payload: {
+          clinic: machine.clinicId, // ← required by backend on every PUT
+          status: !machine.isActive,
+        },
+      }),
+    );
   };
 
   const handleToggleParameterStatus = (id: string) => {
@@ -175,7 +184,9 @@ function MachineDashboard() {
         isOpen={machineModal.isOpen}
         mode={machineModal.mode}
         initialValue={machineModal.value}
-        clinicId={clinicId}
+        // FIX: in edit mode, use the machine's own clinicId; fall back to
+        // clinics[0] only for create mode where initialValue is null
+        clinicId={machineModal.value?.clinicId ?? clinicId}
         parameterOptions={parameterOptions}
         onClose={closeMachineModal}
         onSave={closeMachineModal}

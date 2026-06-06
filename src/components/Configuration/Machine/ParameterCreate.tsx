@@ -14,7 +14,7 @@ import {
 // Types
 // =====================================================
 type Option = {
-  id: string;   // string — matches MachineItem.id
+  id: string;
   name: string;
 };
 
@@ -22,7 +22,6 @@ type ParameterCreateProps = {
   isOpen: boolean;
   mode: "create" | "edit";
   initialValue: MachineParameterItem | null;
-  // Full machine list so we can derive which machines were previously linked
   machines: MachineItem[];
   machineOptions: Option[];
   onClose: () => void;
@@ -259,8 +258,6 @@ function ParameterCreate({
     if (initialValue) {
       setCode(initialValue.machineParameterCode);
       setName(initialValue.machineParameterName);
-      // Derive which machines currently link to this parameter
-      // by checking each machine's machineParameterIds array
       setSelectedMachineIds(
         machines
           .filter((m) => m.machineParameterIds.includes(initialValue.id))
@@ -310,8 +307,7 @@ function ParameterCreate({
           }),
         );
 
-        // 2. Diff machine links: add parameter to newly selected machines,
-        //    remove it from deselected machines
+        // 2. Diff machine links
         const previousIds = new Set(
           machines
             .filter((m) => m.machineParameterIds.includes(initialValue.id))
@@ -330,6 +326,7 @@ function ParameterCreate({
               updateMachine({
                 id: machineId,
                 payload: {
+                  clinic: machine.clinicId, // ← fix: required by backend on every PUT
                   machine_parameter_ids: [
                     ...machine.machineParameterIds,
                     initialValue.id,
@@ -345,6 +342,7 @@ function ParameterCreate({
               updateMachine({
                 id: machineId,
                 payload: {
+                  clinic: machine.clinicId, // ← fix: required by backend on every PUT
                   machine_parameter_ids: machine.machineParameterIds.filter(
                     (pid) => pid !== initialValue.id,
                   ),
@@ -376,6 +374,7 @@ function ParameterCreate({
                 updateMachine({
                   id: machineId,
                   payload: {
+                    clinic: machine.clinicId, // ← fix: required by backend on every PUT
                     machine_parameter_ids: [
                       ...machine.machineParameterIds,
                       newParameterId,

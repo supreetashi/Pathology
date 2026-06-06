@@ -30,7 +30,7 @@ export const machineApi = {
 
   updateMachine: async (id: string, payload: UpdateMachinePayload) => {
     try {
-      return await http.patch(`/machines/${id}/`, payload);
+      return await http.put(`/machines/${id}/`, payload);
     } catch (error: any) {
       console.error(
         "[updateMachine] error detail:",
@@ -66,7 +66,7 @@ export const machineApi = {
     payload: UpdateMachineParameterPayload,
   ) => {
     try {
-      return await http.patch(`/machine-parameters/${id}/`, payload);
+      return await http.put(`/machine-parameters/${id}/`, payload);
     } catch (error: any) {
       console.error(
         "[updateMachineParameter] error detail:",
