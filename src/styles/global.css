@@ -7,7 +7,7 @@
 :root {
   --shipment-font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --shipment-text-primary: #111827;
-  --shipment-text-secondary: #374151;
+  --shipment-text-secondary: #111827;
   --shipment-text-muted: #9ca3af;
   --shipment-font-size-base: 13px;
   --shipment-font-size-title: 16px;
@@ -50,7 +50,7 @@ textarea {
 
 #root :where(p, label, li, a, td, th, small, input, select, textarea) {
   font-size: var(--shipment-font-size-base) !important;
-  color: var(--shipment-text-secondary) !important;
+  color: var(--shipment-text-primary) !important;
 }
 
 #root th {
@@ -84,7 +84,7 @@ textarea {
 .menu-page-card :where(p, li, label, td, th, a),
 .receive-view :where(p, li, label, td, th, a),
 .shipment-container :where(p, li, label, td, th, a) {
-  color: var(--shipment-text-secondary);
+  color: var(--shipment-text-primary);
   font-family: var(--shipment-font-family);
   font-size: var(--shipment-font-size-base);
 }

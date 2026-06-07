@@ -24,9 +24,9 @@
 }
 
 .title {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
-    color: #111827;
+    color: #1f2937;
     margin: 0;
 }
 
@@ -45,22 +45,24 @@
     left: 0.75em;
     top: 50%;
     transform: translateY(-50%);
-    width: 1.1em;
-    height: 1.1em;
+    width: 1em;
+    height: 1em;
     pointer-events: none;
+    opacity: 0.4;
 }
 
 .searchInput {
-    height: 2.75em;
-    padding: 0 0.75em 0 2.4em;
+    height: 36px;
+    padding: 0 0.75em 0 2.2em;
     border: 1px solid #E2E3E5;
     border-radius: 10px;
     font-family: var(--shipment-font-family);
     font-size: 13px;
-    color: #374151;
+    color: #111827;
     outline: none;
-    width: 26em;
+    width: 320px;
     box-sizing: border-box;
+    background: #fff;
     transition: border 0.2s;
 }
 
@@ -69,21 +71,21 @@
 }
 
 .searchInput:focus {
-    border-color: #9e9e9e;
+    border-color: #b0b0b0;
 }
 
 .filterBtn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 2.75em;
-    height: 2.75em;
+    width: 36px;
+    height: 36px;
     border: 1px solid #E2E3E5;
     border-radius: 10px;
-    background: #F3F3F3;
+    background: #F8F8F8;
     cursor: pointer;
-    transition: background 0.2s;
     flex-shrink: 0;
+    transition: background 0.2s;
 }
 
 .filterBtn:hover {
@@ -100,9 +102,9 @@
 }
 
 .tabPill {
-    height: 2em;
-    padding: 0 1em;
-    border: 1px solid #e5e7eb;
+    height: 30px;
+    padding: 0 14px;
+    border: 1.5px solid #E2E3E5;
     border-radius: 20px;
     background: #fff;
     font-size: 13px;
@@ -115,13 +117,13 @@
 }
 
 .tabPill:hover {
-    border-color: #fb923c;
+    border-color: #f97316;
     color: #ea580c;
     background: #fff7ed;
 }
 
 .tabPillActive {
-    border: 1.5px solid #fb923c;
+    border: 1.5px solid #f97316;
     color: #ea580c;
     background: #fff7ed;
     font-weight: 600;
@@ -142,58 +144,56 @@
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
-    flex: 1;
-    height: 100%;
 }
 
+/* Column width distribution matching Figma */
+.table colgroup col:nth-child(1) { width: 130px; }  /* Order Date | Time */
+.table colgroup col:nth-child(2) { width: 180px; }  /* Patient */
+.table colgroup col:nth-child(3) { width: 100px; }  /* Patient Type */
+.table colgroup col:nth-child(4) { width: 160px; }  /* Doctor Name */
+.table colgroup col:nth-child(5) { width: 180px; }  /* Bill Details */
+.table colgroup col:nth-child(6) { width: 80px;  }  /* Total Tests */
+.table colgroup col:nth-child(7) { width: 110px; }  /* Order Status */
+.table colgroup col:nth-child(8) { width: 40px;  }  /* View */
+
 .head th {
-    padding: 0 1em;
-    height: 44px;
-    background: #ffffff;
-    color: #111827;
-    font-family: var(--shipment-font-family);
-    font-size: 13px;
+    padding: 0 10px;
+    height: 40px;
     background: #fafafa;
-    color: #101828;
-    font-family: 'Noto Sans', sans-serif;
-    font-size: 0.88em;
+    color: #9ca3af;
+    font-family: var(--shipment-font-family);
+    font-size: 12px;
     font-weight: 400;
     text-align: left;
     white-space: nowrap;
+    border-bottom: 1px solid #f3f4f6;
 }
 
 .head th:first-child {
-    border-top-left-radius: 12px;
-    border-bottom-left-radius: 12px;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
 }
 
 .head th:last-child {
-    border-top-right-radius: 12px;
-    border-bottom-right-radius: 12px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
 }
-
-
-/* Scrollable tbody — 10 rows × 44px = 440px */
 
 .scrollBody {
     display: table-row-group;
 }
 
-.scrollBody tr {
-    display: table-row;
-    height: calc(100% / 10);
-}
-
 .row td {
-    padding: 0 1.5em;
-    border-top: 1px solid #f3f4f6;
+    padding: 0 10px;
+    height: 52px;
+    border-bottom: 1px solid #f3f4f6;
     color: #111827;
     font-family: var(--shipment-font-family);
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 400;
-    line-height: 1.5;
     vertical-align: middle;
     white-space: nowrap;
+    overflow: hidden;
     text-overflow: ellipsis;
 }
 
@@ -203,34 +203,34 @@
 .dateCell {
     display: flex;
     flex-direction: column;
-    gap: 0.1em;
+    gap: 5px;
 }
 
 .dateText {
-    font-size: 0.9em;
-    font-weight: 500;
-    color: #232323;
+    font-size: 12px;
+    font-weight: 400;
+    color: #111827;
 }
 
 .timeText {
-    font-size: 13px;
+    font-size: 12px;
     color: #111827;
 }
 
 .patientCell {
     display: flex;
     flex-direction: column;
-    gap: 0.1em;
+    gap: 5px;
 }
 
 .patientName {
-    font-size: 0.9em;
-    font-weight: 650;
-    color: #232323;
+    font-size: 12px;
+    font-weight: 600;
+    color: #111827;
 }
 
 .patientSub {
-    font-size: 0.9em;
+    font-size: 12px;
     color: #111827;
 }
 
@@ -246,11 +246,12 @@
 .billNo {
     display: flex;
     align-items: center;
-    gap: 0.35em;
-    font-size: 0.88em;
-    color: #232323;
+    gap: 5px;
+    font-size: 12px;
+    color: #111827;
 }
 
+/* Orange info icon before bill number — matches Figma */
 .billInfoBtn {
     display: inline-flex;
     align-items: center;
@@ -259,6 +260,7 @@
     cursor: pointer;
     padding: 0;
     flex-shrink: 0;
+    color: #E17C64;
 }
 
 .billTooltip {
@@ -268,36 +270,36 @@
     background: #fff;
     border: 1px solid #E2E3E5;
     border-radius: 10px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-    padding: 0.75em 1em;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    padding: 10px 14px;
     z-index: 999;
     min-width: 160px;
     display: flex;
     flex-direction: column;
-    gap: 0.5em;
+    gap: 6px;
 }
 
 .billTooltipRow {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1em;
+    gap: 12px;
 }
 
 .billTooltipLabel {
-    font-size: 13px;
+    font-size: 12px;
     color: #9ca3af;
     font-family: var(--shipment-font-family);
 }
 
 .billTooltipValue {
     font-size: 13px;
-    font-weight: 400;
-    color: #111827;
+    font-weight: 500;
+    color: #1f2937;
 }
 
 
-/* View button */
+/* View button — blue eye icon per Figma */
 
 .viewBtn {
     display: inline-flex;
@@ -306,12 +308,13 @@
     background: transparent;
     border: none;
     cursor: pointer;
-    padding: 0.25em;
+    padding: 4px;
+    color: #5A8AEA;
     transition: opacity 0.2s;
 }
 
 .viewBtn:hover {
-    opacity: 0.6;
+    opacity: 0.7;
 }
 
 
@@ -321,10 +324,10 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.2em 0.75em;
+    padding: 3px 12px;
     border-radius: 20px;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 500;
     font-family: var(--shipment-font-family);
     white-space: nowrap;
 }
@@ -364,23 +367,23 @@
 
 .footer {
     flex-shrink: 0;
-    padding: 0.75em 0 0;
+    padding: 12px 0 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 13px;
+    font-size: 12px;
     color: #9ca3af;
 }
 
 .pagination {
     display: flex;
     align-items: center;
-    gap: 0.25em;
+    gap: 3px;
 }
 
 .pageBtn {
-    width: 2em;
-    height: 2em;
+    width: 28px;
+    height: 28px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -401,8 +404,8 @@
 }
 
 .pageNumBtn {
-    width: 2em;
-    height: 2em;
+    width: 28px;
+    height: 28px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -411,7 +414,7 @@
     background: transparent;
     font-size: 13px;
     font-family: var(--shipment-font-family);
-    color: #374151;
+    color: #111827;
     cursor: pointer;
     transition: background 0.15s;
 }
@@ -432,7 +435,7 @@
     position: fixed;
     inset: 0;
     z-index: 10001;
-    background: rgba(0, 0, 0, 0.35);
+    background: rgba(0, 0, 0, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -441,8 +444,8 @@
 .filterModal {
     background: #fff;
     border-radius: 16px;
-    width: 450px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    width: 380px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -453,22 +456,22 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1em 1.25em 0.75em;
+    padding: 16px 20px 12px;
 }
 
 .filterTitle {
     font-family: var(--shipment-font-family);
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
-    color: #111827;
+    color: #1f2937;
 }
 
 .filterClose {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 1.75em;
-    height: 1.75em;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     border: none;
     background: #f0f0f0;
@@ -481,26 +484,26 @@
 }
 
 .filterBody {
-    padding: 0.5em 1.25em 1em;
+    padding: 4px 20px 14px;
     display: flex;
     flex-direction: column;
-    gap: 0.875em;
+    gap: 12px;
 }
 
 .filterDateRow {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.75em;
+    gap: 12px;
 }
 
 .filterField {
     display: flex;
     flex-direction: column;
-    gap: 0.3em;
+    gap: 4px;
 }
 
 .filterLabel {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 400;
     color: #9ca3af;
     font-family: var(--shipment-font-family);
@@ -511,14 +514,15 @@
     align-items: center;
     border: 1px solid #E2E3E5;
     border-radius: 8px;
-    padding: 0 0.5em;
-    gap: 0.4em;
-    height: 2.4em;
+    padding: 0 8px;
+    gap: 6px;
+    height: 34px;
+    box-sizing: border-box;
     transition: border-color 0.2s;
 }
 
 .dateInputWrap:focus-within {
-    border-color: #9e9e9e;
+    border-color: #b0b0b0;
 }
 
 .filterInput {
@@ -527,13 +531,13 @@
     outline: none;
     font-size: 13px;
     font-family: var(--shipment-font-family);
-    color: #374151;
+    color: #111827;
     background: transparent;
     min-width: 0;
 }
 
 .filterInput::placeholder {
-    color: #9ca3af;
+    color: #c0c0c0;
 }
 
 .filterSelectWrap {
@@ -542,43 +546,43 @@
 
 .filterSelect {
     width: 100%;
-    height: 2.4em;
-    padding: 0 2em 0 0.75em;
+    height: 34px;
+    padding: 0 28px 0 10px;
     border: 1px solid #E2E3E5;
     border-radius: 8px;
     font-size: 13px;
     font-family: var(--shipment-font-family);
-    color: #374151;
+    color: #111827;
     outline: none;
     appearance: none;
-    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239e9e9e' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 0.75em center;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239e9e9e' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 10px center;
     cursor: pointer;
     box-sizing: border-box;
     transition: border-color 0.2s;
 }
 
 .filterSelect:focus {
-    border-color: #9e9e9e;
+    border-color: #b0b0b0;
 }
 
 .filterFooter {
     display: flex;
-    gap: 0.6em;
-    padding: 0.75em 1.25em 1.25em;
+    gap: 8px;
+    padding: 8px 20px 20px;
 }
 
 .filterClearBtn {
     flex: 1;
-    height: 2.5em;
+    height: 38px;
     border: 1px solid #E2E3E5;
     border-radius: 10px;
     background: #f5f5f5;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
-    color: #374151;
+    color: #111827;
     cursor: pointer;
     font-family: var(--shipment-font-family);
-    transition: background 0.2s;
+    transition: background 0.15s;
 }
 
 .filterClearBtn:hover {
@@ -587,20 +591,20 @@
 
 .filterApplyBtn {
     flex: 1;
-    height: 2.5em;
+    height: 38px;
     border: none;
     border-radius: 10px;
-    background: #3a3a3a;
+    background: #1a1a1a;
     color: #fff;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     font-family: var(--shipment-font-family);
-    transition: background 0.2s;
+    transition: background 0.15s;
 }
 
 .filterApplyBtn:hover {
-    background: #222;
+    background: #333;
 }
 
 
@@ -609,7 +613,7 @@
 .filterGrid2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.875em;
+    gap: 12px;
 }
 
 .floatField {
@@ -620,55 +624,53 @@
 .floatBorder {
     position: relative;
     border: 1px solid #E2E3E5;
-    border-radius: 10px;
-    padding: 0.6em 0.875em 0.55em;
+    border-radius: 8px;
+    padding: 6px 10px 6px;
     display: flex;
     flex-direction: column;
-    gap: 0.18em;
+    gap: 2px;
     transition: border-color 0.2s;
     background: #fff;
+    height: 52px;
+    justify-content: center;
 }
 
 .floatBorder:focus-within {
-    border-color: #9e9e9e;
+    border-color: #b0b0b0;
 }
 
 .floatLabel {
-    position: absolute;
-    top: -0.55em;
-    left: 0.75em;
-    padding: 0 0.3em;
-    background: #fff;
-    font-size: 0.7em;
+    font-size: 10px;
     font-weight: 500;
-    color: #9e9e9e;
-    font-family: 'Noto Sans', sans-serif;
+    color: #9ca3af;
+    font-family: var(--shipment-font-family);
     line-height: 1;
     pointer-events: none;
     white-space: nowrap;
+    margin-bottom: 2px;
 }
 
 .floatInputRow {
     display: flex;
     align-items: center;
-    gap: 0.4em;
+    gap: 6px;
 }
 
 .floatInput {
     flex: 1;
     border: none;
     outline: none;
-    font-size: 0.92em;
-    font-family: 'Nunito', sans-serif;
-    font-weight: 600;
-    color: #1a1a1a;
+    font-size: 13px;
+    font-family: var(--shipment-font-family);
+    font-weight: 500;
+    color: #111827;
     background: transparent;
     min-width: 0;
     padding: 0;
 }
 
 .floatInput::placeholder {
-    color: #bbb;
+    color: #c0c0c0;
     font-weight: 400;
 }
 
@@ -676,10 +678,10 @@
     flex: 1;
     border: none;
     outline: none;
-    font-size: 0.92em;
-    font-family: 'Nunito', sans-serif;
-    font-weight: 600;
-    color: #1a1a1a;
+    font-size: 13px;
+    font-family: var(--shipment-font-family);
+    font-weight: 500;
+    color: #111827;
     background: transparent;
     appearance: none;
     cursor: pointer;
