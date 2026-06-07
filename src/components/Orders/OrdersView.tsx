@@ -42,7 +42,6 @@ function BillTooltip({ billNo, netAmt, billStatus }: { billNo: string; netAmt: n
   return (
     <div className={styles.billWrapper} ref={ref}>
       <span className={styles.billNo}>
-        {/* Orange info icon — matches Figma */}
         <button className={styles.billInfoBtn} onClick={() => setShow((s) => !s)}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E17C64" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10" />
@@ -87,8 +86,6 @@ function FilterModal({ isOpen, onClose, onApply, onClear, values, onChange, doct
   return (
     <div className={styles.filterOverlay} onClick={onClose}>
       <div className={styles.filterModal} onClick={(e) => e.stopPropagation()}>
-
-        {/* Header */}
         <div className={styles.filterHeader}>
           <span className={styles.filterTitle}>Filters</span>
           <button className={styles.filterClose} onClick={onClose}>
@@ -99,45 +96,27 @@ function FilterModal({ isOpen, onClose, onApply, onClear, values, onChange, doct
           </button>
         </div>
 
-        {/* Body */}
         <div className={styles.filterBody}>
-
-          {/* From Date / To Date row */}
           <div className={styles.filterGrid2}>
             <div className={styles.floatBorder}>
               <span className={styles.floatLabel}>From Date</span>
               <div className={styles.floatInputRow}>
-                <input
-                  className={styles.floatInput}
-                  type="date"
-                  value={values.fromDate}
-                  onChange={(e) => set("fromDate", e.target.value)}
-                />
+                <input className={styles.floatInput} type="date" value={values.fromDate} onChange={(e) => set("fromDate", e.target.value)} />
               </div>
             </div>
             <div className={styles.floatBorder}>
               <span className={styles.floatLabel}>To Date</span>
               <div className={styles.floatInputRow}>
-                <input
-                  className={styles.floatInput}
-                  type="date"
-                  value={values.toDate}
-                  onChange={(e) => set("toDate", e.target.value)}
-                />
+                <input className={styles.floatInput} type="date" value={values.toDate} onChange={(e) => set("toDate", e.target.value)} />
               </div>
             </div>
           </div>
 
-          {/* Doctor / Order Status row */}
           <div className={styles.filterGrid2}>
             <div className={styles.floatBorder}>
               <span className={styles.floatLabel}>Doctor</span>
               <div className={styles.floatInputRow}>
-                <select
-                  className={styles.floatSelect}
-                  value={values.doctor}
-                  onChange={(e) => set("doctor", e.target.value)}
-                >
+                <select className={styles.floatSelect} value={values.doctor} onChange={(e) => set("doctor", e.target.value)}>
                   <option value="">All</option>
                   {doctors.map((d) => <option key={d} value={d}>{d}</option>)}
                 </select>
@@ -146,43 +125,27 @@ function FilterModal({ isOpen, onClose, onApply, onClear, values, onChange, doct
             <div className={styles.floatBorder}>
               <span className={styles.floatLabel}>Order Status</span>
               <div className={styles.floatInputRow}>
-                <select
-                  className={styles.floatSelect}
-                  value={values.orderStatus}
-                  onChange={(e) => set("orderStatus", e.target.value)}
-                >
-                  {ORDER_STATUSES.map((s) => (
-                    <option key={s} value={s}>{s || "All"}</option>
-                  ))}
+                <select className={styles.floatSelect} value={values.orderStatus} onChange={(e) => set("orderStatus", e.target.value)}>
+                  {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s || "All"}</option>)}
                 </select>
               </div>
             </div>
           </div>
 
-          {/* Patient Type */}
           <div className={styles.floatBorder}>
             <span className={styles.floatLabel}>Patient Type</span>
             <div className={styles.floatInputRow}>
-              <select
-                className={styles.floatSelect}
-                value={values.patientType}
-                onChange={(e) => set("patientType", e.target.value)}
-              >
-                {PATIENT_TYPES.map((t) => (
-                  <option key={t} value={t}>{t || "All"}</option>
-                ))}
+              <select className={styles.floatSelect} value={values.patientType} onChange={(e) => set("patientType", e.target.value)}>
+                {PATIENT_TYPES.map((t) => <option key={t} value={t}>{t || "All"}</option>)}
               </select>
             </div>
           </div>
-
         </div>
 
-        {/* Footer */}
         <div className={styles.filterFooter}>
           <button className={styles.filterClearBtn} onClick={onClear}>Clear All</button>
           <button className={styles.filterApplyBtn} onClick={() => { onApply(); onClose(); }}>Apply</button>
         </div>
-
       </div>
     </div>
   );
@@ -191,9 +154,9 @@ function FilterModal({ isOpen, onClose, onApply, onClear, values, onChange, doct
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function OrdersView() {
-  const dispatch = useDispatch<AppDispatch>();
-  const orders   = useSelector(selectOrders);
-  const loading  = useSelector(selectOrdersLoading);
+  const dispatch      = useDispatch<AppDispatch>();
+  const orders        = useSelector(selectOrders);
+  const loading       = useSelector(selectOrdersLoading);
   const selectedOrder = useSelector(selectSelectedOrder);
 
   const [activeTab, setActiveTab]           = useState<TabKey>("all");
@@ -229,12 +192,24 @@ export default function OrdersView() {
     });
   }, [tabFiltered, search, appliedFilters]);
 
-  const totalPages     = Math.ceil(filtered.length / PAGE_SIZE);
-  const pageRows       = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages     = Math.ceil(filtered.length / PAGE_SIZE) || 1;
+  const safePage       = Math.min(page, totalPages);
+  const pageRows       = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
   const inhouseCount   = orders.filter((o) => o.type === "inhouse").length;
   const outsourceCount = orders.filter((o) => o.type === "outsource").length;
 
   const handleTabChange = (tab: TabKey) => { setActiveTab(tab); setPage(1); };
+
+  // Pagination page numbers — show max 5, centered around current
+  const pageNumbers = useMemo(() => {
+    const total = totalPages;
+    if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1);
+    const start = Math.max(1, Math.min(safePage - 2, total - 4));
+    return Array.from({ length: 5 }, (_, i) => start + i);
+  }, [totalPages, safePage]);
+
+  const startEntry = filtered.length > 0 ? (safePage - 1) * PAGE_SIZE + 1 : 0;
+  const endEntry   = Math.min(safePage * PAGE_SIZE, filtered.length);
 
   if (selectedOrder) {
     return (
@@ -244,7 +219,9 @@ export default function OrdersView() {
           patientAge:  selectedOrder.patientAge,
           gender:      selectedOrder.gender,
           mrn:         selectedOrder.mrn,
+          orderId:     selectedOrder.orderId,
         }}
+        orderId={selectedOrder.orderId}
         onBack={() => dispatch(clearSelectedOrder())}
       />
     );
@@ -293,7 +270,7 @@ export default function OrdersView() {
         ))}
       </div>
 
-      {/* ── Table ── */}
+      {/* ── Table — only real rows, no empty fillers ── */}
       <div className={styles.tableWrapper}>
         <table className={styles.table}>
           <thead className={styles.head}>
@@ -309,63 +286,53 @@ export default function OrdersView() {
             </tr>
           </thead>
           <tbody className={styles.scrollBody}>
-            {Array.from({ length: PAGE_SIZE }, (_, i) => {
-              const row = pageRows[i];
-              return row ? (
-                <tr key={row.id} className={styles.row}>
+            {pageRows.length > 0 ? pageRows.map((row) => (
+              <tr key={row.id} className={styles.row}>
 
-                  {/* Order Date | Time */}
-                  <td>
-                    <div className={styles.dateCell}>
-                      <span className={styles.dateText}>{row.date}</span>
-                      <span className={styles.timeText}>{row.time}</span>
-                    </div>
-                  </td>
+                <td>
+                  <div className={styles.dateCell}>
+                    <span className={styles.dateText}>{row.date}</span>
+                    <span className={styles.timeText}>{row.time}</span>
+                  </div>
+                </td>
 
-                  {/* Patient */}
-                  <td>
-                    <div className={styles.patientCell}>
-                      <span className={styles.patientName}>{row.patientName} | {row.patientAge}</span>
-                      <span className={styles.patientSub}>{row.mrn} | {row.gender}</span>
-                    </div>
-                  </td>
+                <td>
+                  <div className={styles.patientCell}>
+                    <span className={styles.patientName}>{row.patientName} | {row.patientAge}</span>
+                    <span className={styles.patientSub}>{row.mrn} | {row.gender}</span>
+                  </div>
+                </td>
 
-                  {/* Patient Type */}
-                  <td style={{ color: "#111827", fontSize: "12px", fontWeight: "400" }}>{row.patientType}</td>
+                <td style={{ color: "#111827", fontSize: "12px" }}>{row.patientType}</td>
+                <td style={{ color: "#111827", fontSize: "12px" }}>{row.doctorName}</td>
 
-                  {/* Doctor Name */}
-                  <td style={{ color: "#111827", fontSize: "12px", fontWeight: "400" }}>{row.doctorName}</td>
+                <td>
+                  <BillTooltip billNo={row.billNo} netAmt={row.netAmt} billStatus={row.billStatus} />
+                </td>
 
-                  {/* Bill Details — orange info icon + bill number */}
-                  <td>
-                    <BillTooltip billNo={row.billNo} netAmt={row.netAmt} billStatus={row.billStatus} />
-                  </td>
+                <td style={{ textAlign: "center", color: "#111827", fontSize: "12px" }}>{row.totalTests}</td>
 
-                  {/* Total Tests */}
-                  <td style={{ textAlign: "center", color: "#111827", fontSize: "12px" }}>{row.totalTests}</td>
+                <td style={{ textAlign: "right" }}>
+                  <StatusBadge status={row.orderStatus} />
+                </td>
 
-                  {/* Order Status */}
-                  <td style={{ textAlign: "right" }}>
-                    <StatusBadge status={row.orderStatus} />
-                  </td>
+                <td style={{ textAlign: "center" }}>
+                  <button className={styles.viewBtn} onClick={() => dispatch(setSelectedOrder(row))}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5A8AEA" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="3" />
+                      <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z" />
+                    </svg>
+                  </button>
+                </td>
 
-                  {/* View — blue eye icon */}
-                  <td style={{ textAlign: "center" }}>
-                    <button className={styles.viewBtn} onClick={() => dispatch(setSelectedOrder(row))}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5A8AEA" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="3" />
-                        <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z" />
-                      </svg>
-                    </button>
-                  </td>
-
-                </tr>
-              ) : (
-                <tr key={`empty-${i}`} className={styles.row}>
-                  {Array.from({ length: 8 }, (_, j) => <td key={j} />)}
-                </tr>
-              );
-            })}
+              </tr>
+            )) : (
+              <tr>
+                <td colSpan={8} style={{ textAlign: "center", padding: "2rem", color: "#9ca3af", fontSize: "13px" }}>
+                  No matching records found.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -373,24 +340,45 @@ export default function OrdersView() {
       {/* ── Footer / Pagination ── */}
       <div className={styles.footer}>
         <span>
-          Showing {filtered.length > 0 ? (page - 1) * PAGE_SIZE + 1 : 0} to {Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} entries
+          Showing {startEntry} to {endEntry} of {filtered.length} entries
         </span>
         <div className={styles.pagination}>
-          <button className={styles.pageBtn} disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
+          {/* Prev */}
+          <button className={styles.pageBtn} disabled={safePage === 1} onClick={() => setPage((p) => p - 1)}>
             <svg width="7" height="11" viewBox="0 0 7 11" fill="none">
               <path d="M6 1L1 5.5L6 10" stroke="#505050" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-          {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((p) => (
+
+          {/* First page + ellipsis if needed */}
+          {pageNumbers[0] > 1 && (
+            <>
+              <button className={`${styles.pageNumBtn} ${safePage === 1 ? styles.pageNumActive : ""}`} onClick={() => setPage(1)}>1</button>
+              {pageNumbers[0] > 2 && <span style={{ color: "#9ca3af", padding: "0 4px" }}>…</span>}
+            </>
+          )}
+
+          {/* Page number buttons */}
+          {pageNumbers.map((p) => (
             <button
               key={p}
-              className={`${styles.pageNumBtn} ${p === page ? styles.pageNumActive : ""}`}
+              className={`${styles.pageNumBtn} ${p === safePage ? styles.pageNumActive : ""}`}
               onClick={() => setPage(p)}
             >
               {p}
             </button>
           ))}
-          <button className={styles.pageBtn} disabled={page === totalPages || totalPages === 0} onClick={() => setPage((p) => p + 1)}>
+
+          {/* Last page + ellipsis if needed */}
+          {pageNumbers[pageNumbers.length - 1] < totalPages && (
+            <>
+              {pageNumbers[pageNumbers.length - 1] < totalPages - 1 && <span style={{ color: "#9ca3af", padding: "0 4px" }}>…</span>}
+              <button className={`${styles.pageNumBtn} ${safePage === totalPages ? styles.pageNumActive : ""}`} onClick={() => setPage(totalPages)}>{totalPages}</button>
+            </>
+          )}
+
+          {/* Next */}
+          <button className={styles.pageBtn} disabled={safePage === totalPages} onClick={() => setPage((p) => p + 1)}>
             <svg width="7" height="11" viewBox="0 0 7 11" fill="none">
               <path d="M1 1L6 5.5L1 10" stroke="#505050" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>

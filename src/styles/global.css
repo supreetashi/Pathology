@@ -42,26 +42,23 @@ textarea {
   color: var(--shipment-text-secondary);
 }
 
+/* Headings only — no td/th here */
 #root :where(h1, h2, h3, h4, h5, h6) {
   font-size: var(--shipment-font-size-title) !important;
   color: var(--shipment-text-primary) !important;
   font-weight: 600 !important;
 }
 
-#root :where(p, label, li, a, td, th, small, input, select, textarea) {
-  font-size: var(--shipment-font-size-base) !important;
-  color: var(--shipment-text-primary) !important;
-}
-
-#root th {
-  color: var(--shipment-text-primary) !important;
+/* NO !important on td/th/input — let component CSS override */
+#root :where(p, label, li, a, small) {
+  color: var(--shipment-text-primary);
 }
 
 #root :where(input::placeholder, textarea::placeholder) {
   color: var(--shipment-text-muted) !important;
 }
 
-/* Keep core module typography in sync with Shipment style tokens. */
+/* Core module typography */
 .content-shell,
 .menu-page-card,
 .receive-view,
@@ -80,10 +77,10 @@ textarea {
   font-size: var(--shipment-font-size-title);
 }
 
-.content-shell :where(p, li, label, td, th, a),
-.menu-page-card :where(p, li, label, td, th, a),
-.receive-view :where(p, li, label, td, th, a),
-.shipment-container :where(p, li, label, td, th, a) {
+/* NO td/th override here — let Shipment.css control those */
+.content-shell :where(p, li, label, a),
+.menu-page-card :where(p, li, label, a),
+.receive-view :where(p, li, label, a) {
   color: var(--shipment-text-primary);
   font-family: var(--shipment-font-family);
   font-size: var(--shipment-font-size-base);

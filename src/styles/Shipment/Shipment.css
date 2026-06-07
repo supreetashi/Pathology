@@ -5,28 +5,22 @@
    Figma Exact - Plus Jakarta Sans
    ============================================ */
 
-/* ============================================
-   BASE CONTAINER
-   ============================================ */
 .shipment-container {
-  padding: 24px 28px;
+  padding: 28px 32px;
   background-color: #ffffff;
   min-height: 100vh;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* ============================================
-   HEADER
-   ============================================ */
 .shipment-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .page-title {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: #111827;
   margin: 0;
@@ -39,9 +33,7 @@
   align-items: center;
 }
 
-/* ============================================
-   SEARCH BAR
-   ============================================ */
+/* SEARCH */
 .search-wrapper {
   position: relative;
   display: flex;
@@ -52,18 +44,18 @@
   position: absolute;
   left: 10px;
   color: #9ca3af !important;
-  font-size: 18px !important;
+  font-size: 16px !important;
   z-index: 1;
   pointer-events: none;
 }
 
 .search-input {
-  width: 340px;
-  padding: 9px 12px 9px 36px;
+  width: 300px;
+  padding: 7px 12px 7px 34px;
   border: 1px solid #E2E3E5;
   border-radius: 10px;
-  font-size: 13px;
-  color: #374151;
+  font-size: 12px;
+  color: #111827;
   outline: none;
   background: #ffffff;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -79,16 +71,13 @@
   border-color: #d1d5db;
 }
 
-/* ============================================
-   FILTER BUTTON
-   ============================================ */
-/* Filter button — exact copy of Orders .iconBtn */
+/* FILTER BUTTON */
 .filter-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border: 1px solid #E2E3E5;
   border-radius: 10px;
   background: #F3F3F3;
@@ -103,22 +92,20 @@
   background: #ebebeb;
 }
 
-/* ============================================
-   TABS
-   ============================================ */
+/* TABS */
 .tabs-container {
   display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
 .tab-item {
-  padding: 7px 18px;
+  padding: 5px 14px;
   border-radius: 20px;
-  border: 1px solid #e5e7eb;
+  border: 1.5px solid #E2E3E5;
   background: white;
   color: #6b7280;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s;
@@ -128,22 +115,19 @@
 }
 
 .tab-item:hover {
-  background: #f9fafb;
-  color: #374151;
+  border-color: #f97316;
+  color: #ea580c;
+  background: #fff7ed;
 }
 
 .tab-item.active {
   background: #fff7ed !important;
-  border: 1.5px solid #fb923c !important;
+  border: 1.5px solid #f97316 !important;
   color: #ea580c !important;
   font-weight: 600;
 }
 
-/* ============================================
-   TABLE OUTER CONTAINER
-   NO outer box border — Figma has none
-   Only row separator lines inside
-   ============================================ */
+/* TABLE */
 .table-container {
   background: white;
   border-radius: 0;
@@ -151,38 +135,27 @@
   overflow: hidden;
 }
 
-/* ============================================
-   TABLE
-   Auto column widths, row separator lines only
-   ============================================ */
 .custom-table {
   width: 100%;
   border-collapse: collapse;
   border-spacing: 0;
 }
 
-/* Headers — dark, same as body, 13px */
 .custom-table thead th {
-  padding: 12px 32px 12px 0;
+  padding: 12px 24px 12px 0;
   text-align: left;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 400;
-  color: #6b7280;
+  color: #9ca3af;
   border-bottom: 1px solid #f3f4f6;
   white-space: nowrap;
-  background: #ffffff;
+  background: #fafafa;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-.custom-table thead th:first-child {
-  padding-left: 0;
-}
+.custom-table thead th:first-child { padding-left: 0; }
+.custom-table thead th:last-child  { padding-right: 0; }
 
-.custom-table thead th:last-child {
-  padding-right: 0;
-}
-
-/* Body rows — ONLY bottom border line, no box */
 .custom-table tbody tr {
   border-bottom: 1px solid #f3f4f6;
   background: #ffffff;
@@ -192,27 +165,19 @@
   border-bottom: none;
 }
 
-/* Cells — 16px top/bottom, 32px right creates col gap, 0 left */
 .custom-table tbody td {
-  padding: 16px 32px 16px 0;
-  font-size: 13px;
-  color: #374151;
+  padding: 16px 24px 16px 0;
+  font-size: 12px;
+  color: #111827;
   vertical-align: middle;
   background: transparent;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-.custom-table tbody td:first-child {
-  padding-left: 0;
-}
+.custom-table tbody td:first-child { padding-left: 0; }
+.custom-table tbody td:last-child  { padding-right: 0; }
 
-.custom-table tbody td:last-child {
-  padding-right: 0;
-}
-
-/* ============================================
-   CHECKBOX COLUMN
-   ============================================ */
+/* CHECKBOX */
 .checkbox-cell {
   width: 36px;
   text-align: left !important;
@@ -236,9 +201,7 @@
   box-sizing: border-box;
 }
 
-.custom-checkbox:hover {
-  border-color: #10b981;
-}
+.custom-checkbox:hover { border-color: #10b981; }
 
 .custom-checkbox.checked {
   background-color: #10b981;
@@ -256,75 +219,70 @@
   position: absolute;
 }
 
-/* ============================================
-   CELL TEXT CLASSES
-   Slightly dark #374151 — matches Figma
-   ============================================ */
+/* CELL TEXT */
 .cell-top {
-  font-size: 13px;
-  font-weight: 400;
-  color: #374151;
-  line-height: 1.5;
+  font-size: 12px;
+  font-weight: 500;
+  color: #111827;
+  line-height: 1.4;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .cell-time {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 400;
-  color: #374151;
-  line-height: 1.5;
-  margin-top: 2px;
+  color: #111827;
+  line-height: 1.4;
+  margin-top: 4px;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .cell-bottom {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 400;
-  color: #374151;
-  line-height: 1.5;
-  margin-top: 2px;
+  color: #111827;
+  line-height: 1.4;
+  margin-top: 4px;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .cell-service {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 400;
-  color: #374151;
-  line-height: 1.5;
+  color: #111827;
+  line-height: 1.4;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .patient-name {
-  font-size: 13px;
-  font-weight: 400;
-  color: #374151;
-  line-height: 1.5;
+  font-size: 12px;
+  font-weight: 500;
+  color: #111827;
+  line-height: 1.4;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .patient-details {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 400;
-  color: #374151;
-  line-height: 1.5;
-  margin-top: 2px;
+  color: #111827;
+  line-height: 1.4;
+  margin-top: 4px;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* ============================================
-   TABLE FOOTER & PAGINATION
-   ============================================ */
+/* FOOTER & PAGINATION */
 .table-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 0;
+  padding: 12px 0;
   border-top: 1px solid #f3f4f6;
   background: #ffffff;
 }
 
 .showing-entries {
-  font-size: 13px;
+  font-size: 12px;
   color: #9ca3af;
   font-weight: 400;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -339,7 +297,7 @@
 .pagination-arrow {
   color: #6b7280;
   cursor: pointer;
-  font-size: 20px !important;
+  font-size: 18px !important;
   display: flex;
   align-items: center;
   border-radius: 6px;
@@ -359,14 +317,14 @@
 }
 
 .page-num {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
   background: none;
-  font-size: 13px;
+  font-size: 12px;
   color: #6b7280;
   border-radius: 6px;
   cursor: pointer;
@@ -386,43 +344,33 @@
   font-weight: 500;
 }
 
-/* ============================================
-   SCHEDULE SHIPPING BUTTON
-   ============================================ */
+/* SCHEDULE SHIPPING BUTTON */
 .shipping-button-container {
   display: flex;
   justify-content: flex-end;
-  margin-top: 20px;
+  margin-top: 16px;
 }
 
 .schedule-shipping-btn {
   background: #1f2937;
   color: #ffffff;
-  padding: 11px 28px;
+  padding: 9px 24px;
   border: none;
   border-radius: 8px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   transition: background 0.2s;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  letter-spacing: 0.01em;
 }
 
-.schedule-shipping-btn:hover {
-  background: #111827;
-}
+.schedule-shipping-btn:hover { background: #111827; }
 
-/* ============================================
-   MODAL OVERLAY (shared)
-   ============================================ */
+/* MODAL OVERLAY */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.35);
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.35);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -432,36 +380,27 @@
 .modal-content {
   background: #ffffff;
   border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-  padding: 28px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+  padding: 24px;
   position: relative;
   max-width: 95vw;
   max-height: 90vh;
   overflow-y: auto;
 }
 
-.modal-content::-webkit-scrollbar {
-  width: 4px;
-}
+.modal-content::-webkit-scrollbar { width: 4px; }
+.modal-content::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 2px; }
 
-.modal-content::-webkit-scrollbar-thumb {
-  background: #e5e7eb;
-  border-radius: 2px;
-}
-
-/* ============================================
-   MODAL HEADER (shared)
-   ============================================ */
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .modal-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
   color: #111827;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -473,60 +412,45 @@
   padding: 4px !important;
   color: #6b7280 !important;
   cursor: pointer !important;
-  font-size: 18px !important;
+  font-size: 16px !important;
   transition: background 0.15s;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
 }
 
-.close-icon-btn:hover {
-  background: #e5e7eb !important;
-}
+.close-icon-btn:hover { background: #e5e7eb !important; }
 
-/* ============================================
-   MODAL FOOTER (shared)
-   ============================================ */
 .modal-footer {
   display: flex;
   gap: 12px;
   justify-content: flex-end;
   border-top: 1px solid #f3f4f6;
-  padding-top: 20px;
+  padding-top: 16px;
   margin-top: 4px;
 }
 
-.filter-footer {
-  justify-content: space-between;
-}
+.filter-footer { justify-content: space-between; }
 
-/* ============================================
-   FILTER MODAL
-   ============================================ */
-.filter-modal {
-  width: 500px;
-}
+/* FILTER MODAL */
+.filter-modal { width: 480px; }
 
 .filter-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 14px;
+  margin-bottom: 20px;
 }
 
 .filter-item label {
   display: block;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
   color: #9ca3af;
-  margin-bottom: 6px;
-  letter-spacing: 0.01em;
+  margin-bottom: 5px;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* ============================================
-   INPUT WITH ICON (filter fields)
-   ============================================ */
 .input-with-icon {
   position: relative;
   display: flex;
@@ -536,10 +460,10 @@
 .input-with-icon input,
 .input-with-icon select {
   width: 100%;
-  padding: 9px 36px 9px 12px;
+  padding: 7px 32px 7px 10px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 12px;
   color: #111827;
   outline: none;
   background: #ffffff;
@@ -552,92 +476,74 @@
   font-weight: 400;
 }
 
-.input-with-icon input {
-  cursor: text;
-}
+.input-with-icon input { cursor: text; }
 
 .input-with-icon input:focus,
-.input-with-icon select:focus {
-  border-color: #9ca3af;
-}
+.input-with-icon select:focus { border-color: #9ca3af; }
 
 .input-with-icon .inner-icon {
   position: absolute;
-  right: 10px;
+  right: 8px;
   color: #9ca3af !important;
-  font-size: 18px !important;
+  font-size: 16px !important;
   pointer-events: none;
 }
 
-/* ============================================
-   FILTER MODAL BUTTONS
-   ============================================ */
 .clear-all-btn {
   background: #f3f4f6;
   color: #374151;
   border: none;
-  padding: 10px 24px;
+  padding: 9px 22px;
   border-radius: 8px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   transition: background 0.15s;
 }
 
-.clear-all-btn:hover {
-  background: #e5e7eb;
-}
+.clear-all-btn:hover { background: #e5e7eb; }
 
 .apply-btn {
   background: #1f2937;
   color: #ffffff;
   border: none;
-  padding: 10px 32px;
+  padding: 9px 28px;
   border-radius: 8px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   transition: background 0.15s;
 }
 
-.apply-btn:hover {
-  background: #111827;
-}
+.apply-btn:hover { background: #111827; }
 
-/* ============================================
-   SHIPPING MODAL
-   Floating-label bordered fields
-   ============================================ */
-.shipping-modal {
-  width: 540px;
-}
+/* SHIPPING MODAL */
+.shipping-modal { width: 520px; }
 
 .shipping-form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 24px;
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
 .ship-field {
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  padding: 8px 12px 6px 12px;
+  padding: 7px 10px 6px 10px;
   display: flex;
   flex-direction: column;
   position: relative;
   background: #ffffff;
-  min-height: 56px;
+  min-height: 50px;
   cursor: pointer;
   transition: border-color 0.15s;
   box-sizing: border-box;
 }
 
-.ship-field:focus-within {
-  border-color: #9ca3af;
-}
+.ship-field:focus-within { border-color: #9ca3af; }
 
 .ship-field.disabled {
   background: #f9fafb;
@@ -646,7 +552,7 @@
 }
 
 .ship-field-label {
-  font-size: 11px;
+  font-size: 10px;
   color: #9ca3af;
   font-weight: 400;
   line-height: 1.2;
@@ -665,7 +571,7 @@
 .ship-field-input {
   border: none;
   outline: none;
-  font-size: 13px;
+  font-size: 12px;
   color: #111827;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   background: transparent;
@@ -676,15 +582,12 @@
   min-width: 0;
 }
 
-.ship-field.disabled .ship-field-input {
-  color: #374151;
-  cursor: default;
-}
+.ship-field.disabled .ship-field-input { color: #374151; cursor: default; }
 
 .ship-field-select {
   border: none;
   outline: none;
-  font-size: 13px;
+  font-size: 12px;
   color: #111827;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   background: transparent;
@@ -698,7 +601,6 @@
   min-width: 0;
 }
 
-/* Hide native browser date/time picker icon */
 .ship-date-input::-webkit-calendar-picker-indicator,
 .ship-time-input::-webkit-calendar-picker-indicator {
   display: none;
@@ -706,67 +608,47 @@
 }
 
 .ship-date-input,
-.ship-time-input {
-  -webkit-appearance: none;
-  appearance: none;
-}
+.ship-time-input { -webkit-appearance: none; appearance: none; }
 
-/* Custom picker icon — always visible on right */
 .ship-picker-icon {
   color: #94a3b8 !important;
-  font-size: 18px !important;
+  font-size: 16px !important;
   flex-shrink: 0;
   margin-left: 6px;
   cursor: pointer;
   display: block !important;
 }
 
-/* ============================================
-   SHIPPING DETAILS SECTION
-   ============================================ */
-.shipping-details-section {
-  margin-bottom: 0;
-}
+.shipping-details-section { margin-bottom: 0; }
 
 .shipping-details-section h4 {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   color: #374151;
-  margin: 0 0 12px 0;
+  margin: 0 0 10px 0;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* ============================================
-   MINI TABLE (inside shipping modal)
-   ============================================ */
+/* MINI TABLE */
 .mini-table-container {
   border: 1px solid #f3f4f6;
   border-radius: 10px;
   overflow: hidden;
-  max-height: 220px;
+  max-height: 200px;
   overflow-y: auto;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
-.mini-table-container::-webkit-scrollbar {
-  width: 4px;
-}
+.mini-table-container::-webkit-scrollbar { width: 4px; }
+.mini-table-container::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 2px; }
 
-.mini-table-container::-webkit-scrollbar-thumb {
-  background: #e5e7eb;
-  border-radius: 2px;
-}
-
-.mini-table {
-  width: 100%;
-  border-collapse: collapse;
-}
+.mini-table { width: 100%; border-collapse: collapse; }
 
 .mini-table thead th {
   background: #f9fafb;
-  padding: 10px 14px;
+  padding: 8px 12px;
   text-align: left;
   font-size: 11px;
   color: #9ca3af;
@@ -776,19 +658,14 @@
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-.mini-table tbody tr {
-  border-top: 1px solid #f3f4f6;
-}
-
-.mini-table tbody tr:first-child {
-  border-top: none;
-}
+.mini-table tbody tr { border-top: 1px solid #f3f4f6; }
+.mini-table tbody tr:first-child { border-top: none; }
 
 .mini-table tbody td {
-  padding: 11px 14px;
+  padding: 9px 12px;
   font-size: 12px;
   color: #111827;
-  line-height: 1.5;
+  line-height: 1.4;
   vertical-align: top;
   font-weight: 400;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -798,7 +675,7 @@
   font-size: 12px;
   font-weight: 400;
   color: #111827;
-  line-height: 1.5;
+  line-height: 1.4;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
@@ -811,55 +688,43 @@
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* ============================================
-   SHIPPING MODAL FOOTER BUTTONS
-   ============================================ */
-.shipping-footer {
-  justify-content: flex-end;
-  gap: 10px;
-}
+.shipping-footer { justify-content: flex-end; gap: 10px; }
 
 .cancel-btn {
   background: #ffffff;
   color: #374151;
   border: 1px solid #e5e7eb;
-  padding: 10px 28px;
+  padding: 8px 24px;
   border-radius: 8px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   transition: all 0.15s;
 }
 
-.cancel-btn:hover {
-  background: #f9fafb;
-}
+.cancel-btn:hover { background: #f9fafb; }
 
 .save-btn {
   background: #1f2937;
   color: #ffffff;
   border: none;
-  padding: 10px 32px;
+  padding: 8px 28px;
   border-radius: 8px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   transition: background 0.15s;
 }
 
-.save-btn:hover {
-  background: #111827;
-}
+.save-btn:hover { background: #111827; }
 
-/* ============================================
-   STATUS PILLS (Received tab)
-   ============================================ */
+/* STATUS PILLS */
 .status-pill {
-  padding: 4px 12px;
+  padding: 3px 10px;
   border-radius: 20px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   display: inline-block;
   text-align: center;
@@ -880,34 +745,25 @@
   background-color: #fef2f2;
 }
 
-/* ============================================
-   RESULT CELL (Received tab)
-   ============================================ */
 .result-cell {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-/* ============================================
-   ACTION ICON COLUMN (Shipped / Activity tab)
-   ============================================ */
 .action-icon-cell {
   text-align: center;
   width: 48px;
 }
 
-/* ============================================
-   FILTER MODAL — Figma exact
-   Compact, floating-label stacked fields
-   ============================================ */
+/* FMODAL - Filter modal compact */
 .fmodal {
   background: #ffffff;
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.14);
-  width: 390px;
+  width: 370px;
   max-width: 95vw;
-  padding: 22px 22px 20px 22px;
+  padding: 20px 20px 18px 20px;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
@@ -915,11 +771,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .fmodal-title {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: #111827;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -929,8 +785,8 @@
   background: #f3f4f6;
   border: none;
   border-radius: 50%;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -942,47 +798,40 @@
 
 .fmodal-close:hover { background: #e5e7eb; }
 
-/* 2-col grid */
 .fmodal-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: 8px;
+  margin-bottom: 14px;
 }
 
-/* Field box - compact Figma style */
 .fmodal-field {
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  padding: 7px 10px;
+  padding: 6px 10px;
   display: flex;
   flex-direction: column;
   background: #ffffff;
-  min-height: 50px;
+  min-height: 46px;
   box-sizing: border-box;
   transition: border-color 0.15s;
-  cursor: text;
   justify-content: center;
 }
 
-.fmodal-field:focus-within {
-  border-color: #374151;
-}
+.fmodal-field:focus-within { border-color: #374151; }
 
-/* Floating label — small grey on top */
 .fmodal-label {
-  font-size: 11px;
+  font-size: 10px;
   color: #9ca3af;
   font-weight: 400;
   line-height: 1.2;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
   pointer-events: none;
   white-space: nowrap;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   display: block;
 }
 
-/* Row: input/select + icon */
 .fmodal-input-wrap {
   display: flex;
   align-items: center;
@@ -990,11 +839,10 @@
   flex: 1;
 }
 
-/* Text/date input — dark value */
 .fmodal-input {
   border: none;
   outline: none;
-  font-size: 13px;
+  font-size: 12px;
   color: #111827;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   background: transparent;
@@ -1008,11 +856,10 @@
 
 .fmodal-input::placeholder { color: #9ca3af; }
 
-/* Select — dark value, no default arrow */
 .fmodal-select {
   border: none;
   outline: none;
-  font-size: 13px;
+  font-size: 12px;
   color: #111827;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   background: transparent;
@@ -1027,20 +874,18 @@
   width: 100%;
 }
 
-/* Icon on right */
 .fmodal-icon {
   color: #9ca3af !important;
-  font-size: 16px !important;
+  font-size: 14px !important;
   flex-shrink: 0;
   margin-left: 4px;
   pointer-events: none;
   display: block !important;
 }
 
-/* Footer buttons */
 .fmodal-footer {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
 }
 
@@ -1049,9 +894,9 @@
   background: #ffffff;
   color: #374151;
   border: 1px solid #e5e7eb;
-  padding: 11px 0;
+  padding: 9px 0;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -1066,9 +911,9 @@
   background: #1f2937;
   color: #ffffff;
   border: none;
-  padding: 11px 0;
+  padding: 9px 0;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -1078,11 +923,11 @@
 
 .fmodal-apply:hover { background: #111827; }
 
-/* Hide native date picker icon — we use our own calendar icon */
 .fmodal-date-input::-webkit-calendar-picker-indicator {
   display: none;
   -webkit-appearance: none;
 }
+
 .fmodal-date-input {
   -webkit-appearance: none;
   appearance: none;

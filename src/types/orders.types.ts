@@ -11,7 +11,6 @@ export interface ApiMeta {
   previous: string | null;
 }
 
-// Matches client API response exactly
 export interface OrderPatient {
   id: number;
   name: string;
@@ -83,6 +82,7 @@ export type PatientType = "Walk-In" | "Registered";
 
 export interface OrderRow {
   id: string;
+  orderId: number;          // ← Vidai work_order id for detail API
   date: string;
   time: string;
   patientName: string;
@@ -120,6 +120,8 @@ export interface BaseTest {
   collectorItem: string;
   status: TestStatus;
   checked: boolean;
+  testServiceId?: number;   // ← for collection API
+  source: "inhouse" | "outsource";
 }
 
 export interface InhouseTest extends BaseTest {

@@ -16,7 +16,7 @@
 .card {
     background: #fff;
     border-radius: 16px;
-    margin: 12px;
+    margin: 10px;
     flex: 1;
     min-height: 0;
     display: flex;
@@ -31,7 +31,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 10px 20px 6px;
+    padding: 4px 16px 4px;
 }
 
 .backBtn {
@@ -41,14 +41,15 @@
     background: transparent;
     border: none;
     cursor: pointer;
-    padding: 0;
-    color: #505050;
+    padding: 2px;
+    color: #374151;
+    flex-shrink: 0;
 }
 
 .cardTitle {
     font-family: var(--shipment-font-family);
     font-weight: 600;
-    font-size: 14px;
+    font-size: 13px;
     color: #111827;
     margin: 0;
 }
@@ -59,8 +60,8 @@
 .patientBar {
     display: flex;
     align-items: center;
-    gap: 20px;
-    padding: 0 20px 12px;
+    gap: 14px;
+    padding: 2px 16px 10px;
     border-bottom: 1px solid #f0f0f0;
 }
 
@@ -80,28 +81,30 @@
 
 .patientFields {
     display: flex;
-    gap: 40px;
+    gap: 32px;
     flex-wrap: wrap;
+    align-items: flex-start;
 }
 
 .field {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
 }
 
 .fieldLabel {
-    font-size: 11px;
+    font-size: 10px;
     color: #9ca3af;
     font-weight: 400;
     font-family: var(--shipment-font-family);
 }
 
 .fieldValue {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: #111827;
     font-family: var(--shipment-font-family);
+    white-space: nowrap;
 }
 
 
@@ -276,6 +279,7 @@
     font-weight: 400;
     vertical-align: middle;
     white-space: nowrap;
+    color: #111827;
 }
 
 .row:first-child td {
@@ -292,14 +296,14 @@
 }
 
 .datePrimary {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
     color: #111827;
 }
 
 .dateSub {
     font-size: 11px;
-    color: #111827;
+    color: #6b7280;
 }
 
 .codeCell {
@@ -309,14 +313,14 @@
 }
 
 .codePrimary {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
-    color: #111827;
+    color: #374151;
 }
 
 .codeSub {
     font-size: 11px;
-    color: #111827;
+    color: #6b7280;
 }
 
 .specimenCell {
@@ -326,7 +330,7 @@
 }
 
 .specimenPrimary {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: #111827;
 }
@@ -728,7 +732,7 @@
 }
 
 .processFieldValue {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: #111827;
     font-family: var(--shipment-font-family);

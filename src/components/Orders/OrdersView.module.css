@@ -135,9 +135,8 @@
 .tableWrapper {
     flex: 1;
     min-height: 0;
-    overflow: visible;
-    display: flex;
-    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .table {
@@ -181,6 +180,7 @@
 
 .scrollBody {
     display: table-row-group;
+    vertical-align: middle;
 }
 
 .row td {
