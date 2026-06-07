@@ -1,8 +1,8 @@
-/* ─── Root ───────────────────────────────────────────────────────────────────── */
+/* ─── Root ───────────────────────────────────────────────────────────────── */
 
 .page {
-    font-family: 'Nunito', sans-serif;
-    font-size: clamp(13px, 1.5vh, 16px);
+    font-family: var(--shipment-font-family);
+    font-size: 13px;
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -11,28 +11,27 @@
 }
 
 
-/* ─── Main Card ──────────────────────────────────────────────────────────────── */
+/* ─── Main Card ──────────────────────────────────────────────────────────── */
 
 .card {
     background: #fff;
     border-radius: 16px;
-    margin: 1em;
+    margin: 12px;
     flex: 1;
     min-height: 0;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
 
-/* ─── Card Header ────────────────────────────────────────────────────────────── */
+/* ─── Card Header ────────────────────────────────────────────────────────── */
 
 .cardHeader {
     display: flex;
     align-items: center;
-    gap: 0.5em;
-    padding: 1em 1.5em 0.75em;
+    gap: 6px;
+    padding: 10px 20px 6px;
 }
 
 .backBtn {
@@ -43,87 +42,90 @@
     border: none;
     cursor: pointer;
     padding: 0;
+    color: #505050;
 }
 
 .cardTitle {
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 700;
-    font-size: 1.05em;
-    color: #1a1a1a;
+    font-family: var(--shipment-font-family);
+    font-weight: 600;
+    font-size: 14px;
+    color: #111827;
     margin: 0;
 }
 
 
-/* ─── Patient Info ───────────────────────────────────────────────────────────── */
+/* ─── Patient Info Bar ───────────────────────────────────────────────────── */
 
 .patientBar {
     display: flex;
     align-items: center;
-    gap: 1em;
-    padding: 0 1.5em 1em;
+    gap: 20px;
+    padding: 0 20px 12px;
     border-bottom: 1px solid #f0f0f0;
 }
 
 .avatar {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     flex-shrink: 0;
-    background: linear-gradient(135deg, #E17C64, #f5c9b0);
+    background: #f5c9b0;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
+    color: #c05c35;
     font-weight: 700;
-    font-size: 1.1em;
+    font-size: 15px;
 }
 
 .patientFields {
     display: flex;
-    gap: 2.5em;
+    gap: 40px;
     flex-wrap: wrap;
 }
 
 .field {
     display: flex;
     flex-direction: column;
-    gap: 0.15em;
+    gap: 2px;
 }
 
 .fieldLabel {
-    font-size: 0.72em;
-    color: #9e9e9e;
-    font-family: 'Noto Sans', sans-serif;
+    font-size: 11px;
+    color: #9ca3af;
+    font-weight: 400;
+    font-family: var(--shipment-font-family);
 }
 
 .fieldValue {
-    font-size: 0.9em;
-    font-weight: 700;
-    color: #1a1a1a;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    font-family: var(--shipment-font-family);
 }
 
 
-/* ─── List Header ────────────────────────────────────────────────────────────── */
+/* ─── List Header ────────────────────────────────────────────────────────── */
 
 .listHeader {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.875em 1.5em 0.5em;
+    padding: 10px 20px 4px;
 }
 
 .listTitle {
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 700;
-    font-size: 0.95em;
-    color: #1a1a1a;
+    font-family: var(--shipment-font-family);
+    font-weight: 600;
+    font-size: 12px;
+    color: #111827;
     margin: 0;
 }
 
 .listActions {
     display: flex;
     align-items: center;
-    gap: 0.75em;
+    gap: 10px;
 }
 
 .searchWrap {
@@ -132,35 +134,39 @@
 
 .searchIcon {
     position: absolute;
-    left: 0.75em;
+    left: 10px;
     top: 50%;
     transform: translateY(-50%);
     pointer-events: none;
     display: flex;
+    color: #9ca3af;
 }
 
 .searchInput {
-    height: 2.4em;
-    padding: 0 0.75em 0 2.2em;
+    height: 34px;
+    padding: 0 10px 0 30px;
     border: 1px solid #E2E3E5;
     border-radius: 10px;
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.88em;
+    font-family: var(--shipment-font-family);
+    font-size: 12px;
     outline: none;
-    width: 18em;
+    width: 220px;
     box-sizing: border-box;
+    color: #374151;
+    background: #fff;
+    transition: border 0.2s;
 }
 
 .searchInput::placeholder {
-    color: #9e9e9e;
+    color: #9ca3af;
 }
 
 .searchInput:focus {
-    border-color: #9e9e9e;
+    border-color: #b0b0b0;
 }
 
 
-/* ─── Filter button wrapper ──────────────────────────────────────────────────── */
+/* ─── Filter button ──────────────────────────────────────────────────────── */
 
 .filterBtnWrap {
     flex-shrink: 0;
@@ -170,75 +176,46 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 2.4em;
-    height: 2.4em;
+    width: 34px;
+    height: 34px;
     border: 1px solid #E2E3E5;
     border-radius: 10px;
-    background: #F3F3F3;
+    background: #F8F8F8;
     cursor: pointer;
-    transition: background 0.2s;
+    color: #505050;
+    transition: background 0.15s;
 }
 
 .iconBtn:hover {
-    background: #ebebeb;
+    background: #efefef;
 }
 
 .iconBtnActive {
-    background: #ebebeb;
-    border-color: #9e9e9e;
+    background: #efefef;
+    border-color: #b0b0b0;
 }
 
 
-/* ─── Filter Modal ───────────────────────────────────────────────────────────── */
-
-.filterModal {
-    background: #fff;
-    border-radius: 16px;
-    width: 300px;
-    max-width: 95vw;
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    font-family: 'Nunito', sans-serif;
-    font-size: clamp(13px, 1.5vh, 16px);
-}
-
-.filterDropdownHeader {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1em 1.25em 0.875em;
-}
-
-.filterDropdownTitle {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 0.95em;
-    font-weight: 700;
-    color: #1a1a1a;
-}
-
-
-/* ─── Tab Pills ──────────────────────────────────────────────────────────────── */
+/* ─── Tab Pills ──────────────────────────────────────────────────────────── */
 
 .tabRow {
     display: flex;
-    gap: 0.5em;
-    padding: 0 1.5em 0.5em;
+    gap: 8px;
+    padding: 0 20px 8px;
 }
 
 .tabPill {
-    height: 1.875em;
-    padding: 0 0.875em;
+    height: 28px;
+    padding: 0 14px;
     border: 1.5px solid #E2E3E5;
     border-radius: 20px;
     background: #fff;
-    font-size: 0.82em;
-    font-weight: 600;
-    font-family: 'Montserrat', sans-serif;
-    color: #7a7a7a;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: var(--shipment-font-family);
+    color: #6b7280;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.15s;
     white-space: nowrap;
 }
 
@@ -250,10 +227,12 @@
 .tabPillActive {
     border-color: #E17C64;
     color: #E17C64;
+    font-weight: 600;
+    background: #fff7f5;
 }
 
 
-/* ─── Table ──────────────────────────────────────────────────────────────────── */
+/* ─── Table ──────────────────────────────────────────────────────────────── */
 
 .tableWrap {
     flex: 1;
@@ -269,35 +248,32 @@
 }
 
 .head th {
-    padding: 0.875em 1em;
+    padding: 10px 12px;
     background: #fafafa;
-    color: #7a7a7a;
-    font-family: 'Noto Sans', sans-serif;
-    font-size: 0.95em;
+    color: #9ca3af;
+    font-family: var(--shipment-font-family);
+    font-size: 12px;
     font-weight: 400;
-    line-height: 145%;
     text-align: left;
     white-space: nowrap;
+    border-bottom: 1px solid #f3f4f6;
 }
 
 .head th:first-child {
-    border-top-left-radius: 12px;
-    border-bottom-left-radius: 12px;
+    border-top-left-radius: 8px;
 }
 
 .head th:last-child {
-    border-top-right-radius: 12px;
-    border-bottom-right-radius: 12px;
+    border-top-right-radius: 8px;
 }
 
 .row td {
-    padding: 0.6em 1em;
-    border-top: 1px solid #e2e3e599;
-    color: #232323;
-    font-family: 'Nunito', sans-serif;
-    font-size: 1.05em;
-    font-weight: 500;
-    line-height: 100%;
+    padding: 12px 12px;
+    border-top: 1px solid #f3f4f6;
+    color: #111827;
+    font-family: var(--shipment-font-family);
+    font-size: 12px;
+    font-weight: 400;
     vertical-align: middle;
     white-space: nowrap;
 }
@@ -307,91 +283,91 @@
 }
 
 
-/* ─── Cell sub-types ─────────────────────────────────────────────────────────── */
+/* ─── Cell sub-types ─────────────────────────────────────────────────────── */
 
 .dateCell {
     display: flex;
     flex-direction: column;
-    gap: 0.1em;
+    gap: 2px;
 }
 
 .datePrimary {
-    font-size: 0.88em;
-    font-weight: 600;
-    color: #1a1a1a;
+    font-size: 13px;
+    font-weight: 500;
+    color: #111827;
 }
 
 .dateSub {
-    font-size: 0.78em;
-    color: #9e9e9e;
+    font-size: 11px;
+    color: #111827;
 }
 
 .codeCell {
     display: flex;
     flex-direction: column;
-    gap: 0.1em;
+    gap: 2px;
 }
 
 .codePrimary {
-    font-size: 0.88em;
+    font-size: 13px;
     font-weight: 600;
-    color: #1a1a1a;
+    color: #111827;
 }
 
 .codeSub {
-    font-size: 0.78em;
-    color: #9e9e9e;
+    font-size: 11px;
+    color: #111827;
 }
 
 .specimenCell {
     display: flex;
     flex-direction: column;
-    gap: 0.1em;
+    gap: 2px;
 }
 
 .specimenPrimary {
-    font-size: 0.88em;
+    font-size: 13px;
     font-weight: 600;
-    color: #1a1a1a;
+    color: #111827;
 }
 
 .specimenSub {
-    font-size: 0.78em;
-    color: #9e9e9e;
+    font-size: 11px;
+    color: #111827;
 }
 
 .statusCell {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    gap: 0.4em;
+    justify-content: center;
+    gap: 6px;
 }
 
 .resultCell {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    gap: 0.35em;
+    justify-content: center;
+    gap: 5px;
 }
 
 .agencyCell {
     display: flex;
     align-items: center;
-    gap: 0.4em;
+    gap: 6px;
 }
 
 
-/* ─── Badges ─────────────────────────────────────────────────────────────────── */
+/* ─── Badges — match Figma exactly ──────────────────────────────────────── */
 
 .badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.2em 0.65em;
+    padding: 3px 10px;
     border-radius: 20px;
-    font-size: 0.78em;
+    font-size: 11px;
     font-weight: 600;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--shipment-font-family);
     white-space: nowrap;
 }
 
@@ -438,7 +414,7 @@
 }
 
 
-/* ─── Action / icon buttons ──────────────────────────────────────────────────── */
+/* ─── Action / icon buttons ──────────────────────────────────────────────── */
 
 .actionBtn {
     display: inline-flex;
@@ -447,9 +423,9 @@
     background: transparent;
     border: none;
     cursor: pointer;
-    padding: 0.2em;
+    padding: 3px;
     opacity: 0.7;
-    transition: opacity 0.2s;
+    transition: opacity 0.15s;
 }
 
 .actionBtn:hover {
@@ -458,44 +434,45 @@
 
 .dash {
     color: #d0d0d0;
-    font-size: 0.9em;
+    font-size: 13px;
 }
 
 
-/* ─── Check circle ───────────────────────────────────────────────────────────── */
+/* ─── Check circle ───────────────────────────────────────────────────────── */
 
 .checkCircle {
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    border: 1.5px solid #E2E3E5;
+    border: 1.5px solid #d1d5db;
     background: #fff;
     cursor: pointer;
     flex-shrink: 0;
 }
 
 
-/* ─── Card footer ────────────────────────────────────────────────────────────── */
+/* ─── Card footer ────────────────────────────────────────────────────────── */
 
 .cardFooter {
     display: flex;
     justify-content: flex-end;
-    padding: 0.75em 1.5em;
+    padding: 10px 20px;
     flex-shrink: 0;
+    border-top: 1px solid #f3f4f6;
 }
 
 .scheduleBtn {
-    height: 2.4em;
-    padding: 0 1.5em;
+    height: 36px;
+    padding: 0 20px;
     border: none;
     border-radius: 10px;
-    background: #505050;
+    background: #3a3a3a;
     color: #fff;
-    font-size: 0.9em;
-    font-weight: 700;
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
-    font-family: 'Montserrat', sans-serif;
-    transition: background 0.2s;
+    font-family: var(--shipment-font-family);
+    transition: background 0.15s;
 }
 
 .scheduleBtn:hover {
@@ -503,12 +480,12 @@
 }
 
 
-/* ─── Shared modal overlay ───────────────────────────────────────────────────── */
+/* ─── Shared modal overlay ───────────────────────────────────────────────── */
 
 .modalOverlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.35);
+    background: rgba(0, 0, 0, 0.3);
     z-index: 10001;
     display: flex;
     align-items: center;
@@ -516,30 +493,30 @@
 }
 
 
-/* ─── Shared modal header ────────────────────────────────────────────────────── */
+/* ─── Shared modal header ────────────────────────────────────────────────── */
 
 .modalHeader {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1em 1.25em 0.875em;
-    border-bottom: 1px solid #f0f0f0;
+    padding: 14px 20px 12px;
+    border-bottom: 1px solid #f3f4f6;
     flex-shrink: 0;
 }
 
 .modalTitle {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 1em;
-    font-weight: 700;
-    color: #1a1a1a;
+    font-family: var(--shipment-font-family);
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
 }
 
 .panelClose {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 1.6em;
-    height: 1.6em;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     border: none;
     background: #f0f0f0;
@@ -552,54 +529,55 @@
 }
 
 
-/* ─── Schedule Collection Modal ──────────────────────────────────────────────── */
+/* ─── Schedule Collection Modal ──────────────────────────────────────────── */
 
 .modal {
     background: #fff;
     border-radius: 16px;
-    width: 520px;
+    width: 500px;
     max-width: 95vw;
     max-height: 90vh;
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    font-family: 'Nunito', sans-serif;
-    font-size: clamp(13px, 1.5vh, 16px);
+    font-family: var(--shipment-font-family);
+    font-size: 13px;
 }
 
 .modalBody {
-    padding: 1.25em;
+    padding: 16px 20px;
     display: flex;
     flex-direction: column;
-    gap: 1.25em;
+    gap: 16px;
     overflow-y: auto;
 }
 
 .modalDateRow {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1em;
+    gap: 12px;
 }
 
 .modalField {
     display: flex;
     flex-direction: column;
-    gap: 0.3em;
+    gap: 4px;
 }
 
 .modalLabel {
-    font-size: 0.72em;
-    color: #9e9e9e;
-    font-family: 'Noto Sans', sans-serif;
+    font-size: 11px;
+    color: #9ca3af;
+    font-weight: 400;
+    font-family: var(--shipment-font-family);
 }
 
 .collectionDetailsTitle {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 0.82em;
-    font-weight: 700;
-    color: #1a1a1a;
-    margin: 0 0 0.75em;
+    font-family: var(--shipment-font-family);
+    font-size: 12px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 10px;
 }
 
 .collectionTable {
@@ -608,21 +586,22 @@
 }
 
 .collectionTable thead th {
-    font-family: 'Noto Sans', sans-serif;
-    font-size: 0.78em;
+    font-family: var(--shipment-font-family);
+    font-size: 11px;
     font-weight: 400;
-    color: #9e9e9e;
+    color: #9ca3af;
     text-align: left;
-    padding: 0 0.5em 0.5em;
+    padding: 0 8px 6px;
 }
 
 .collectionTable tbody td {
-    font-size: 0.85em;
+    font-size: 12px;
     font-weight: 500;
-    color: #1a1a1a;
-    padding: 0.35em 0.5em;
-    border-top: 1px solid #f0f0f0;
+    color: #111827;
+    padding: 5px 8px;
+    border-top: 1px solid #f3f4f6;
     vertical-align: middle;
+    font-family: var(--shipment-font-family);
 }
 
 .collectionTable tbody tr:first-child td {
@@ -632,22 +611,23 @@
 .modalFooter {
     display: flex;
     justify-content: flex-end;
-    gap: 0.6em;
-    padding: 0.875em 1.25em 1.25em;
+    gap: 8px;
+    padding: 10px 20px 16px;
     flex-shrink: 0;
 }
 
 .modalCancelBtn {
-    height: 2.4em;
-    padding: 0 1.25em;
+    height: 36px;
+    padding: 0 16px;
     border: 1px solid #E2E3E5;
     border-radius: 10px;
     background: #f5f5f5;
-    font-size: 0.88em;
-    font-weight: 700;
+    font-size: 13px;
+    font-weight: 600;
     color: #505050;
     cursor: pointer;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--shipment-font-family);
+    transition: background 0.15s;
 }
 
 .modalCancelBtn:hover {
@@ -655,16 +635,17 @@
 }
 
 .modalPrintBtn {
-    height: 2.4em;
-    padding: 0 1.25em;
+    height: 36px;
+    padding: 0 16px;
     border: 1px solid #E2E3E5;
     border-radius: 10px;
     background: #f5f5f5;
-    font-size: 0.88em;
-    font-weight: 700;
+    font-size: 13px;
+    font-weight: 600;
     color: #505050;
     cursor: pointer;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--shipment-font-family);
+    transition: background 0.15s;
 }
 
 .modalPrintBtn:hover {
@@ -672,17 +653,17 @@
 }
 
 .modalCollectBtn {
-    height: 2.4em;
-    padding: 0 1.25em;
+    height: 36px;
+    padding: 0 16px;
     border: none;
     border-radius: 10px;
     background: #3a3a3a;
     color: #fff;
-    font-size: 0.88em;
-    font-weight: 700;
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
-    font-family: 'Montserrat', sans-serif;
-    transition: background 0.2s;
+    font-family: var(--shipment-font-family);
+    transition: background 0.15s;
 }
 
 .modalCollectBtn:hover {
@@ -695,134 +676,134 @@
 }
 
 
-/* ─── Test Process Details Modal ─────────────────────────────────────────────── */
+/* ─── Test Process Details Modal ─────────────────────────────────────────── */
 
 .processModal {
     background: #fff;
     border-radius: 16px;
-    width: 560px;
+    width: 540px;
     max-width: 95vw;
     max-height: 85vh;
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    font-family: 'Nunito', sans-serif;
-    font-size: clamp(13px, 1.5vh, 16px);
+    font-family: var(--shipment-font-family);
+    font-size: 13px;
 }
 
 .processModalBody {
-    padding: 1.25em;
+    padding: 16px 20px;
     display: flex;
     flex-direction: column;
-    gap: 1.25em;
+    gap: 16px;
     overflow-y: auto;
 }
 
-.processSection {}
-
 .processSectionTitle {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 0.82em;
-    font-weight: 700;
-    color: #1a1a1a;
-    margin: 0 0 0.75em;
+    font-family: var(--shipment-font-family);
+    font-size: 12px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 8px;
 }
 
 .processFields {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75em 2.5em;
+    gap: 10px 32px;
 }
 
 .processField {
     display: flex;
     flex-direction: column;
-    gap: 0.2em;
+    gap: 2px;
     min-width: 110px;
 }
 
 .processFieldLabel {
-    font-size: 0.72em;
-    color: #9e9e9e;
-    font-family: 'Noto Sans', sans-serif;
+    font-size: 11px;
+    color: #9ca3af;
+    font-family: var(--shipment-font-family);
 }
 
 .processFieldValue {
-    font-size: 0.88em;
+    font-size: 13px;
     font-weight: 600;
-    color: #1a1a1a;
+    color: #111827;
+    font-family: var(--shipment-font-family);
 }
 
 
-/* ─── Change Agency Modal ────────────────────────────────────────────────────── */
+/* ─── Change Agency Modal ────────────────────────────────────────────────── */
 
 .agencyModal {
     background: #fff;
     border-radius: 16px;
     width: 300px;
     max-width: 95vw;
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    font-family: 'Nunito', sans-serif;
-    font-size: clamp(13px, 1.5vh, 16px);
+    font-family: var(--shipment-font-family);
+    font-size: 13px;
 }
 
 .agencyBody {
-    padding: 0.875em 1.25em;
+    padding: 12px 20px;
     display: flex;
     flex-direction: column;
-    gap: 0.875em;
+    gap: 12px;
 }
 
 .agencyTextarea {
     border: 1px solid #E2E3E5;
     border-radius: 8px;
-    padding: 0.5em 0.75em;
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.88em;
-    color: #1a1a1a;
+    padding: 8px 10px;
+    font-family: var(--shipment-font-family);
+    font-size: 13px;
+    color: #111827;
     resize: none;
     outline: none;
     height: 64px;
-    line-height: 1.4;
+    line-height: 1.5;
     width: 100%;
     box-sizing: border-box;
+    transition: border-color 0.15s;
 }
 
 .agencyTextarea:focus {
-    border-color: #9e9e9e;
+    border-color: #b0b0b0;
 }
 
 
-/* ─── Shared filter/form styles (used in dropdown + modals) ──────────────────── */
+/* ─── Shared filter/form styles ──────────────────────────────────────────── */
 
 .filterBody {
-    padding: 0 1.25em;
+    padding: 0 20px;
     display: flex;
     flex-direction: column;
-    gap: 0.875em;
+    gap: 12px;
 }
 
 .filterDateRow {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.75em;
+    gap: 10px;
 }
 
 .filterField {
     display: flex;
     flex-direction: column;
-    gap: 0.3em;
+    gap: 4px;
 }
 
 .filterLabel {
-    font-size: 0.72em;
+    font-size: 11px;
     font-weight: 500;
-    color: #9e9e9e;
-    font-family: 'Noto Sans', sans-serif;
+    color: #9ca3af;
+    font-family: var(--shipment-font-family);
 }
 
 .dateInputWrap {
@@ -830,68 +811,71 @@
     align-items: center;
     border: 1px solid #E2E3E5;
     border-radius: 8px;
-    padding: 0 0.5em;
-    gap: 0.4em;
-    height: 2.4em;
+    padding: 0 8px;
+    gap: 6px;
+    height: 34px;
     box-sizing: border-box;
+    transition: border-color 0.2s;
 }
 
 .dateInputWrap:focus-within {
-    border-color: #9e9e9e;
+    border-color: #b0b0b0;
 }
 
 .filterInput {
     flex: 1;
     border: none;
     outline: none;
-    font-size: 0.85em;
-    font-family: 'Nunito', sans-serif;
-    color: #1a1a1a;
+    font-size: 13px;
+    font-family: var(--shipment-font-family);
+    color: #111827;
     background: transparent;
     min-width: 0;
 }
 
 .filterInput::placeholder {
-    color: #bbb;
+    color: #c0c0c0;
 }
 
 .filterSelect {
     width: 100%;
-    height: 2.4em;
-    padding: 0 2em 0 0.75em;
+    height: 34px;
+    padding: 0 28px 0 10px;
     border: 1px solid #E2E3E5;
     border-radius: 8px;
-    font-size: 0.875em;
-    font-family: 'Nunito', sans-serif;
-    color: #1a1a1a;
+    font-size: 13px;
+    font-family: var(--shipment-font-family);
+    color: #111827;
     outline: none;
     appearance: none;
-    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239e9e9e' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 0.75em center;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239e9e9e' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 10px center;
     cursor: pointer;
     box-sizing: border-box;
+    transition: border-color 0.2s;
 }
 
 .filterSelect:focus {
-    border-color: #9e9e9e;
+    border-color: #b0b0b0;
 }
 
 .filterFooter {
     display: flex;
-    gap: 0.6em;
-    padding: 1em 1.25em 1.25em;
+    gap: 8px;
+    padding: 12px 20px 16px;
 }
 
 .clearBtn {
     flex: 1;
-    height: 2.4em;
+    height: 36px;
     border: 1px solid #E2E3E5;
     border-radius: 10px;
     background: #f5f5f5;
-    font-size: 0.85em;
-    font-weight: 700;
+    font-size: 13px;
+    font-weight: 600;
     color: #505050;
     cursor: pointer;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--shipment-font-family);
+    transition: background 0.15s;
 }
 
 .clearBtn:hover {
@@ -900,15 +884,16 @@
 
 .applyBtn {
     flex: 1;
-    height: 2.4em;
+    height: 36px;
     border: none;
     border-radius: 10px;
     background: #3a3a3a;
     color: #fff;
-    font-size: 0.85em;
-    font-weight: 700;
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--shipment-font-family);
+    transition: background 0.15s;
 }
 
 .applyBtn:hover {

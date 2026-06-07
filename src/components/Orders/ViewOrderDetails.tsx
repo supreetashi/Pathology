@@ -2,14 +2,10 @@ import { useState, useRef } from "react";
 import type { ChangeEvent, MouseEvent, RefObject } from "react";
 import styles from "./ViewOrderDetails.module.css";
 
-// import shared types — remove local duplicates
 import type { TestRow, TestStatus } from "../../types/orders.types";
-
-// ─── Component-only types (not in orders.types.ts) ───────────────────────────
 
 type ActiveTab = "inhouse" | "outsource";
 
-// PatientOrder keeps cycleId which is UI-only (not in API OrderRow)
 type PatientOrder = {
   patientName?: string;
   patientAge?: number;
@@ -31,8 +27,6 @@ type ViewOrderDetailsProps = {
   order?: PatientOrder | null;
   onBack?: () => void;
 };
-
-// ─── Mock data (unchanged) ────────────────────────────────────────────────────
 
 const INHOUSE_TESTS: TestRow[] = [
   { id: 1, source: "inhouse", date: "04/02/2024", time: "10:30 AM", code: "2786/B34", name: "Urine Culture",   service: "Women Pathology 2026", specimenNo: "-",        type: "Urine",  collectorItem: "Urine Container",                      status: "Pending",              checked: true  },
@@ -75,7 +69,7 @@ const BADGE_CLASS: Record<TestStatus, string> = {
 const HAS_INFO:   TestStatus[] = ["Collected", "Shipped", "Accepted", "Completed", "Rejected"];
 const HAS_RESULT: TestStatus[] = ["Completed", "Collected"];
 
-// ─── Icons (unchanged) ────────────────────────────────────────────────────────
+// ─── Icons ────────────────────────────────────────────────────────────────────
 
 function IconBack() {
   return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#505050" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>;
@@ -93,10 +87,10 @@ function IconEdit() {
   return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5A8AEA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>;
 }
 function IconPrint() {
-  return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9e9e9e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg>;
+  return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5A8AEA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg>;
 }
 function IconDownload() {
-  return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9e9e9e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>;
+  return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5A8AEA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>;
 }
 function IconClose() {
   return <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><line x1="1" y1="1" x2="11" y2="11" stroke="#505050" strokeWidth="2" strokeLinecap="round" /><line x1="11" y1="1" x2="1" y2="11" stroke="#505050" strokeWidth="2" strokeLinecap="round" /></svg>;
@@ -108,24 +102,27 @@ function IconClock() {
   return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9e9e9e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>;
 }
 
+// FIX 1: Checkbox is SQUARE (rounded square) not circle, matches Figma
 function CheckCircle({ checked, onClick }: CheckCircleProps) {
   return checked ? (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ cursor: "pointer" }} onClick={onClick}>
-      <circle cx="12" cy="12" r="10" fill="#4CAF50" />
-      <polyline points="9 12 11 14 15 10" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style={{ cursor: "pointer", flexShrink: 0 }} onClick={onClick}>
+      <rect x="0.5" y="0.5" width="17" height="17" rx="4" fill="#4CAF50" stroke="#4CAF50" />
+      <polyline points="4 9 7.5 12.5 14 6" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ) : (
-    <div className={styles.checkCircle} onClick={onClick} />
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style={{ cursor: "pointer", flexShrink: 0 }} onClick={onClick}>
+      <rect x="0.5" y="0.5" width="17" height="17" rx="4" fill="#fff" stroke="#d1d5db" strokeWidth="1.5" />
+    </svg>
   );
 }
 
-// ─── Sub-components (unchanged logic) ────────────────────────────────────────
+// ─── Sub-components ────────────────────────────────────────────────────────────
 
 function FilterDropdown({ onClose }: FilterDropdownProps) {
-  const [fromDate, setFromDate]   = useState("13/03/2026");
-  const [toDate, setToDate]       = useState("14/03/2026");
+  const [fromDate, setFromDate]     = useState("13/03/2026");
+  const [toDate, setToDate]         = useState("14/03/2026");
   const [testStatus, setTestStatus] = useState<TestStatus>("Pending");
-  const [service, setService]     = useState("Women Patholog...");
+  const [service, setService]       = useState("Women Patholog...");
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
@@ -270,9 +267,9 @@ function ScheduleModal({ rows, onClose, onCollect }: ScheduleModalProps) {
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.id}>
-                    <td><div style={{ display: "flex", flexDirection: "column" }}><span style={{ fontWeight: 600, fontSize: "0.88em" }}>{barcodesPrinted ? row.specimenNo : row.type}</span><span style={{ color: "#9e9e9e", fontSize: "0.78em" }}>{row.type}</span></div></td>
+                    <td><div style={{ display: "flex", flexDirection: "column" }}><span style={{ fontWeight: 600, fontSize: "0.88em" }}>{row.specimenNo}</span><span style={{ color: "#9e9e9e", fontSize: "0.78em" }}>{row.type}</span></div></td>
                     <td>{row.service}</td>
-                    <td><div style={{ display: "flex", flexDirection: "column" }}><span style={{ fontWeight: 600, fontSize: "0.88em" }}>{barcodesPrinted ? row.code : ""}</span><span style={{ fontSize: "0.85em" }}>{row.name}</span></div></td>
+                    <td><div style={{ display: "flex", flexDirection: "column" }}><span style={{ fontWeight: 600, fontSize: "0.88em" }}>{row.code}</span><span style={{ fontSize: "0.85em" }}>{row.name}</span></div></td>
                     <td>{row.collectorItem}</td>
                   </tr>
                 ))}
@@ -293,14 +290,14 @@ function ScheduleModal({ rows, onClose, onCollect }: ScheduleModalProps) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function ViewOrderDetails({ order, onBack }: ViewOrderDetailsProps) {
-  const [activeTab, setActiveTab]   = useState<ActiveTab>("inhouse");
-  const [search, setSearch]         = useState("");
+  const [activeTab, setActiveTab]     = useState<ActiveTab>("inhouse");
+  const [search, setSearch]           = useState("");
   const [checkedRows, setCheckedRows] = useState<Set<number>>(
     new Set(INHOUSE_TESTS.filter((t) => t.checked).map((t) => t.id))
   );
-  const [filterOpen, setFilterOpen]   = useState(false);
-  const [processOpen, setProcessOpen] = useState(false);
-  const [agencyOpen, setAgencyOpen]   = useState(false);
+  const [filterOpen, setFilterOpen]     = useState(false);
+  const [processOpen, setProcessOpen]   = useState(false);
+  const [agencyOpen, setAgencyOpen]     = useState(false);
   const [scheduleOpen, setScheduleOpen] = useState(false);
 
   const filterBtnRef = useRef<HTMLButtonElement | null>(null);
@@ -319,27 +316,40 @@ export default function ViewOrderDetails({ order, onBack }: ViewOrderDetailsProp
   };
 
   const checkedTests  = tests.filter((t) => checkedRows.has(t.id));
-  const filteredTests = tests.filter((t) => !search || t.name.toLowerCase().includes(search.toLowerCase()) || t.code.toLowerCase().includes(search.toLowerCase()));
+  const filteredTests = tests.filter((t) =>
+    !search ||
+    t.name.toLowerCase().includes(search.toLowerCase()) ||
+    t.code.toLowerCase().includes(search.toLowerCase())
+  );
 
-  const patient: PatientOrder = order ?? { patientName: "Emilia Williamson", patientAge: 27, gender: "Female", mrn: "PCC - 4912", cycleId: "PCC/727/3" };
+  const patient: PatientOrder = order ?? {
+    patientName: "Emilia Williamson",
+    patientAge: 27,
+    gender: "Female",
+    mrn: "PCC - 4912",
+    cycleId: "PCC/727/3",
+  };
 
   return (
     <div className={styles.page}>
       <div className={styles.card}>
+
+        {/* FIX 3: Card header with back arrow and title */}
         <div className={styles.cardHeader}>
           <button className={styles.backBtn} onClick={onBack} type="button"><IconBack /></button>
           <h2 className={styles.cardTitle}>View Order Details</h2>
         </div>
 
+        {/* FIX 3: Patient bar — label small grey, value dark bold */}
         <div className={styles.patientBar}>
           <div className={styles.avatar}>{patient.patientName?.charAt(0) ?? "E"}</div>
           <div className={styles.patientFields}>
             {[
-              { label: "Patient Name",        val: patient.patientName },
-              { label: "Age",                 val: patient.patientAge ? `${patient.patientAge} Years` : "27 Years" },
-              { label: "Sex Assigned At Birth", val: patient.gender ?? "Female" },
-              { label: "MRN",                 val: patient.mrn ?? "PCC - 4912" },
-              { label: "Cycle ID",            val: patient.cycleId ?? "PCC/727/3" },
+              { label: "Patient Name",          val: patient.patientName },
+              { label: "Age",                   val: patient.patientAge ? `${patient.patientAge} Years` : "27 Years" },
+              { label: "Sex Assigned At Birth",  val: patient.gender ?? "Female" },
+              { label: "MRN",                   val: patient.mrn ?? "PCC - 4912" },
+              { label: "Cycle ID",              val: patient.cycleId ?? "PCC/727/3" },
             ].map(({ label, val }) => (
               <div key={label} className={styles.field}>
                 <span className={styles.fieldLabel}>{label}</span>
@@ -349,15 +359,26 @@ export default function ViewOrderDetails({ order, onBack }: ViewOrderDetailsProp
           </div>
         </div>
 
+        {/* FIX 3: List of Tests heading */}
         <div className={styles.listHeader}>
-          <h3 className={styles.listTitle}>List of Tests ({totalInhouse + totalOutsource})</h3>
+          <h3 className={styles.listTitle}>List of Tests <span style={{ fontWeight: 400, color: "#6b7280", fontSize: "11px" }}>({totalInhouse + totalOutsource})</span></h3>
           <div className={styles.listActions}>
             <div className={styles.searchWrap}>
               <span className={styles.searchIcon}><IconSearch /></span>
-              <input className={styles.searchInput} placeholder="Search by Test Name / Code" value={search} onChange={(e: ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)} />
+              <input
+                className={styles.searchInput}
+                placeholder="Search by Test Name / Code"
+                value={search}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+              />
             </div>
             <div className={styles.filterBtnWrap}>
-              <button ref={filterBtnRef} className={`${styles.iconBtn} ${filterOpen ? styles.iconBtnActive : ""}`} onClick={() => setFilterOpen((o) => !o)} type="button">
+              <button
+                ref={filterBtnRef}
+                className={`${styles.iconBtn} ${filterOpen ? styles.iconBtnActive : ""}`}
+                onClick={() => setFilterOpen((o) => !o)}
+                type="button"
+              >
                 <IconFilter />
               </button>
               {filterOpen && <FilterDropdown onClose={() => setFilterOpen(false)} anchorRef={filterBtnRef} />}
@@ -370,53 +391,92 @@ export default function ViewOrderDetails({ order, onBack }: ViewOrderDetailsProp
           <button className={`${styles.tabPill} ${activeTab === "outsource" ? styles.tabPillActive : ""}`} onClick={() => setActiveTab("outsource")} type="button">Outsource ({totalOutsource})</button>
         </div>
 
+        {/* FIX 4 & 5: Table with proper column spacing, status centered, result icons blue */}
         <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead className={styles.head}>
               <tr>
-                <th style={{ width: "3%" }}></th>
-                <th style={{ width: "13%" }}>Date | Time</th>
+                <th style={{ width: "3%"  }}></th>
+                <th style={{ width: "12%" }}>Date | Time</th>
                 <th style={{ width: isOutsource ? "13%" : "16%" }}>Test Code | Name</th>
                 <th style={{ width: "16%" }}>Service Name</th>
-                <th style={{ width: "12%" }}>Specimen No. | Type</th>
-                <th style={{ width: isOutsource ? "15%" : "20%" }}>Collector Item</th>
-                {isOutsource && <th style={{ width: "11%" }}>Agency</th>}
-                <th style={{ width: "13%", textAlign: "right" }}>Test Status</th>
-                <th style={{ width: "6%",  textAlign: "right" }}>Result</th>
+                <th style={{ width: "13%" }}>Specimen No. | Type</th>
+                <th style={{ width: isOutsource ? "14%" : "19%" }}>Collector Item</th>
+                {isOutsource && <th style={{ width: "10%" }}>Agency</th>}
+                <th style={{ width: "14%", textAlign: "center" }}>Test Status</th>
+                <th style={{ width: "9%",  textAlign: "right", paddingRight: "16px" }}>Result</th>
               </tr>
             </thead>
             <tbody>
               {filteredTests.map((row) => (
                 <tr key={row.id} className={styles.row}>
-                  <td><CheckCircle checked={checkedRows.has(row.id)} onClick={() => toggleRow(row.id)} /></td>
-                  <td><div className={styles.dateCell}><span className={styles.datePrimary}>{row.date}</span><span className={styles.dateSub}>{row.time}</span></div></td>
-                  <td><div className={styles.codeCell}><span className={styles.codePrimary}>{row.code}</span><span className={styles.codeSub}>{row.name}</span></div></td>
-                  <td>{row.service}</td>
-                  <td><div className={styles.specimenCell}><span className={styles.specimenPrimary}>{row.specimenNo}</span><span className={styles.specimenSub}>{row.type}</span></div></td>
-                  <td>{row.collectorItem}</td>
+
+                  {/* FIX 1: Square checkbox */}
+                  <td style={{ verticalAlign: "middle" }}>
+                    <CheckCircle checked={checkedRows.has(row.id)} onClick={() => toggleRow(row.id)} />
+                  </td>
+
+                  {/* FIX 2: Date/time same dark color */}
+                  <td>
+                    <div className={styles.dateCell}>
+                      <span className={styles.datePrimary}>{row.date}</span>
+                      <span className={styles.dateSub}>{row.time}</span>
+                    </div>
+                  </td>
+
+                  <td>
+                    <div className={styles.codeCell}>
+                      <span className={styles.codePrimary}>{row.code}</span>
+                      <span className={styles.codeSub}>{row.name}</span>
+                    </div>
+                  </td>
+
+                  <td style={{ color: "#111827" }}>{row.service}</td>
+
+                  <td>
+                    <div className={styles.specimenCell}>
+                      <span className={styles.specimenPrimary}>{row.specimenNo}</span>
+                      <span className={styles.specimenSub}>{row.type}</span>
+                    </div>
+                  </td>
+
+                  <td style={{ color: "#111827" }}>{row.collectorItem}</td>
+
                   {isOutsource && "agency" in row && (
                     <td>
                       <div className={styles.agencyCell}>
-                        <span>{row.agency}</span>
+                        <span style={{ color: "#111827" }}>{row.agency}</span>
                         <button className={styles.actionBtn} onClick={() => setAgencyOpen(true)} type="button"><IconEdit /></button>
                       </div>
                     </td>
                   )}
-                  <td>
+
+                  {/* FIX 4: Status centered */}
+                  <td style={{ textAlign: "center" }}>
                     <div className={styles.statusCell}>
                       <span className={`${styles.badge} ${BADGE_CLASS[row.status]}`}>{row.status}</span>
-                      {HAS_INFO.includes(row.status) && <button className={styles.actionBtn} type="button"><IconInfo /></button>}
+                      {HAS_INFO.includes(row.status) && (
+                        <button className={styles.actionBtn} onClick={() => setProcessOpen(true)} type="button">
+                          <IconInfo />
+                        </button>
+                      )}
                     </div>
                   </td>
-                  <td>
-                    <div className={styles.resultCell}>
+
+                  {/* FIX 5: Result — blue icons right-aligned like Figma */}
+                  <td style={{ textAlign: "right", paddingRight: "8px" }}>
+                    <div className={styles.resultCell} style={{ justifyContent: "flex-end" }}>
                       {HAS_RESULT.includes(row.status) ? (
-                        <><button className={styles.actionBtn} type="button"><IconPrint /></button><button className={styles.actionBtn} type="button"><IconDownload /></button></>
+                        <>
+                          <button className={styles.actionBtn} type="button"><IconDownload /></button>
+                          <button className={styles.actionBtn} type="button"><IconPrint /></button>
+                        </>
                       ) : (
                         <span className={styles.dash}>—</span>
                       )}
                     </div>
                   </td>
+
                 </tr>
               ))}
             </tbody>
@@ -424,7 +484,9 @@ export default function ViewOrderDetails({ order, onBack }: ViewOrderDetailsProp
         </div>
 
         <div className={styles.cardFooter}>
-          <button className={styles.scheduleBtn} onClick={() => setScheduleOpen(true)} type="button">Schedule Collection</button>
+          <button className={styles.scheduleBtn} onClick={() => setScheduleOpen(true)} type="button">
+            Schedule Collection
+          </button>
         </div>
       </div>
 
