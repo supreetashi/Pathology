@@ -1,4 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { FaRegFileAlt } from "react-icons/fa";
+import UndoIcon from "../../assets/icons/undo.png";
 import type { ChangeEvent, MouseEvent, RefObject } from "react";
 import styles from "./ViewOrderDetails.module.css";
 
@@ -12,6 +14,7 @@ type PatientOrder = {
   gender?: string;
   mrn?: string;
   cycleId?: string;
+  orderId?: number;   // Vidai work_order id
 };
 
 type ProcessField   = { label: string; val: string };
@@ -25,6 +28,7 @@ type ScheduleModalProps  = { rows: TestRow[]; onClose: () => void; onCollect: ()
 
 type ViewOrderDetailsProps = {
   order?: PatientOrder | null;
+  orderId?: number;
   onBack?: () => void;
 };
 
@@ -72,7 +76,7 @@ const HAS_RESULT: TestStatus[] = ["Completed", "Collected"];
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
 function IconBack() {
-  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#505050" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>;
+  return <img src={UndoIcon} alt="back" width={20} height={20} style={{ display: "block" }} />;
 }
 function IconSearch() {
   return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9e9e9e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>;
@@ -87,7 +91,7 @@ function IconEdit() {
   return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5A8AEA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>;
 }
 function IconPrint() {
-  return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5A8AEA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg>;
+  return <FaRegFileAlt size={14} color="#5A8AEA" />;
 }
 function IconDownload() {
   return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5A8AEA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>;
@@ -119,51 +123,118 @@ function CheckCircle({ checked, onClick }: CheckCircleProps) {
 // ─── Sub-components ────────────────────────────────────────────────────────────
 
 function FilterDropdown({ onClose }: FilterDropdownProps) {
-  const [fromDate, setFromDate]     = useState("13/03/2026");
-  const [toDate, setToDate]         = useState("14/03/2026");
-  const [testStatus, setTestStatus] = useState<TestStatus>("Pending");
-  const [service, setService]       = useState("Women Patholog...");
+  const [fromDate, setFromDate]     = useState("");
+  const [toDate, setToDate]         = useState("");
+  const [testStatus, setTestStatus] = useState<string>("");
+  const [service, setService]       = useState("");
+
+  const handleClear = () => {
+    setFromDate(""); setToDate(""); setTestStatus(""); setService("");
+  };
 
   return (
-    <div className={styles.modalOverlay} onClick={onClose}>
-      <div className={styles.filterModal} onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}>
-        <div className={styles.filterDropdownHeader}>
-          <span className={styles.filterDropdownTitle}>Filters</span>
-          <button className={styles.panelClose} onClick={onClose} type="button"><IconClose /></button>
+    <div
+      style={{
+        position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)",
+        zIndex: 10002, display: "flex", alignItems: "center", justifyContent: "center"
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          background: "#fff", borderRadius: "16px", width: "360px",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.15)", overflow: "hidden",
+          fontFamily: "var(--shipment-font-family)", fontSize: "13px"
+        }}
+        onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px 10px" }}>
+          <span style={{ fontWeight: 700, fontSize: "15px", color: "#111827" }}>Filters</span>
+          <button onClick={onClose} type="button" style={{ background: "#f0f0f0", border: "none", borderRadius: "50%", width: 26, height: 26, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <IconClose />
+          </button>
         </div>
-        <div className={styles.filterBody}>
-          <div className={styles.filterDateRow}>
-            <div className={styles.filterField}>
-              <span className={styles.filterLabel}>From Date</span>
-              <div className={styles.dateInputWrap}>
-                <input className={styles.filterInput} value={fromDate} onChange={(e: ChangeEvent<HTMLInputElement>) => setFromDate(e.target.value)} placeholder="DD/MM/YYYY" />
-                <IconCalendar />
+
+        {/* Body */}
+        <div style={{ padding: "0 18px 8px", display: "flex", flexDirection: "column", gap: "8px" }}>
+
+          {/* From / To Date */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+              <span style={{ fontSize: "10px", color: "#9ca3af" }}>From Date</span>
+              <div style={{ display: "flex", alignItems: "center", border: "1px solid #E2E3E5", borderRadius: "6px", padding: "0 6px", height: "28px" }}>
+                <input
+                  type="date"
+                  value={fromDate}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setFromDate(e.target.value)}
+                  style={{ flex: 1, border: "none", outline: "none", fontSize: "11px", fontFamily: "var(--shipment-font-family)", color: "#111827", background: "transparent" }}
+                />
               </div>
             </div>
-            <div className={styles.filterField}>
-              <span className={styles.filterLabel}>To Date</span>
-              <div className={styles.dateInputWrap}>
-                <input className={styles.filterInput} value={toDate} onChange={(e: ChangeEvent<HTMLInputElement>) => setToDate(e.target.value)} placeholder="DD/MM/YYYY" />
-                <IconCalendar />
+            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+              <span style={{ fontSize: "10px", color: "#9ca3af" }}>To Date</span>
+              <div style={{ display: "flex", alignItems: "center", border: "1px solid #E2E3E5", borderRadius: "6px", padding: "0 6px", height: "28px" }}>
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setToDate(e.target.value)}
+                  style={{ flex: 1, border: "none", outline: "none", fontSize: "11px", fontFamily: "var(--shipment-font-family)", color: "#111827", background: "transparent" }}
+                />
               </div>
             </div>
           </div>
-          <div className={styles.filterField}>
-            <span className={styles.filterLabel}>Test Status</span>
-            <select className={styles.filterSelect} value={testStatus} onChange={(e: ChangeEvent<HTMLSelectElement>) => setTestStatus(e.target.value as TestStatus)}>
-              <option>Pending</option><option>Collected</option><option>Completed</option><option>Rejected</option>
+
+          {/* Test Status */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+            <span style={{ fontSize: "10px", color: "#9ca3af" }}>Test Status</span>
+            <select
+              value={testStatus}
+              onChange={(e: ChangeEvent<HTMLSelectElement>) => setTestStatus(e.target.value)}
+              style={{ width: "100%", height: "28px", padding: "0 8px", border: "1px solid #E2E3E5", borderRadius: "6px", fontSize: "12px", fontFamily: "var(--shipment-font-family)", color: "#111827", outline: "none", background: "#fff", cursor: "pointer" }}
+            >
+              <option value="">All</option>
+              <option value="Pending">Pending</option>
+              <option value="Recollection Pending">Recollection Pending</option>
+              <option value="Collected">Collected</option>
+              <option value="Shipped">Shipped</option>
+              <option value="Accepted">Accepted</option>
+              <option value="Completed">Completed</option>
+              <option value="Rejected">Rejected</option>
             </select>
           </div>
-          <div className={styles.filterField}>
-            <span className={styles.filterLabel}>Service</span>
-            <select className={styles.filterSelect} value={service} onChange={(e: ChangeEvent<HTMLSelectElement>) => setService(e.target.value)}>
-              <option>Women Patholog...</option><option>Men Pathology 2026</option>
+
+          {/* Service */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+            <span style={{ fontSize: "10px", color: "#9ca3af" }}>Service</span>
+            <select
+              value={service}
+              onChange={(e: ChangeEvent<HTMLSelectElement>) => setService(e.target.value)}
+              style={{ width: "100%", height: "28px", padding: "0 8px", border: "1px solid #E2E3E5", borderRadius: "6px", fontSize: "12px", fontFamily: "var(--shipment-font-family)", color: "#111827", outline: "none", background: "#fff", cursor: "pointer" }}
+            >
+              <option value="">All</option>
+              <option value="Women Pathology 2026">Women Pathology 2026</option>
+              <option value="Men Pathology 2026">Men Pathology 2026</option>
             </select>
           </div>
         </div>
-        <div className={styles.filterFooter}>
-          <button className={styles.clearBtn} onClick={onClose} type="button">Clear All</button>
-          <button className={styles.applyBtn} onClick={onClose} type="button">Apply</button>
+
+        {/* Footer */}
+        <div style={{ display: "flex", gap: "8px", padding: "6px 18px 14px" }}>
+          <button
+            onClick={handleClear}
+            type="button"
+            style={{ flex: 1, height: "32px", border: "1px solid #E2E3E5", borderRadius: "8px", background: "#f5f5f5", fontSize: "12px", fontWeight: 600, color: "#374151", cursor: "pointer", fontFamily: "var(--shipment-font-family)" }}
+          >
+            Clear All
+          </button>
+          <button
+            onClick={onClose}
+            type="button"
+            style={{ flex: 1, height: "32px", border: "none", borderRadius: "8px", background: "#1a1a1a", color: "#fff", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "var(--shipment-font-family)" }}
+          >
+            Apply
+          </button>
         </div>
       </div>
     </div>
@@ -230,9 +301,121 @@ function AgencyModal({ onClose }: AgencyModalProps) {
 }
 
 function ScheduleModal({ rows, onClose, onCollect }: ScheduleModalProps) {
-  const [collectionDate, setCollectionDate] = useState("13/03/2026");
+  const BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+
+  const [collectionDate, setCollectionDate] = useState(new Date().toISOString().split("T")[0]);
   const [collectionTime, setCollectionTime] = useState("12:30");
   const [barcodesPrinted, setBarcodesPrinted] = useState(false);
+  const [barcodeData, setBarcodeData] = useState<Record<number, { barcode_value: string; specimen_no: string }>>({});
+  const [loadingBarcode, setLoadingBarcode] = useState(false);
+  const [loadingCollect, setLoadingCollect] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Step 1: Generate barcodes for each selected row
+  const handlePrintBarcode = async () => {
+    setLoadingBarcode(true);
+    setError(null);
+    try {
+      const results: Record<number, { barcode_value: string; specimen_no: string }> = {};
+      for (const row of rows) {
+        const res = await fetch(`${BASE}/collections/generate-barcode/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+        if (!res.ok) throw new Error(`Barcode generation failed for ${row.code}`);
+        const data = await res.json();
+        results[row.id] = {
+          barcode_value: data.barcode_value,
+          specimen_no: data.specimen_no,
+        };
+      }
+      setBarcodeData(results);
+      setBarcodesPrinted(true);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Barcode generation failed");
+    } finally {
+      setLoadingBarcode(false);
+    }
+  };
+
+  // Step 2: Create PendingShipment records → appears in Shipment > Pending tab
+  const handleCollect = async () => {
+    if (!barcodesPrinted) return;
+    setLoadingCollect(true);
+    setError(null);
+    try {
+      for (const row of rows) {
+        const bc = barcodeData[row.id];
+
+        // First create/get a patient record
+        // We need patient_id from the order — use a fallback patient creation
+        let patientId: number | null = null;
+
+        // Try to get existing patient by MRN via patients list
+        const patientsRes = await fetch(`${BASE}/patients/`);
+        if (patientsRes.ok) {
+          const patients = await patientsRes.json();
+          // patients is array from PatientView
+          const found = Array.isArray(patients)
+            ? patients.find((p: Record<string, unknown>) =>
+                String(p.mrn) === String(row.specimenNo) ||
+                String(p.patient_name) === String(row.name)
+              )
+            : null;
+          if (found) patientId = found.id;
+        }
+
+        // If no patient found, create one
+        if (!patientId) {
+          const createPatientRes = await fetch(`${BASE}/patients/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              patient_name: row.name || "Unknown",
+              age: 0,
+              sex: "Unknown",
+              mrn: bc?.specimen_no || row.specimenNo || "N/A",
+              cycle_id: "N/A",
+            }),
+          });
+          if (createPatientRes.ok) {
+            const p = await createPatientRes.json();
+            patientId = p.id;
+          }
+        }
+
+        // Create pending shipment record
+        const pendingRes = await fetch(`${BASE}/pending-shipment/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            patient: patientId,
+            order_date: collectionDate,
+            sample_no: bc?.specimen_no || row.specimenNo,
+            sample_type: row.type === "Blood" ? "Blood" : "Urine",
+            test_code: row.code,
+            test_name: row.name,
+            service_name: row.service,
+          }),
+        });
+
+        if (!pendingRes.ok) {
+          const errData = await pendingRes.json().catch(() => ({}));
+          throw new Error(
+            `Failed to create pending shipment for ${row.code}: ${JSON.stringify(errData)}`
+          );
+        }
+      }
+
+      // Success — close modal and trigger parent
+      onCollect();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Collection failed. Check console.");
+      console.error("Collect error:", e);
+    } finally {
+      setLoadingCollect(false);
+    }
+  };
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
@@ -246,41 +429,85 @@ function ScheduleModal({ rows, onClose, onCollect }: ScheduleModalProps) {
             <div className={styles.modalField}>
               <span className={styles.modalLabel}>Collection Date</span>
               <div className={styles.dateInputWrap}>
-                <input className={styles.filterInput} value={collectionDate} onChange={(e: ChangeEvent<HTMLInputElement>) => setCollectionDate(e.target.value)} placeholder="DD/MM/YYYY" />
+                <input className={styles.filterInput} type="date" value={collectionDate} onChange={(e: ChangeEvent<HTMLInputElement>) => setCollectionDate(e.target.value)} />
                 <IconCalendar />
               </div>
             </div>
             <div className={styles.modalField}>
               <span className={styles.modalLabel}>Collection Time</span>
               <div className={styles.dateInputWrap}>
-                <input className={styles.filterInput} value={collectionTime} onChange={(e: ChangeEvent<HTMLInputElement>) => setCollectionTime(e.target.value)} placeholder="HH:MM" />
+                <input className={styles.filterInput} type="time" value={collectionTime} onChange={(e: ChangeEvent<HTMLInputElement>) => setCollectionTime(e.target.value)} />
                 <IconClock />
               </div>
             </div>
           </div>
+
+          {error && (
+            <div style={{ color: "#E15A5A", fontSize: "12px", padding: "6px 0" }}>{error}</div>
+          )}
+
           <div>
             <p className={styles.collectionDetailsTitle}>Collection Details ({rows.length})</p>
             <table className={styles.collectionTable}>
               <thead>
-                <tr><th>Specimen No. | Type</th><th>Service Name</th><th>Test Code | Name</th><th>Collector Item</th></tr>
+                <tr>
+                  <th>Specimen No. | Type</th>
+                  <th>Service Name</th>
+                  <th>Test Code | Name</th>
+                  <th>Collector Item</th>
+                  {barcodesPrinted && <th>Barcode</th>}
+                </tr>
               </thead>
               <tbody>
-                {rows.map((row) => (
-                  <tr key={row.id}>
-                    <td><div style={{ display: "flex", flexDirection: "column" }}><span style={{ fontWeight: 600, fontSize: "0.88em" }}>{row.specimenNo}</span><span style={{ color: "#9e9e9e", fontSize: "0.78em" }}>{row.type}</span></div></td>
-                    <td>{row.service}</td>
-                    <td><div style={{ display: "flex", flexDirection: "column" }}><span style={{ fontWeight: 600, fontSize: "0.88em" }}>{row.code}</span><span style={{ fontSize: "0.85em" }}>{row.name}</span></div></td>
-                    <td>{row.collectorItem}</td>
-                  </tr>
-                ))}
+                {rows.map((row) => {
+                  const bc = barcodeData[row.id];
+                  return (
+                    <tr key={row.id}>
+                      <td>
+                        <div style={{ display: "flex", flexDirection: "column" }}>
+                          <span style={{ fontWeight: 600, fontSize: "0.88em" }}>{bc?.specimen_no || row.specimenNo}</span>
+                          <span style={{ color: "#9e9e9e", fontSize: "0.78em" }}>{row.type}</span>
+                        </div>
+                      </td>
+                      <td>{row.service}</td>
+                      <td>
+                        <div style={{ display: "flex", flexDirection: "column" }}>
+                          <span style={{ fontWeight: 600, fontSize: "0.88em" }}>{row.code}</span>
+                          <span style={{ fontSize: "0.85em" }}>{row.name}</span>
+                        </div>
+                      </td>
+                      <td>{row.collectorItem}</td>
+                      {barcodesPrinted && (
+                        <td style={{ fontSize: "11px", color: "#5A8AEA", fontWeight: 600 }}>
+                          {bc?.barcode_value || "—"}
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </div>
         <div className={styles.modalFooter}>
           <button className={styles.modalCancelBtn} onClick={onClose} type="button">Cancel</button>
-          <button className={styles.modalPrintBtn} onClick={() => setBarcodesPrinted(true)} type="button">Print Barcode</button>
-          <button className={`${styles.modalCollectBtn} ${!barcodesPrinted ? styles.modalCollectBtnDisabled : ""}`} disabled={!barcodesPrinted} onClick={barcodesPrinted ? onCollect : undefined} type="button">Collect</button>
+          <button
+            className={styles.modalPrintBtn}
+            onClick={handlePrintBarcode}
+            disabled={loadingBarcode || barcodesPrinted}
+            type="button"
+            style={{ opacity: barcodesPrinted ? 0.5 : 1 }}
+          >
+            {loadingBarcode ? "Generating..." : barcodesPrinted ? "Printed ✓" : "Print Barcode"}
+          </button>
+          <button
+            className={`${styles.modalCollectBtn} ${!barcodesPrinted ? styles.modalCollectBtnDisabled : ""}`}
+            disabled={!barcodesPrinted || loadingCollect}
+            onClick={handleCollect}
+            type="button"
+          >
+            {loadingCollect ? "Collecting..." : "Collect"}
+          </button>
         </div>
       </div>
     </div>
@@ -289,10 +516,15 @@ function ScheduleModal({ rows, onClose, onCollect }: ScheduleModalProps) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export default function ViewOrderDetails({ order, onBack }: ViewOrderDetailsProps) {
-  const [activeTab, setActiveTab]     = useState<ActiveTab>("inhouse");
-  const [search, setSearch]           = useState("");
-  const [checkedRows, setCheckedRows] = useState<Set<number>>(
+export default function ViewOrderDetails({ order, orderId, onBack }: ViewOrderDetailsProps) {
+  const BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+
+  const [activeTab, setActiveTab]       = useState<ActiveTab>("inhouse");
+  const [search, setSearch]             = useState("");
+  const [inhouseTests, setInhouseTests] = useState<TestRow[]>(INHOUSE_TESTS);
+  const [outsourceTests, setOutsourceTests] = useState<TestRow[]>(OUTSOURCE_TESTS);
+  const [testsLoading, setTestsLoading] = useState(false);
+  const [checkedRows, setCheckedRows]   = useState<Set<number>>(
     new Set(INHOUSE_TESTS.filter((t) => t.checked).map((t) => t.id))
   );
   const [filterOpen, setFilterOpen]     = useState(false);
@@ -302,10 +534,74 @@ export default function ViewOrderDetails({ order, onBack }: ViewOrderDetailsProp
 
   const filterBtnRef = useRef<HTMLButtonElement | null>(null);
 
+  // Fetch real tests from Vidai order detail API
+  const realOrderId = orderId ?? order?.orderId;
+  useEffect(() => {
+    if (!realOrderId) return;
+    setTestsLoading(true);
+    fetch(`${BASE}/orders/${realOrderId}/`)
+      .then((r) => r.json())
+      .then((data) => {
+        const items = data.invoice_items ?? [];
+        const mapStatus = (s: string): TestStatus => {
+          const lower = (s || "").toLowerCase();
+          if (lower === "collected") return "Collected";
+          if (lower === "shipped")   return "Shipped";
+          if (lower === "accepted")  return "Accepted";
+          if (lower === "completed") return "Completed";
+          if (lower === "rejected")  return "Rejected";
+          if (lower === "recollection_pending" || lower === "recollection pending") return "Recollection Pending";
+          return "Pending";
+        };
+        const inhouse: TestRow[] = items
+          .filter((item: Record<string,unknown>) => item.test_type !== "OUTSOURCE")
+          .map((item: Record<string,unknown>, idx: number) => ({
+            id: Number(item.invoice_item_id) || idx + 1,
+            source: "inhouse" as const,
+            date: data.visit_date ? new Date(data.visit_date as string).toLocaleDateString("en-GB") : "-",
+            time: data.visit_date ? new Date(data.visit_date as string).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : "-",
+            code: String(item.test_service_code || item.billing_source_code || "-"),
+            name: String(item.test_service_name || item.billing_source_name || "-"),
+            service: String(item.service_name || "-"),
+            specimenNo: String(item.specimen_no || "-"),
+            type: String(item.sample_type || item.tube_type || "-"),
+            collectorItem: String(item.tube_type || item.tube_name || "-"),
+            status: mapStatus(String(item.collection_status || "Pending")),
+            checked: false,
+            testServiceId: Number(item.test_service_id),
+          }));
+        const outsource: TestRow[] = items
+          .filter((item: Record<string,unknown>) => item.test_type === "OUTSOURCE")
+          .map((item: Record<string,unknown>, idx: number) => ({
+            id: Number(item.invoice_item_id) || idx + 1000,
+            source: "outsource" as const,
+            date: data.visit_date ? new Date(data.visit_date as string).toLocaleDateString("en-GB") : "-",
+            time: data.visit_date ? new Date(data.visit_date as string).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : "-",
+            code: String(item.test_service_code || item.billing_source_code || "-"),
+            name: String(item.test_service_name || item.billing_source_name || "-"),
+            service: String(item.service_name || "-"),
+            specimenNo: String(item.specimen_no || "-"),
+            type: String(item.sample_type || "-"),
+            collectorItem: String(item.tube_type || item.tube_name || "-"),
+            agency: String(item.agency_name || "-"),
+            status: mapStatus(String(item.collection_status || "Pending")),
+            checked: false,
+            testServiceId: Number(item.test_service_id),
+          }));
+        setInhouseTests(inhouse.length > 0 ? inhouse : INHOUSE_TESTS);
+        setOutsourceTests(outsource.length > 0 ? outsource : OUTSOURCE_TESTS);
+        setCheckedRows(new Set());
+      })
+      .catch(() => {
+        // keep mock data on error
+      })
+      .finally(() => setTestsLoading(false));
+  }, [realOrderId]);
+
   const isOutsource    = activeTab === "outsource";
-  const tests: TestRow[] = isOutsource ? OUTSOURCE_TESTS : INHOUSE_TESTS;
-  const totalInhouse   = INHOUSE_TESTS.length;
-  const totalOutsource = OUTSOURCE_TESTS.length;
+  const tests: TestRow[] = isOutsource ? outsourceTests : inhouseTests;
+  const totalInhouse   = inhouseTests.length;
+  const totalOutsource = outsourceTests.length;
 
   const toggleRow = (id: number) => {
     setCheckedRows((prev) => {
@@ -393,6 +689,9 @@ export default function ViewOrderDetails({ order, onBack }: ViewOrderDetailsProp
 
         {/* FIX 4 & 5: Table with proper column spacing, status centered, result icons blue */}
         <div className={styles.tableWrap}>
+          {testsLoading && (
+            <div style={{ padding: "20px", textAlign: "center", color: "#9ca3af", fontSize: "12px" }}>Loading tests...</div>
+          )}
           <table className={styles.table}>
             <thead className={styles.head}>
               <tr>
@@ -404,7 +703,8 @@ export default function ViewOrderDetails({ order, onBack }: ViewOrderDetailsProp
                 <th style={{ width: isOutsource ? "14%" : "19%" }}>Collector Item</th>
                 {isOutsource && <th style={{ width: "10%" }}>Agency</th>}
                 <th style={{ width: "14%", textAlign: "center" }}>Test Status</th>
-                <th style={{ width: "9%",  textAlign: "right", paddingRight: "16px" }}>Result</th>
+                <th style={{ width: "7%",  textAlign: "center" }}>Result</th>
+                <th style={{ width: "5%",  textAlign: "center" }}>Print</th>
               </tr>
             </thead>
             <tbody>
@@ -427,7 +727,7 @@ export default function ViewOrderDetails({ order, onBack }: ViewOrderDetailsProp
                   <td>
                     <div className={styles.codeCell}>
                       <span className={styles.codePrimary}>{row.code}</span>
-                      <span className={styles.codeSub}>{row.name}</span>
+                      <span className={styles.codeSub} style={{ color: "#6b7280" }}>{row.name}</span>
                     </div>
                   </td>
 
@@ -463,14 +763,21 @@ export default function ViewOrderDetails({ order, onBack }: ViewOrderDetailsProp
                     </div>
                   </td>
 
-                  {/* FIX 5: Result — blue icons right-aligned like Figma */}
-                  <td style={{ textAlign: "right", paddingRight: "8px" }}>
-                    <div className={styles.resultCell} style={{ justifyContent: "flex-end" }}>
+                  {/* Result col - download icon */}
+                  <td style={{ textAlign: "center" }}>
+                    <div className={styles.resultCell}>
                       {HAS_RESULT.includes(row.status) ? (
-                        <>
-                          <button className={styles.actionBtn} type="button"><IconDownload /></button>
-                          <button className={styles.actionBtn} type="button"><IconPrint /></button>
-                        </>
+                        <button className={styles.actionBtn} type="button"><IconDownload /></button>
+                      ) : (
+                        <span className={styles.dash}>—</span>
+                      )}
+                    </div>
+                  </td>
+                  {/* Print col - print icon */}
+                  <td style={{ textAlign: "center" }}>
+                    <div className={styles.resultCell}>
+                      {HAS_RESULT.includes(row.status) ? (
+                        <button className={styles.actionBtn} type="button"><IconPrint /></button>
                       ) : (
                         <span className={styles.dash}>—</span>
                       )}

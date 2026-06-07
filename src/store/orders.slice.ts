@@ -36,6 +36,7 @@ const mapStatus = (s: string): "Pending" | "Partial" | "Complete" => {
 // Maps client API response fields (name, gender, patient_type, etc.)
 const mapOrder = (d: PathologyOrder): OrderRow => ({
   id:          String(d.id),
+  orderId:     d.id,
   date:        fmtDate(d.visit_date),
   time:        fmtTime(d.invoice_datetime ?? d.visit_date),
   patientName: d.patient.name,
