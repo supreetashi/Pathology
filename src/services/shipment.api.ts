@@ -1,11 +1,9 @@
 // ============================================================
 //  shipment.api.ts  —  Shipment module API service
-//  Base URL: /api/  (adjust to your axios instance base)
+//  Base URL: /api/  (adjust to your http instance base)
 // ============================================================
 
-import axios from "axios";
-
-const BASE = "/api";          // ← change if your axios instance already sets baseURL
+import { http } from "./http";
 
 // ─────────────────────────────────────────────
 //  TYPES  (mirror your Django models exactly)
@@ -80,7 +78,7 @@ export interface MoveToReceivedPayload {
 
 /** GET /api/pending-shipment/  — list all pending samples */
 export const getPendingShipments = async (): Promise<PendingShipment[]> => {
-  const res = await axios.get<PendingShipment[]>(`${BASE}/pending-shipment/`);
+  const res = await http.get<PendingShipment[]>(`/pending-shipment/`);
   return res.data;
 };
 
@@ -92,8 +90,8 @@ export const getPendingShipments = async (): Promise<PendingShipment[]> => {
 export const scheduleShipping = async (
   payload: ScheduleShippingPayload
 ): Promise<ShipmentShipped[]> => {
-  const res = await axios.post<ShipmentShipped[]>(
-    `${BASE}/schedule-shipping/`,
+  const res = await http.post<ShipmentShipped[]>(
+    `/schedule-shipping/`,
     payload
   );
   return res.data;
@@ -101,7 +99,7 @@ export const scheduleShipping = async (
 
 /** GET /api/schedule-shipping/  — list all scheduled shippings */
 export const getScheduledShippings = async (): Promise<ShipmentShipped[]> => {
-  const res = await axios.get<ShipmentShipped[]>(`${BASE}/schedule-shipping/`);
+  const res = await http.get<ShipmentShipped[]>(`/schedule-shipping/`);
   return res.data;
 };
 
@@ -113,8 +111,8 @@ export const getScheduledShippings = async (): Promise<ShipmentShipped[]> => {
 export const moveToShipped = async (
   payload: { pending_shipment_ids: number[]; ship_date: string; ship_to: string }
 ): Promise<ShipmentShipped[]> => {
-  const res = await axios.post<ShipmentShipped[]>(
-    `${BASE}/move-to-shipped/`,
+  const res = await http.post<ShipmentShipped[]>(
+    `/move-to-shipped/`,
     payload
   );
   return res.data;
@@ -126,7 +124,7 @@ export const moveToShipped = async (
 
 /** GET /api/shipped-shipment/  — list all shipped records */
 export const getShippedShipments = async (): Promise<ShipmentShipped[]> => {
-  const res = await axios.get<ShipmentShipped[]>(`${BASE}/shipped-shipment/`);
+  const res = await http.get<ShipmentShipped[]>(`/shipped-shipment/`);
   return res.data;
 };
 
@@ -138,8 +136,8 @@ export const getShippedShipments = async (): Promise<ShipmentShipped[]> => {
 export const moveToReceived = async (
   payload: MoveToReceivedPayload
 ): Promise<ShipmentReceived> => {
-  const res = await axios.post<ShipmentReceived>(
-    `${BASE}/move-to-received/`,
+  const res = await http.post<ShipmentReceived>(
+    `/move-to-received/`,
     payload
   );
   return res.data;
@@ -151,8 +149,8 @@ export const moveToReceived = async (
 
 /** GET /api/received-shipment/  — list all received records */
 export const getReceivedShipments = async (): Promise<ShipmentReceived[]> => {
-  const res = await axios.get<ShipmentReceived[]>(
-    `${BASE}/received-shipment/`
+  const res = await http.get<ShipmentReceived[]>(
+    `/received-shipment/`
   );
   return res.data;
 };
@@ -163,7 +161,7 @@ export const getReceivedShipments = async (): Promise<ShipmentReceived[]> => {
 
 /** GET /api/activity-logs/  — list all activity log entries */
 export const getActivityLogs = async (): Promise<ActivityLog[]> => {
-  const res = await axios.get<ActivityLog[]>(`${BASE}/activity-logs/`);
+  const res = await http.get<ActivityLog[]>(`/activity-logs/`);
   return res.data;
 };
 
@@ -173,6 +171,6 @@ export const getActivityLogs = async (): Promise<ActivityLog[]> => {
 
 /** GET /api/patients/  — list patients */
 export const getPatients = async (): Promise<Patient[]> => {
-  const res = await axios.get<Patient[]>(`${BASE}/patients/`);
+  const res = await http.get<Patient[]>(`/patients/`);
   return res.data;
 };
