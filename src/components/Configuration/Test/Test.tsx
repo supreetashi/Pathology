@@ -70,7 +70,11 @@ const toolbarConfig: Record<TabKey, ToolbarConfig> = {
 };
 
 function TestConfigurationView() {
-  const [activeTab, setActiveTab] = useState<TabKey>("Parameter");
+  const [activeTab, setActiveTab] = useState<TabKey>(() => {
+  return (
+    (localStorage.getItem("testConfigurationTab") as TabKey) || "Parameter"
+  );
+});
   const [dataCount, setDataCount] = useState(0);
   const [isTemplateFilterOpen, setIsTemplateFilterOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
@@ -101,12 +105,15 @@ function TestConfigurationView() {
   }));
 
   const handleTabChange = (tab: string) => {
-    if (tab === activeTab) return;
-    setActiveTab(tab as TabKey);
-    setIsTemplateFilterOpen(false);
-    setIsCategoryModalOpen(false);
-    setEditingCategory(null);
-  };
+  if (tab === activeTab) return;
+
+  setActiveTab(tab as TabKey);
+  localStorage.setItem("testConfigurationTab", tab);
+
+  setIsTemplateFilterOpen(false);
+  setIsCategoryModalOpen(false);
+  setEditingCategory(null);
+};
 
   const handleAdd = () => {
     if (activeTab === "Category") {
