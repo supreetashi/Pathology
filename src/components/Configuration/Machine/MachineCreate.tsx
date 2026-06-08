@@ -46,7 +46,10 @@ function MachineCreate({
     if (initialValue) {
       setCode(initialValue.machineCode);
       setName(initialValue.machineName);
-      setSelectedParameterIds(initialValue.machineParameterIds);
+      // FIX 1: Normalize all incoming IDs to strings to avoid type mismatch
+      setSelectedParameterIds(
+        (initialValue.machineParameterIds ?? []).map((id) => String(id))
+      );
     } else {
       setCode("");
       setName("");
@@ -57,12 +60,23 @@ function MachineCreate({
     setErrors({});
   }, [isOpen, initialValue]);
 
+  // FIX 2: Normalize parameterOptions IDs to strings and remove silent filter
+  //         so mismatched IDs show up rather than silently disappearing.
+  // FIX 3: If parameterOptions hasn't loaded yet, show IDs as fallback labels
+  //         so chips still appear instead of showing 0.
+  const normalizedOptions = useMemo(
+    () => parameterOptions.map((o) => ({ ...o, id: String(o.id) })),
+    [parameterOptions]
+  );
+
   const selectedOptions = useMemo(() => {
-    const map = new Map(parameterOptions.map((o) => [o.id, o.name]));
-    return selectedParameterIds
-      .map((id) => ({ id, name: map.get(id) ?? "Unknown" }))
-      .filter((item) => item.name !== "Unknown");
-  }, [parameterOptions, selectedParameterIds]);
+    const map = new Map(normalizedOptions.map((o) => [o.id, o.name]));
+    return selectedParameterIds.map((id) => ({
+      id,
+      // Fallback to the raw ID if parameterOptions hasn't loaded yet
+      name: map.get(id) ?? id,
+    }));
+  }, [normalizedOptions, selectedParameterIds]);
 
   if (!isOpen) return null;
 
@@ -93,9 +107,9 @@ function MachineCreate({
               clinic: initialValue.clinicId,
               machine_code: code.trim(),
               machine_name: name.trim(),
-              machine_parameter_ids: selectedParameterIds,
+              machine_parameters: selectedParameterIds,
             },
-          }),
+          })
         );
       } else {
         result = await dispatch(
@@ -103,8 +117,8 @@ function MachineCreate({
             clinic: clinicId.trim(),
             machine_code: code.trim(),
             machine_name: name.trim(),
-            machine_parameter_ids: selectedParameterIds,
-          }),
+            machine_parameters: selectedParameterIds,
+          })
         );
       }
 
@@ -112,7 +126,7 @@ function MachineCreate({
         toast.error(
           typeof result.payload === "string"
             ? result.payload
-            : "Failed to save machine. Please check the details and try again.",
+            : "Failed to save machine. Please check the details and try again."
         );
         return;
       }
@@ -120,7 +134,7 @@ function MachineCreate({
       toast.success(
         mode === "edit"
           ? "Machine updated successfully."
-          : "Machine created successfully.",
+          : "Machine created successfully."
       );
 
       onSave?.();
@@ -195,7 +209,7 @@ function MachineCreate({
             {isPickerOpen && (
               <div className="machine-create-options-box">
                 <div className="machine-create-options-list">
-                  {parameterOptions.length === 0 ? (
+                  {normalizedOptions.length === 0 ? (
                     <button
                       type="button"
                       className="machine-create-option machine-create-option--empty"
@@ -203,7 +217,8 @@ function MachineCreate({
                       No parameter found
                     </button>
                   ) : (
-                    parameterOptions.map((option) => {
+                    normalizedOptions.map((option) => {
+                      // FIX 1 (continued): compare normalized string IDs
                       const isSelected = selectedParameterIds.includes(option.id);
                       return (
                         <button
@@ -214,7 +229,7 @@ function MachineCreate({
                             setSelectedParameterIds((prev) =>
                               isSelected
                                 ? prev.filter((id) => id !== option.id)
-                                : [...prev, option.id],
+                                : [...prev, option.id]
                             );
                           }}
                         >
@@ -244,7 +259,7 @@ function MachineCreate({
                       className="machine-create-chip-remove"
                       onClick={() =>
                         setSelectedParameterIds((prev) =>
-                          prev.filter((id) => id !== option.id),
+                          prev.filter((id) => id !== option.id)
                         )
                       }
                     >

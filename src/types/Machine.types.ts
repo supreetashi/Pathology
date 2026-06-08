@@ -50,18 +50,18 @@ export interface MachineState {
 // =====================================================
 
 export interface CreateMachinePayload {
-  clinic: string; // required — backend rejects requests without it
+  clinic: string;
   machine_code: string;
   machine_name: string;
-  machine_parameter_ids?: string[];
+  machine_parameters?: string[]; // ← was machine_parameter_ids — backend field is machine_parameters
   status?: boolean;
 }
 
 export interface UpdateMachinePayload {
-  clinic?: string;  // ← add this
+  clinic?: string;
   machine_code?: string;
   machine_name?: string;
-  machine_parameter_ids?: string[];
+  machine_parameters?: string[]; // ← was machine_parameter_ids — backend field is machine_parameters
   status?: boolean;
 }
 
@@ -72,7 +72,6 @@ export interface CreateMachineParameterPayload {
 }
 
 export interface UpdateMachineParameterPayload {
-  clinic?: string; 
   machine_parameter_code?: string;
   machine_parameter_name?: string;
   status?: boolean;

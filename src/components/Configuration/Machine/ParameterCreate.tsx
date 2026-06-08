@@ -259,10 +259,16 @@ function ParameterCreate({
     if (initialValue) {
       setCode(initialValue.machineParameterCode);
       setName(initialValue.machineParameterName);
+
+      // FIX 1: Normalize both sides to strings before comparing so number/string
+      // mismatches don't silently produce an empty selection.
+      const paramId = String(initialValue.id);
       setSelectedMachineIds(
         machines
-          .filter((m) => m.machineParameterIds.includes(initialValue.id))
-          .map((m) => m.id),
+          .filter((m) =>
+            m.machineParameterIds.map((pid) => String(pid)).includes(paramId)
+          )
+          .map((m) => String(m.id)),
       );
     } else {
       setCode("");
@@ -274,12 +280,22 @@ function ParameterCreate({
     setErrors({});
   }, [isOpen, initialValue, machines]);
 
+  // FIX 2: Normalize machineOptions IDs to strings and remove silent filter
+  //         so mismatched IDs show chips instead of silently showing 0.
+  // FIX 3: Fallback to raw ID if machineOptions hasn't loaded yet.
+  const normalizedMachineOptions = useMemo(
+    () => machineOptions.map((o) => ({ ...o, id: String(o.id) })),
+    [machineOptions],
+  );
+
   const selectedOptions = useMemo(() => {
-    const map = new Map(machineOptions.map((o) => [o.id, o.name]));
-    return selectedMachineIds
-      .map((id) => ({ id, name: map.get(id) ?? "Unknown" }))
-      .filter((item) => item.name !== "Unknown");
-  }, [machineOptions, selectedMachineIds]);
+    const map = new Map(normalizedMachineOptions.map((o) => [o.id, o.name]));
+    return selectedMachineIds.map((id) => ({
+      id,
+      // Fallback to raw ID so chips appear even before machineOptions loads
+      name: map.get(id) ?? id,
+    }));
+  }, [normalizedMachineOptions, selectedMachineIds]);
 
   if (!isOpen) return null;
 
@@ -313,11 +329,14 @@ function ParameterCreate({
           return;
         }
 
-        // 2. Diff machine links
+        // 2. Diff machine links — normalize IDs to strings for safe comparison
+        const paramId = String(initialValue.id);
         const previousIds = new Set(
           machines
-            .filter((m) => m.machineParameterIds.includes(initialValue.id))
-            .map((m) => m.id),
+            .filter((m) =>
+              m.machineParameterIds.map((pid) => String(pid)).includes(paramId)
+            )
+            .map((m) => String(m.id)),
         );
         const nextIds = new Set(selectedMachineIds);
 
@@ -326,14 +345,16 @@ function ParameterCreate({
 
         await Promise.all([
           ...toAdd.map((machineId) => {
-            const machine = machines.find((m) => m.id === machineId);
+            const machine = machines.find((m) => String(m.id) === machineId);
             if (!machine) return Promise.resolve();
             return dispatch(
               updateMachine({
                 id: machineId,
                 payload: {
                   clinic: machine.clinicId,
-                  machine_parameter_ids: [
+                  machine_code: machine.machineCode,
+                  machine_name: machine.machineName,
+                  machine_parameters: [
                     ...machine.machineParameterIds,
                     initialValue.id,
                   ],
@@ -342,15 +363,17 @@ function ParameterCreate({
             );
           }),
           ...toRemove.map((machineId) => {
-            const machine = machines.find((m) => m.id === machineId);
+            const machine = machines.find((m) => String(m.id) === machineId);
             if (!machine) return Promise.resolve();
             return dispatch(
               updateMachine({
                 id: machineId,
                 payload: {
                   clinic: machine.clinicId,
-                  machine_parameter_ids: machine.machineParameterIds.filter(
-                    (pid) => pid !== initialValue.id,
+                  machine_code: machine.machineCode,
+                  machine_name: machine.machineName,
+                  machine_parameters: machine.machineParameterIds.filter(
+                    (pid) => String(pid) !== paramId,
                   ),
                 },
               }),
@@ -381,14 +404,16 @@ function ParameterCreate({
           const newParameterId = resultAction.payload?.id as string;
           await Promise.all(
             selectedMachineIds.map((machineId) => {
-              const machine = machines.find((m) => m.id === machineId);
+              const machine = machines.find((m) => String(m.id) === machineId);
               if (!machine) return Promise.resolve();
               return dispatch(
                 updateMachine({
                   id: machineId,
                   payload: {
                     clinic: machine.clinicId,
-                    machine_parameter_ids: [
+                    machine_code: machine.machineCode,
+                    machine_name: machine.machineName,
+                    machine_parameters: [
                       ...machine.machineParameterIds,
                       newParameterId,
                     ],
@@ -471,7 +496,7 @@ function ParameterCreate({
             {isPickerOpen && (
               <div style={styles.optionsBox}>
                 <div style={styles.optionsList}>
-                  {machineOptions.length === 0 ? (
+                  {normalizedMachineOptions.length === 0 ? (
                     <button
                       type="button"
                       style={{ ...styles.option, cursor: "default", color: "#8a909a" }}
@@ -479,7 +504,8 @@ function ParameterCreate({
                       No machine found
                     </button>
                   ) : (
-                    machineOptions.map((option) => {
+                    // FIX 1 (continued): compare against normalized string IDs
+                    normalizedMachineOptions.map((option) => {
                       const isSelected = selectedMachineIds.includes(option.id);
                       return (
                         <button

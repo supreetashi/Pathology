@@ -31,7 +31,6 @@ function MachineDashboard() {
   const machineParameters = useSelector(selectMachineParameters);
   const clinics = useSelector(selectClinics);
 
-  // Used as fallback for create mode; edit mode always uses machine.clinicId
   const clinicId = String(clinics[0]?.id ?? "");
 
   const [activeTab, setActiveTab] = useState<ActiveTab>("machine");
@@ -77,7 +76,7 @@ function MachineDashboard() {
   const closeParameterModal = () =>
     setParameterModal({ isOpen: false, mode: "create", value: null });
 
-  // FIX: always include clinic when toggling machine status
+  // Send all required fields on every PUT — backend rejects partial payloads
   const handleToggleMachineStatus = (id: string) => {
     const machine = machines.find((m: MachineItem) => m.id === id);
     if (!machine) return;
@@ -85,7 +84,10 @@ function MachineDashboard() {
       updateMachine({
         id,
         payload: {
-          clinic: machine.clinicId, // ← required by backend on every PUT
+          clinic: machine.clinicId,
+          machine_code: machine.machineCode,
+          machine_name: machine.machineName,
+          machine_parameters: machine.machineParameterIds,
           status: !machine.isActive,
         },
       }),
@@ -98,7 +100,14 @@ function MachineDashboard() {
     );
     if (!parameter) return;
     dispatch(
-      updateMachineParameter({ id, payload: { status: !parameter.isActive } }),
+      updateMachineParameter({
+        id,
+        payload: {
+          machine_parameter_code: parameter.machineParameterCode,
+          machine_parameter_name: parameter.machineParameterName,
+          status: !parameter.isActive,
+        },
+      }),
     );
   };
 
@@ -184,8 +193,6 @@ function MachineDashboard() {
         isOpen={machineModal.isOpen}
         mode={machineModal.mode}
         initialValue={machineModal.value}
-        // FIX: in edit mode, use the machine's own clinicId; fall back to
-        // clinics[0] only for create mode where initialValue is null
         clinicId={machineModal.value?.clinicId ?? clinicId}
         parameterOptions={parameterOptions}
         onClose={closeMachineModal}
