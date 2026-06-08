@@ -1,169 +1,36 @@
-import { useState, useEffect, useMemo } from "react";
-import DataTable, {
-  Column,
-  Toggle,
-} from "../CommonComponents/DataTable/DataTable";
+import { useEffect, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import DataTable, { Column, Toggle } from "../CommonComponents/DataTable/DataTable";
 import EditIcon from "../../../../assets/icons/edit.svg";
 import FilterModal, { FilterValues } from "./FilterModal";
+import {
+  fetchTemplates,
+  selectTemplates,
+  selectTemplateLoading,
+  toggleTemplateStatus,
+} from "../../../../store/templateSlice";
+import type { AppDispatch } from "../../../../store";
+import type { TemplateItem } from "../../../../types/template.types";
+import { useState } from "react";
 
-type TemplateRow = {
-  code: string;
-  name: string;
-  noOfPathologists: number;
-  gender: string;
-  status: boolean;
+const TEMPLATE_FOR_LABELS: Record<string, string> = {
+  LEAD: "Lead", PATHOLOGY: "Pathology", RADIOLOGY: "Radiology",
+  EXAMINATION: "Examination", INVESTIGATION: "Investigation",
+  SURGERY: "Surgery", OUTCOME: "Outcome",
 };
+const GENDER_LABELS: Record<string, string> = { MALE: "Male", FEMALE: "Female", BOTH: "Both" };
+const USER_TYPE_LABELS: Record<string, string> = { PATHOLOGIST: "Pathologist", RADIOLOGIST: "Radiologist" };
+const FORMAT_LABELS: Record<string, string> = { TEXT: "Text", FORM: "Form" };
+
+const defaultFilters: FilterValues = { templateFor: "", gender: "", userType: "", templateFormat: "" };
 
 type TemplateTableProps = {
   onCountChange?: (count: number) => void;
   filterOpen?: boolean;
   onFilterClose?: () => void;
   searchText?: string;
-  onEdit: (row: TemplateRow) => void;
+  onEdit: (row: TemplateItem) => void;
 };
-
-const initialData: TemplateRow[] = [
-  {
-    code: "TN-041421",
-    name: "Culture & Sensitivity growth",
-    noOfPathologists: 5,
-    gender: "Female",
-    status: false,
-  },
-  {
-    code: "TN-041423",
-    name: "Culture & Sensitivity no growth",
-    noOfPathologists: 4,
-    gender: "Male",
-    status: true,
-  },
-  {
-    code: "TN-041427",
-    name: "Microbial Analysis Report Template",
-    noOfPathologists: 4,
-    gender: "Both",
-    status: true,
-  },
-  {
-    code: "TN-041438",
-    name: "Pathogen Sensitivity Report Template",
-    noOfPathologists: 4,
-    gender: "Female",
-    status: true,
-  },
-  {
-    code: "TN-041445",
-    name: "Infection Culture Report Template",
-    noOfPathologists: 4,
-    gender: "Female",
-    status: true,
-  },
-  {
-    code: "TN-041452",
-    name: "Bacterial Growth Assessment Template",
-    noOfPathologists: 4,
-    gender: "Female",
-    status: true,
-  },
-  {
-    code: "TN-041460",
-    name: "Culture Sensitivity Evaluation Template",
-    noOfPathologists: 4,
-    gender: "Female",
-    status: true,
-  },
-  {
-    code: "TN-041472",
-    name: "Pathology Culture Report Template",
-    noOfPathologists: 4,
-    gender: "Female",
-    status: true,
-  },
-  {
-    code: "TN-041481",
-    name: "Microbial Sensitivity Analysis Template",
-    noOfPathologists: 4,
-    gender: "Female",
-    status: false,
-  },
-  {
-    code: "TN-041493",
-    name: "Infectious Agent Culture Report Template",
-    noOfPathologists: 4,
-    gender: "Female",
-    status: false,
-  },
-  {
-    code: "TN-041505",
-    name: "Bacterial Sensitivity Testing Template",
-    noOfPathologists: 4,
-    gender: "Female",
-    status: false,
-  },
-  {
-    code: "TN-041517",
-    name: "General Pathology Summary Template",
-    noOfPathologists: 3,
-    gender: "Male",
-    status: true,
-  },
-  {
-    code: "TN-041529",
-    name: "Histopathology Basic Template",
-    noOfPathologists: 2,
-    gender: "Both",
-    status: true,
-  },
-  {
-    code: "TN-041541",
-    name: "Cytology Screening Template",
-    noOfPathologists: 3,
-    gender: "Female",
-    status: false,
-  },
-  {
-    code: "TN-041553",
-    name: "Advanced Microbiology Template",
-    noOfPathologists: 5,
-    gender: "Male",
-    status: true,
-  },
-  {
-    code: "TN-041565",
-    name: "Hormonal Panel Template",
-    noOfPathologists: 2,
-    gender: "Female",
-    status: true,
-  },
-  {
-    code: "TN-041577",
-    name: "Routine Blood Work Template",
-    noOfPathologists: 3,
-    gender: "Both",
-    status: false,
-  },
-  {
-    code: "TN-041589",
-    name: "Urine Microscopy Template",
-    noOfPathologists: 2,
-    gender: "Female",
-    status: true,
-  },
-  {
-    code: "TN-041601",
-    name: "Fertility Panel Report Template",
-    noOfPathologists: 4,
-    gender: "Male",
-    status: true,
-  },
-  {
-    code: "TN-041613",
-    name: "Detailed Infection Study Template",
-    noOfPathologists: 5,
-    gender: "Both",
-    status: false,
-  },
-];
 
 export default function TemplateTable({
   onCountChange,
@@ -172,49 +39,71 @@ export default function TemplateTable({
   searchText = "",
   onEdit,
 }: TemplateTableProps) {
-  const [allData, setAllData] = useState<TemplateRow[]>(initialData);
-  const [activeFilters, setActiveFilters] = useState<FilterValues>({
-    gender: "",
-  });
+  const dispatch = useDispatch<AppDispatch>();
+  const templates = useSelector(selectTemplates);
+  const loading = useSelector(selectTemplateLoading);
+  const [activeFilters, setActiveFilters] = useState<FilterValues>(defaultFilters);
+
+  useEffect(() => {
+    dispatch(fetchTemplates());
+  }, [dispatch]);
 
   const filteredData = useMemo(() => {
     const query = searchText.trim().toLowerCase();
-    return allData.filter((row) => {
-      const matchesSearch =
-        !query ||
+    return templates.filter((row) => {
+      const matchesSearch = !query ||
         row.code.toLowerCase().includes(query) ||
         row.name.toLowerCase().includes(query);
-      const matchesGender =
-        !activeFilters.gender || row.gender === activeFilters.gender;
-      return matchesSearch && matchesGender;
+      const matchesFor = !activeFilters.templateFor || row.templateFor === activeFilters.templateFor;
+      const matchesGender = !activeFilters.gender || row.gender === activeFilters.gender;
+      const matchesUserType = !activeFilters.userType || row.userType === activeFilters.userType;
+      const matchesFormat = !activeFilters.templateFormat || row.templateFormat === activeFilters.templateFormat;
+      return matchesSearch && matchesFor && matchesGender && matchesUserType && matchesFormat;
     });
-  }, [allData, activeFilters, searchText]);
+  }, [templates, searchText, activeFilters]);
 
   useEffect(() => {
     onCountChange?.(filteredData.length);
   }, [filteredData, onCountChange]);
 
-  const handleToggle = (code: string) => {
-    setAllData((prev) =>
-      prev.map((item) =>
-        item.code === code ? { ...item, status: !item.status } : item,
-      ),
-    );
-  };
-
-  // Figma: Code 18% | Name 36% | No. of Pathologists 10% | Gender 12% | Status 16% | Edit 8%
-  const columns: Column<TemplateRow>[] = [
-    { key: "code", header: "Template Code", width: "14%" },
-    { key: "name", header: "Template Name", width: "25%" },
-    { key: "noOfPathologists", header: "No. of Pathologist", width: "17%" },
-    { key: "gender", header: "Gender", width: "30%" },
+  const columns: Column<TemplateItem>[] = [
+    { key: "code", header: "Template Code", width: "12%" },
+    {
+      key: "templateFor",
+      header: "Template For",
+      width: "14%",
+      render: (row) => <span>{TEMPLATE_FOR_LABELS[row.templateFor] ?? row.templateFor}</span>,
+    },
+    { key: "name", header: "Template Name", width: "20%" },
+    {
+      key: "gender",
+      header: "Gender",
+      width: "8%",
+      render: (row) => <span>{GENDER_LABELS[row.gender] ?? row.gender}</span>,
+    },
+    {
+      key: "templateFormat",
+      header: "Template Format",
+      width: "12%",
+      render: (row) => <span>{FORMAT_LABELS[row.templateFormat] ?? row.templateFormat}</span>,
+    },
+    {
+      key: "userType",
+      header: "User Type",
+      width: "12%",
+      render: (row) => <span>{USER_TYPE_LABELS[row.userType] ?? row.userType}</span>,
+    },
+    { key: "serviceName", header: "Service Name", width: "14%" },
     {
       key: "status",
       header: "Status",
       align: "right",
-      width: "16%",
+      width: "10%",
       render: (row) => (
-        <Toggle checked={row.status} onChange={() => handleToggle(row.code)} />
+        <Toggle
+          checked={row.isActive}
+          onChange={() => dispatch(toggleTemplateStatus({ id: row.id, status: !row.isActive }))}
+        />
       ),
     },
     {
@@ -226,19 +115,15 @@ export default function TemplateTable({
         <button
           type="button"
           onClick={() => onEdit(row)}
-          style={{
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
-            display: "inline-flex",
-            alignItems: "center",
-          }}
+          style={{ background: "transparent", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center" }}
         >
           <img src={EditIcon} alt="edit" width={18} height={18} />
         </button>
       ),
     },
   ];
+
+  if (loading) return <div style={{ padding: "2em", color: "#9e9e9e" }}>Loading...</div>;
 
   return (
     <>
@@ -247,7 +132,7 @@ export default function TemplateTable({
         isOpen={filterOpen}
         onClose={() => onFilterClose?.()}
         onApply={(filters) => setActiveFilters(filters)}
-        onClearAll={() => setActiveFilters({ gender: "" })}
+        onClearAll={() => setActiveFilters(defaultFilters)}
         initialValues={activeFilters}
       />
     </>

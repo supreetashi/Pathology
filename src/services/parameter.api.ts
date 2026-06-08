@@ -12,7 +12,7 @@ import { http } from "./http";
 
 export const parameterApi = {
   // ── Parameters ─────────────────────────────────────
-  getParameters: () => http.get("/parameters/"),
+  getParameters: () => http.get("/parameters/?page_size=100"),
 
   createParameter: (payload: CreateParameterPayload) =>
     http.post("/parameters/", payload),
