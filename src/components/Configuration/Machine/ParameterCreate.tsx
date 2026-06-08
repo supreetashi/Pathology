@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
 import { useDispatch } from "react-redux";
+import { toast } from "react-toastify";
 import CloseCircleIcon from "../../../assets/icons/close-circle.svg";
 import type { AppDispatch } from "../../../store";
 import type { MachineItem, MachineParameterItem } from "../../../types/Machine.types";
@@ -297,7 +298,7 @@ function ParameterCreate({
     try {
       if (mode === "edit" && initialValue) {
         // 1. Update the parameter's own code/name
-        await dispatch(
+        const updateResult = await dispatch(
           updateMachineParameter({
             id: initialValue.id,
             payload: {
@@ -306,6 +307,11 @@ function ParameterCreate({
             },
           }),
         );
+
+        if (updateMachineParameter.rejected.match(updateResult)) {
+          toast.error("Failed to update parameter. Please try again.");
+          return;
+        }
 
         // 2. Diff machine links
         const previousIds = new Set(
@@ -326,7 +332,7 @@ function ParameterCreate({
               updateMachine({
                 id: machineId,
                 payload: {
-                  clinic: machine.clinicId, // ← fix: required by backend on every PUT
+                  clinic: machine.clinicId,
                   machine_parameter_ids: [
                     ...machine.machineParameterIds,
                     initialValue.id,
@@ -342,7 +348,7 @@ function ParameterCreate({
               updateMachine({
                 id: machineId,
                 payload: {
-                  clinic: machine.clinicId, // ← fix: required by backend on every PUT
+                  clinic: machine.clinicId,
                   machine_parameter_ids: machine.machineParameterIds.filter(
                     (pid) => pid !== initialValue.id,
                   ),
@@ -351,6 +357,8 @@ function ParameterCreate({
             );
           }),
         ]);
+
+        toast.success("Machine parameter updated successfully.");
       } else {
         // 1. Create the standalone parameter
         const resultAction = await dispatch(
@@ -359,6 +367,11 @@ function ParameterCreate({
             machine_parameter_name: name.trim(),
           }),
         );
+
+        if (createMachineParameter.rejected.match(resultAction)) {
+          toast.error("Failed to create parameter. Please try again.");
+          return;
+        }
 
         // 2. Link it to each selected machine
         if (
@@ -374,7 +387,7 @@ function ParameterCreate({
                 updateMachine({
                   id: machineId,
                   payload: {
-                    clinic: machine.clinicId, // ← fix: required by backend on every PUT
+                    clinic: machine.clinicId,
                     machine_parameter_ids: [
                       ...machine.machineParameterIds,
                       newParameterId,
@@ -385,10 +398,14 @@ function ParameterCreate({
             }),
           );
         }
+
+        toast.success("Machine parameter created successfully.");
       }
 
       onSave?.();
       onClose();
+    } catch {
+      toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setIsSaving(false);
     }

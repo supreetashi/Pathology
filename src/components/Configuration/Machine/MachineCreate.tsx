@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
+import { toast } from "react-toastify";
 import CloseCircleIcon from "../../../assets/icons/close-circle.svg";
 import type { AppDispatch } from "../../../store";
 import type { MachineItem } from "../../../types/Machine.types";
@@ -37,8 +38,7 @@ function MachineCreate({
   const [selectedParameterIds, setSelectedParameterIds] = useState<string[]>([]);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [errors, setErrors] = useState<{ code?: string; name?: string; clinic?: string }>({});
-  const [saveError, setSaveError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<{ code?: string; name?: string }>({});
 
   useEffect(() => {
     if (!isOpen) return;
@@ -55,7 +55,6 @@ function MachineCreate({
 
     setIsPickerOpen(false);
     setErrors({});
-    setSaveError(null);
   }, [isOpen, initialValue]);
 
   const selectedOptions = useMemo(() => {
@@ -68,11 +67,13 @@ function MachineCreate({
   if (!isOpen) return null;
 
   const validate = () => {
-    const next: { code?: string; name?: string; clinic?: string } = {};
+    const next: { code?: string; name?: string } = {};
     if (!code.trim()) next.code = "Machine code is required";
     if (!name.trim()) next.name = "Machine name is required";
-    if (!clinicId?.trim())
-      next.clinic = "No clinic selected. Please select a clinic before adding a machine.";
+    if (!clinicId?.trim()) {
+      toast.error("No clinic selected. Please select a clinic before adding a machine.");
+      return false;
+    }
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -80,7 +81,6 @@ function MachineCreate({
   const handleSave = async () => {
     if (!validate() || isSaving) return;
     setIsSaving(true);
-    setSaveError(null);
 
     try {
       let result: any;
@@ -90,7 +90,7 @@ function MachineCreate({
           updateMachine({
             id: initialValue.id,
             payload: {
-              clinic: initialValue.clinicId, // ← fix: required by backend on every PUT
+              clinic: initialValue.clinicId,
               machine_code: code.trim(),
               machine_name: name.trim(),
               machine_parameter_ids: selectedParameterIds,
@@ -109,7 +109,7 @@ function MachineCreate({
       }
 
       if (result?.error) {
-        setSaveError(
+        toast.error(
           typeof result.payload === "string"
             ? result.payload
             : "Failed to save machine. Please check the details and try again.",
@@ -117,10 +117,16 @@ function MachineCreate({
         return;
       }
 
+      toast.success(
+        mode === "edit"
+          ? "Machine updated successfully."
+          : "Machine created successfully.",
+      );
+
       onSave?.();
       onClose();
     } catch {
-      setSaveError("An unexpected error occurred. Please try again.");
+      toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -139,14 +145,6 @@ function MachineCreate({
         </div>
 
         <div className="machine-create-body">
-          {errors.clinic && (
-            <div className="machine-create-error-banner">{errors.clinic}</div>
-          )}
-
-          {saveError && (
-            <div className="machine-create-error-banner">{saveError}</div>
-          )}
-
           <label className="machine-create-field-wrap">
             <span className="machine-create-label">Machine Code</span>
             <input
