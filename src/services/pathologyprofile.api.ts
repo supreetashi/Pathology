@@ -10,6 +10,8 @@ export const pathologyProfileApi = {
     // Fetch all pathology profiles
     getPathologyProfiles: () => http.get("/profiles/"),
 
+    getServiceNameLists: () => http.get("https://99999.preview-api.vidaisolutions.com/api/laboratory-test/"),
+
     // Create pathology profile
     createPathologyProfile: (payload: CreatePathologyProfilePayload) =>
         http.post("/profiles/", payload),

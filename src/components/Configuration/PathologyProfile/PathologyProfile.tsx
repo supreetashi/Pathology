@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   createPathologyProfile,
   fetchPathologyProfiles,
+  fetchServiceNameLists,
   selectPathologyProfiles,
   togglePathologyProfileStatus,
 } from "../../../store/pathologyProfileSlice";
@@ -56,6 +57,7 @@ function PathologyProfile() {
 
   useEffect(() => {
     dispatch(fetchPathologyProfiles());
+    dispatch(fetchServiceNameLists());
   }, [dispatch]);
 
   return (
@@ -123,20 +125,20 @@ function PathologyProfile() {
                       <label className={styles.switchLabel}>
                         <input
                           type="checkbox"
-                          checked={row.isActive}
+                          checked={row.status}
                           onChange={() => toggleStatus(row.id)}
                           className={styles.switchInput}
                         />
                         <span
                           className={
-                            row.isActive
+                            row.status
                               ? `${styles.slider} ${styles.sliderOn}`
                               : styles.slider
                           }
                         >
                           <span
                             className={
-                              row.isActive
+                              row.status
                                 ? `${styles.knob} ${styles.knobOn}`
                                 : styles.knob
                             }
