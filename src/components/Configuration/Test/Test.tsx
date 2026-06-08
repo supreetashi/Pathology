@@ -74,7 +74,9 @@ function TestConfigurationView() {
   const [dataCount, setDataCount] = useState(0);
   const [isTemplateFilterOpen, setIsTemplateFilterOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<CategoryItem | null>(null);
+  const [editingCategory, setEditingCategory] = useState<CategoryItem | null>(
+    null,
+  );
 
   const [searchByTab, setSearchByTab] = useState<Record<TabKey, string>>({
     Parameter: "",
@@ -86,9 +88,9 @@ function TestConfigurationView() {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   useEffect(() => {
-  dispatch(fetchTests());
-  dispatch(fetchCategories());
-}, [dispatch]);
+    dispatch(fetchTests());
+    dispatch(fetchCategories());
+  }, [dispatch]);
   const categories = useSelector(selectCategories);
   const tests = useSelector(selectTests);
 
@@ -178,7 +180,9 @@ function TestConfigurationView() {
   };
 
   return (
-    <div style={{ width: "100%", height: "100%", position: "absolute", inset: 0 }}>
+    <div
+      style={{ width: "100%", height: "100%", position: "absolute", inset: 0 }}
+    >
       <div className={styles.contentContainer}>
         <TabsHeader
           tabs={[...tabs]}
