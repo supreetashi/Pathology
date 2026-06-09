@@ -309,6 +309,15 @@ const ShipmentView: React.FC = () => {
         {renderTabContent()}
       </div>
 
+      {/* Schedule Shipping button — inline above footer when rows selected */}
+      {activeTab === "pending" && selectedRows.length > 0 && (
+        <div className="shipping-button-container">
+          <button className="schedule-shipping-btn" onClick={() => setShowShippingModal(true)}>
+            Schedule Shipping
+          </button>
+        </div>
+      )}
+
       {/* Footer */}
       <div className="table-footer">
         <div className="showing-entries">
@@ -327,14 +336,7 @@ const ShipmentView: React.FC = () => {
         </div>
       </div>
 
-      {/* Schedule Shipping button — only when rows selected */}
-      {activeTab === "pending" && selectedRows.length > 0 && (
-        <div className="shipping-button-container">
-          <button className="schedule-shipping-btn" onClick={() => setShowShippingModal(true)}>
-            Schedule Shipping
-          </button>
-        </div>
-      )}
+
 
       {/* FILTER MODAL */}
       {showFilterModal && (
@@ -494,19 +496,19 @@ const ShipmentView: React.FC = () => {
                     }
                   }
 
-                  // ✅ Remove shipped items from pending list immediately (no wait for API)
+                  // Remove shipped items from pending immediately
                   setPendingDataOriginal(prev => prev.filter(p => !shippedIds.includes(p.id)));
-
                   setSelectedRows([]);
                   setShowShippingModal(false);
-
-                  // Refresh ALL tabs to update counts correctly
-                  await fetchTabData("pending");
-                  await fetchTabData("shipped");
-                  await fetchTabData("received");
-                  await fetchTabData("activity");
-
                   showToast(`${shippedIds.length} sample(s) shipped successfully`, "success");
+
+                  // Refresh shipped + activity immediately and again after delay
+                  fetchTabData("shipped");
+                  fetchTabData("activity");
+                  setTimeout(() => {
+                    fetchTabData("shipped");
+                    fetchTabData("activity");
+                  }, 1500);
                 } catch (err) {
                   console.error("Schedule shipping failed:", err);
                   showToast("Failed to schedule shipping: " + String(err), "error");
