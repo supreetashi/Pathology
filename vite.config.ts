@@ -2,6 +2,14 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
-  base: "/pathology/",   //  frontend_url
   plugins: [react()],
+  server: {
+    proxy: {
+      "/api": {
+        target: "http://127.0.0.1:8000",   // 127.0.0.1, not localhost
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 });
