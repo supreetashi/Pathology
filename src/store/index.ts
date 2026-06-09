@@ -7,8 +7,9 @@ import parameterReducer from "./parameterSlice";
 import machineReducer from "./MachineSlice";
 import ordersReducer from "./orders.slice";
 import shipmentReducer from "./shipment.slice";
-import templateReducer from "./templateSlice"
+import templateReducer from "./templateSlice";
 import laboratoryTestReducer from "./laboratoryTestSlice";
+import agencyReducer from "./agencySlice";
 
 export const store = configureStore({
   reducer: {
@@ -22,6 +23,7 @@ export const store = configureStore({
     shipment: shipmentReducer,
     template: templateReducer,
     laboratoryTests: laboratoryTestReducer,
+    agency: agencyReducer,
   },
 });
 

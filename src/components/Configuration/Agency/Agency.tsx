@@ -1,20 +1,9 @@
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import "./Agency.css";
 import { FiSearch, FiPlus } from "react-icons/fi";
 import AddNewAgency from "./Add_agency";
 import editicon from "../../../assets/icons/edit.svg";
-
-
-interface Agency {
-  id: number;
-  code: string;
-  name: string;
-  country: string;
-  location: string;
-  services: number;
-  active: boolean;
-}
+import { agencyApi, type Agency } from "../../../services/agency.api";
 
 interface Linking {
   id: number;
@@ -25,107 +14,168 @@ interface Linking {
 const AgencyPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"agency" | "linking">("agency");
   const [page, setPage] = useState<"list" | "add">("list");
-  
+  const [editingAgency, setEditingAgency] = useState<Agency | null>(null);
 
   const [agencyData, setAgencyData] = useState<Agency[]>([]);
-  const [linkingData, setLinkingData] = useState<Linking[]>([]);
+  const [agencyTotal, setAgencyTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const [linkingData] = useState<Linking[]>([
+    { id: 1, clinic: "Apollo Clinic", agencyCount: 4 },
+    { id: 2, clinic: "Fortis", agencyCount: 2 },
+    { id: 3, clinic: "Manipal Hospital", agencyCount: 5 },
+    { id: 4, clinic: "Aster Clinic", agencyCount: 3 },
+    { id: 5, clinic: "Narayana Health", agencyCount: 6 },
+  ]);
 
   const [agencySearch, setAgencySearch] = useState("");
   const [linkingSearch, setLinkingSearch] = useState("");
-
   const [agencyPage, setAgencyPage] = useState(1);
   const [linkingPage, setLinkingPage] = useState(1);
 
   const itemsPerPage = 10;
 
-  useEffect(() => {
-    setAgencyData([
-      { id: 1, code: "AG-1001", name: "Acuity Labs", country: "India", location: "Pune", services: 4, active: true },
-      { id: 2, code: "AG-1002", name: "Pathway Diagnostics", country: "India", location: "Chennai", services: 3, active: false },
-      { id: 3, code: "AG-1003", name: "Prime Labs", country: "India", location: "Delhi", services: 5, active: true },
-      { id: 4, code: "AG-1004", name: "Care Labs", country: "India", location: "Hyderabad", services: 2, active: false },
-      { id: 5, code: "AG-1005", name: "Wellness Labs", country: "India", location: "Mumbai", services: 6, active: true },
-      { id: 6, code: "AG-1006", name: "Health Labs", country: "India", location: "Bangalore", services: 2, active: true },
-      { id: 7, code: "AG-1007", name: "Metro Labs", country: "India", location: "Delhi", services: 3, active: false },
-      { id: 8, code: "AG-1008", name: "City Labs", country: "India", location: "Pune", services: 4, active: true },
-      { id: 9, code: "AG-1009", name: "Nova Labs", country: "India", location: "Chennai", services: 2, active: true },
-      { id: 10, code: "AG-1010", name: "Global Labs", country: "India", location: "Hyderabad", services: 1, active: false },
-      { id: 11, code: "AG-1011", name: "Elite Labs", country: "India", location: "Mumbai", services: 5, active: true },
-    ]);
+  // ── Fetch agencies ───────────────────────────────────
+  const fetchAgencies = useCallback(async (search?: string) => {
+    setLoading(true);
+    try {
+      const res: any = await agencyApi.getAll(search);
 
-    setLinkingData([
-      { id: 1, clinic: "Apollo Clinic", agencyCount: 4 },
-      { id: 2, clinic: "Fortis", agencyCount: 2 },
-      { id: 3, clinic: "Manipal Hospital", agencyCount: 5 },
-      { id: 4, clinic: "Aster Clinic", agencyCount: 3 },
-      { id: 5, clinic: "Narayana Health", agencyCount: 6 },
-      { id: 6, clinic: "Cloudnine", agencyCount: 2 },
-      { id: 7, clinic: "Columbia Asia", agencyCount: 4 },
-      { id: 8, clinic: "Sakra World", agencyCount: 3 },
-      { id: 9, clinic: "Rainbow Hospital", agencyCount: 5 },
-      { id: 10, clinic: "Motherhood", agencyCount: 2 },
-      { id: 11, clinic: "Medanta", agencyCount: 6 },
-    ]);
+      // Handle every possible shape http.ts might return
+      let results: Agency[] = [];
+      let total = 0;
+
+      if (!res) {
+        results = [];
+        total = 0;
+      } else if (Array.isArray(res)) {
+        // http returns plain array
+        results = res;
+        total = res.length;
+      } else if (Array.isArray(res?.results)) {
+        // http returns {count, results} directly
+        results = res.results;
+        total = res.count ?? res.results.length;
+      } else if (Array.isArray(res?.data)) {
+        // axios shape: {data: Agency[]}
+        results = res.data;
+        total = res.data.length;
+      } else if (Array.isArray(res?.data?.results)) {
+        // axios + paginated: {data: {count, results}}
+        results = res.data.results;
+        total = res.data.count ?? res.data.results.length;
+      } else {
+        results = [];
+        total = 0;
+      }
+
+      setAgencyData(results);
+      setAgencyTotal(total);
+    } catch (err) {
+      console.error("Failed to fetch agencies:", err);
+      setAgencyData([]);
+      setAgencyTotal(0);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const filteredAgency = agencyData.filter((a) => {
-  const search = agencySearch.toLowerCase();
+  useEffect(() => {
+    fetchAgencies();
+  }, [fetchAgencies]);
 
-  return (
-    a.name.toLowerCase().includes(search) ||
-    a.code.toLowerCase().includes(search) ||
-    a.country.toLowerCase().includes(search) ||
-    a.location.toLowerCase().includes(search)
-  );
-});
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchAgencies(agencySearch || undefined);
+      setAgencyPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [agencySearch, fetchAgencies]);
 
+  // ── Toggle status optimistic ─────────────────────────
+  const toggleStatus = async (agency: Agency) => {
+    setAgencyData((prev) =>
+      prev.map((item) =>
+        item.id === agency.id ? { ...item, status: !item.status } : item
+      )
+    );
+    try {
+      await agencyApi.update(agency.id, { status: !agency.status });
+    } catch (err) {
+      console.error("Failed to toggle status:", err);
+      setAgencyData((prev) =>
+        prev.map((item) =>
+          item.id === agency.id ? { ...item, status: agency.status } : item
+        )
+      );
+    }
+  };
+
+  // ── Navigation ───────────────────────────────────────
+  const handleAddNew = () => {
+    setEditingAgency(null);
+    setPage("add");
+  };
+
+  const handleEdit = (agency: Agency) => {
+    setEditingAgency(agency);
+    setPage("add");
+  };
+
+  const handleFormBack = () => {
+    setEditingAgency(null);
+    setPage("list");
+  };
+
+  const handleFormSaved = () => {
+    setEditingAgency(null);
+    setPage("list");
+    fetchAgencies(agencySearch || undefined);
+  };
+
+  // ── Linking (client-side) ────────────────────────────
   const filteredLinking = linkingData.filter((l) =>
     l.clinic.toLowerCase().includes(linkingSearch.toLowerCase())
   );
-
-  const agencyTotalPages = Math.max(1, Math.ceil(filteredAgency.length / itemsPerPage));
-  const linkingTotalPages = Math.max(1, Math.ceil(filteredLinking.length / itemsPerPage));
-
-  const agencyDataPaginated = filteredAgency.slice(
-    (agencyPage - 1) * itemsPerPage,
-    agencyPage * itemsPerPage
+  const linkingTotalPages = Math.max(
+    1,
+    Math.ceil(filteredLinking.length / itemsPerPage)
   );
-
   const linkingDataPaginated = filteredLinking.slice(
     (linkingPage - 1) * itemsPerPage,
     linkingPage * itemsPerPage
   );
-
-  useEffect(() => setAgencyPage(1), [agencySearch]);
   useEffect(() => setLinkingPage(1), [linkingSearch]);
 
-  const toggleStatus = (id: number) => {
-    setAgencyData((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, active: !item.active } : item
-      )
-    );
-  };
+  // ── Agency pagination ────────────────────────────────
+  const agencyTotalPages = Math.max(1, Math.ceil(agencyTotal / itemsPerPage));
 
   return (
     <div className="agency-container">
       {page === "list" ? (
         <>
-          
+          {/* Tabs */}
           <div className="tabs">
-            <div className={`tab ${activeTab === "agency" ? "active" : ""}`} onClick={() => setActiveTab("agency")}>
+            <div
+              className={`tab ${activeTab === "agency" ? "active" : ""}`}
+              onClick={() => setActiveTab("agency")}
+            >
               Agency
             </div>
-            <div className={`tab ${activeTab === "linking" ? "active" : ""}`} onClick={() => setActiveTab("linking")}>
+            <div
+              className={`tab ${activeTab === "linking" ? "active" : ""}`}
+              onClick={() => setActiveTab("linking")}
+            >
               Agency-Clinic Linking
             </div>
           </div>
 
-          
+          {/* Header */}
           <div className="header-row">
             <h3>
               {activeTab === "agency"
-                ? `List of Agency (${filteredAgency.length})`
+                ? `List of Agency (${agencyTotal})`
                 : `Agency-Clinic Linking (${filteredLinking.length})`}
             </h3>
 
@@ -134,11 +184,13 @@ const AgencyPage: React.FC = () => {
                 <FiSearch />
                 <input
                   placeholder={
-  activeTab === "agency"
-    ? "Search by Code, Name, Country, City"
-    : "Search by Clinic"
-}
-                  value={activeTab === "agency" ? agencySearch : linkingSearch}
+                    activeTab === "agency"
+                      ? "Search by Code, Name"
+                      : "Search by Clinic"
+                  }
+                  value={
+                    activeTab === "agency" ? agencySearch : linkingSearch
+                  }
                   onChange={(e) =>
                     activeTab === "agency"
                       ? setAgencySearch(e.target.value)
@@ -148,15 +200,14 @@ const AgencyPage: React.FC = () => {
               </div>
 
               {activeTab === "agency" && (
-                <button className="add-btn" onClick={() => setPage("add")}>
+                <button className="add-btn" onClick={handleAddNew}>
                   <FiPlus /> Add New Agency
                 </button>
               )}
             </div>
           </div>
 
-          
-          
+          {/* Table */}
           <div className="table">
             <div className="table-head">
               {activeTab === "agency" ? (
@@ -177,141 +228,159 @@ const AgencyPage: React.FC = () => {
               )}
             </div>
 
-            {(activeTab === "agency" ? agencyDataPaginated : linkingDataPaginated).map((item: any) => (
-              <div className="table-row" key={item.id}>
-                {activeTab === "agency" ? (
-                  <>
-                    <span>{item.code}</span>
-                    <span>{item.name}</span>
-                    <span>{item.country}</span>
-                    <span>{item.location}</span>
-                    <span>{item.services}</span>
-
-                    <div className="status-cell">
-                      
-                      <label className="switch">
-                        <input
-                          type="checkbox"
-                          checked={item.active}
-                          onChange={() => toggleStatus(item.id)}
-                        />
-                        <span className="slider"></span>
-                      </label>
-
-                      <button
-                     className="edit-btn"
-                    onClick={() => setPage("add")}
->
-                    <img src={editicon} alt="edit" />
-                    </button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <span>{item.clinic}</span>
-                    <span>{item.agencyCount}</span>
-
-                    <div className="status-cell">
-                     <button className="edit-btn">
-  <img src={editicon} alt="edit" />
-</button>
-
-                    </div>
-                  </>
-                )}
+            {/* Loading */}
+            {loading && (
+              <div className="table-row">
+                <span style={{ padding: "16px", color: "#888" }}>
+                  Loading...
+                </span>
               </div>
-            ))}
+            )}
+
+            {/* Agency rows */}
+            {!loading &&
+              activeTab === "agency" &&
+              agencyData.length > 0 &&
+              agencyData.map((item) => (
+                <div className="table-row" key={item.id}>
+                  <span>{item.agency_code}</span>
+                  <span>{item.agency_name}</span>
+                  <span>{item.country ?? "—"}</span>
+                  <span>{item.city ?? "—"}</span>
+                  <span>
+                    {Array.isArray(item.agency_services)
+                      ? item.agency_services.length
+                      : 0}
+                  </span>
+                  <div className="status-cell">
+                    <label className="switch">
+                      <input
+                        type="checkbox"
+                        checked={item.status}
+                        onChange={() => toggleStatus(item)}
+                      />
+                      <span className="slider"></span>
+                    </label>
+                    <button
+                      className="edit-btn"
+                      onClick={() => handleEdit(item)}
+                    >
+                      <img src={editicon} alt="edit" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+            {/* Empty state */}
+            {!loading &&
+              activeTab === "agency" &&
+              agencyData.length === 0 && (
+                <div
+                  className="table-row"
+                  style={{ justifyContent: "center", color: "#aaa" }}
+                >
+                  No agencies found.
+                </div>
+              )}
+
+            {/* Linking rows */}
+            {!loading &&
+              activeTab === "linking" &&
+              linkingDataPaginated.map((item) => (
+                <div className="table-row" key={item.id}>
+                  <span>{item.clinic}</span>
+                  <span>{item.agencyCount}</span>
+                  <div className="status-cell">
+                    <button className="edit-btn">
+                      <img src={editicon} alt="edit" />
+                    </button>
+                  </div>
+                </div>
+              ))}
           </div>
 
-         <div className="footer">
-  
-  <div className="page-info">
-    {(() => {
-      const currentPage =
-        activeTab === "agency" ? agencyPage : linkingPage;
+          {/* Footer */}
+          <div className="footer">
+            <div className="page-info">
+              {(() => {
+                const currentPage =
+                  activeTab === "agency" ? agencyPage : linkingPage;
+                const totalItems =
+                  activeTab === "agency" ? agencyTotal : linkingData.length;
+                const start = (currentPage - 1) * itemsPerPage + 1;
+                const end = Math.min(currentPage * itemsPerPage, totalItems);
+                if (totalItems === 0) return "No entries";
+                return `Showing ${start} to ${end} of ${totalItems} entries`;
+              })()}
+            </div>
 
-      const totalItems =
-        activeTab === "agency"
-          ? agencyData.length
-          : linkingData.length;
+            <div className="pagination">
+              <button
+                className="nav-btn"
+                disabled={
+                  activeTab === "agency"
+                    ? agencyPage === 1
+                    : linkingPage === 1
+                }
+                onClick={() =>
+                  activeTab === "agency"
+                    ? setAgencyPage((p) => p - 1)
+                    : setLinkingPage((p) => p - 1)
+                }
+              >
+                ‹
+              </button>
 
-      const itemsPerPage = 10;
+              {Array.from({
+                length:
+                  activeTab === "agency"
+                    ? agencyTotalPages
+                    : linkingTotalPages,
+              }).map((_, index) => {
+                const pageNumber = index + 1;
+                const currentPage =
+                  activeTab === "agency" ? agencyPage : linkingPage;
+                return (
+                  <button
+                    key={pageNumber}
+                    className={`page-btn ${
+                      currentPage === pageNumber ? "active" : ""
+                    }`}
+                    onClick={() =>
+                      activeTab === "agency"
+                        ? setAgencyPage(pageNumber)
+                        : setLinkingPage(pageNumber)
+                    }
+                  >
+                    {pageNumber}
+                  </button>
+                );
+              })}
 
-      const start = (currentPage - 1) * itemsPerPage + 1;
-      const end = Math.min(currentPage * itemsPerPage, totalItems);
-
-      return `Showing ${start} to ${end} of ${totalItems} entries`;
-    })()}
-  </div>
-
-  
-  <div className="pagination">
-    
-    <button
-      className="nav-btn"
-      disabled={
-        activeTab === "agency"
-          ? agencyPage === 1
-          : linkingPage === 1
-      }
-      onClick={() =>
-        activeTab === "agency"
-          ? setAgencyPage(agencyPage - 1)
-          : setLinkingPage(linkingPage - 1)
-      }
-    >
-      ‹
-    </button>
-
-   
-    {Array.from({
-      length:
-        activeTab === "agency"
-          ? agencyTotalPages
-          : linkingTotalPages,
-    }).map((_, index) => {
-      const pageNumber = index + 1;
-      const currentPage =
-        activeTab === "agency" ? agencyPage : linkingPage;
-
-      return (
-        <button
-          key={pageNumber}
-          className={`page-btn ${
-            currentPage === pageNumber ? "active" : ""
-          }`}
-          onClick={() =>
-            activeTab === "agency"
-              ? setAgencyPage(pageNumber)
-              : setLinkingPage(pageNumber)
-          }
-        >
-          {pageNumber}
-        </button>
-      );
-    })}
-
-    
-    <button
-      className="nav-btn"
-      disabled={
-        activeTab === "agency"
-          ? agencyPage === agencyTotalPages
-          : linkingPage === linkingTotalPages
-      }
-      onClick={() =>
-        activeTab === "agency"
-          ? setAgencyPage(agencyPage + 1)
-          : setLinkingPage(linkingPage + 1)
-      }
-    >
-      ›
-    </button>
-  </div>
-</div>
+              <button
+                className="nav-btn"
+                disabled={
+                  activeTab === "agency"
+                    ? agencyPage === agencyTotalPages
+                    : linkingPage === linkingTotalPages
+                }
+                onClick={() =>
+                  activeTab === "agency"
+                    ? setAgencyPage((p) => p + 1)
+                    : setLinkingPage((p) => p + 1)
+                }
+              >
+                ›
+              </button>
+            </div>
+          </div>
         </>
       ) : (
-        <AddNewAgency onBack={() => setPage("list")} />
+        <AddNewAgency
+          onBack={handleFormBack}
+          onSaved={handleFormSaved}
+          editingAgency={editingAgency}
+        />
       )}
     </div>
   );
