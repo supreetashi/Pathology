@@ -14,12 +14,12 @@ const PendingTab: React.FC<PendingTabProps> = ({
   return (
     <table className="custom-table" style={{ tableLayout: "fixed", width: "100%" }}>
       <colgroup>
-        <col style={{ width: "40px" }} />     {/* checkbox */}
-        <col style={{ width: "140px" }} />    {/* Order Date | Time */}
-        <col style={{ width: "160px" }} />    {/* Sample No. | Type — wider */}
-        <col style={{ width: "160px" }} />    {/* Test Code | Name — wider */}
-        <col style={{ width: "180px" }} />    {/* Service Name */}
-        <col />                               {/* Patient — fills rest */}
+        <col style={{ width: "40px" }} />
+        <col style={{ width: "140px" }} />
+        <col style={{ width: "160px" }} />
+        <col style={{ width: "160px" }} />
+        <col style={{ width: "180px" }} />
+        <col />
       </colgroup>
       <thead>
         <tr>

@@ -1,15 +1,30 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
+/* ── Force parent containers to not scroll ── */
+.MuiBox-root:has(> .shipment-container),
+div:has(> .shipment-container) {
+  overflow: hidden !important;
+  height: 100% !important;
+  max-height: 100% !important;
+}
+
+
+
 /* ============================================
    SHIPMENT MODULE - FULL COMPLETE CSS
    Figma Exact - Plus Jakarta Sans
    ============================================ */
 
 .shipment-container {
-  padding: 28px 32px;
+  padding: 20px 28px 0 28px;
   background-color: #ffffff;
-  min-height: 100vh;
+  flex: 1;
+  min-height: 0;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
 .shipment-header {
@@ -133,6 +148,9 @@
   border-radius: 0;
   border: none;
   overflow: hidden;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .custom-table {

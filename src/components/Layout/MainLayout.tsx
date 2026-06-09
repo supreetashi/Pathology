@@ -8,7 +8,6 @@ import styles from "../../styles/sidebar.module.css";
 const Header = lazy(() => import("./Header"));
 const Sidebar = lazy(() => import("./Sidebar"));
 const TOP_ROW_HEIGHT = 88;
-// Sidebar width scales: 200px on small screens up to 260px on xlarge
 const SIDEBAR_WIDTH = { xs: 200, sm: 210, md: 230, lg: 250, xl: 260 };
 
 const MainLayout = () => {
@@ -83,13 +82,15 @@ const MainLayout = () => {
         >
           <Box
             className={`${styles.cardWrapper} ${styles.contentCardWrapper}`}
-            sx={{ m: 0 }}
+            sx={{ m: 0, flexGrow: 1, minHeight: 0, display: "flex", flexDirection: "column" }}
           >
             <Box
               className={styles.card}
               sx={{
                 flexGrow: 1,
+                minHeight: 0,
                 overflowY: "auto",
+                position: "relative",
               }}
             >
               <Outlet />

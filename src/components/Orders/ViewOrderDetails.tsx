@@ -347,25 +347,21 @@ function ScheduleModal({ rows, onClose, onCollect }: ScheduleModalProps) {
       for (const row of rows) {
         const bc = barcodeData[row.id];
 
-        // First create/get a patient record
-        // We need patient_id from the order — use a fallback patient creation
         let patientId: number | null = null;
 
-        // Try to get existing patient by MRN via patients list
+        // Try to find existing patient
         const patientsRes = await fetch(`${BASE}/patients/`);
         if (patientsRes.ok) {
           const patients = await patientsRes.json();
-          // patients is array from PatientView
           const found = Array.isArray(patients)
             ? patients.find((p: Record<string, unknown>) =>
-                String(p.mrn) === String(row.specimenNo) ||
                 String(p.patient_name) === String(row.name)
               )
             : null;
           if (found) patientId = found.id;
         }
 
-        // If no patient found, create one
+        // Create patient if not found
         if (!patientId) {
           const createPatientRes = await fetch(`${BASE}/patients/`, {
             method: "POST",
@@ -374,7 +370,7 @@ function ScheduleModal({ rows, onClose, onCollect }: ScheduleModalProps) {
               patient_name: row.name || "Unknown",
               age: 0,
               sex: "Unknown",
-              mrn: bc?.specimen_no || row.specimenNo || "N/A",
+              mrn: bc?.specimen_no || "N/A",
               cycle_id: "N/A",
             }),
           });
@@ -384,7 +380,7 @@ function ScheduleModal({ rows, onClose, onCollect }: ScheduleModalProps) {
           }
         }
 
-        // Create pending shipment record
+        // Create pending shipment
         const pendingRes = await fetch(`${BASE}/pending-shipment/`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -401,18 +397,15 @@ function ScheduleModal({ rows, onClose, onCollect }: ScheduleModalProps) {
 
         if (!pendingRes.ok) {
           const errData = await pendingRes.json().catch(() => ({}));
-          throw new Error(
-            `Failed to create pending shipment for ${row.code}: ${JSON.stringify(errData)}`
-          );
+          throw new Error(`Failed: ${JSON.stringify(errData)}`);
         }
       }
 
-      // Success — close modal and trigger parent
+      // ✅ Success: close modal immediately, no alert
       onCollect();
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Collection failed. Check console.");
+      setError(e instanceof Error ? e.message : "Collection failed.");
       console.error("Collect error:", e);
-    } finally {
       setLoadingCollect(false);
     }
   };
@@ -516,6 +509,47 @@ function ScheduleModal({ rows, onClose, onCollect }: ScheduleModalProps) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
+// ─── Toast ────────────────────────────────────────────────────────────────────
+function VODToast({ message, type, onClose }: { message: string; type: "success"|"error"; onClose: () => void }) {
+  useEffect(() => { const t = setTimeout(onClose, 3000); return () => clearTimeout(t); }, [onClose]);
+  return (
+    <div style={{
+      position: "fixed", top: "20px", right: "20px", zIndex: 99999,
+      background: "#ffffff",
+      border: `1px solid ${type === "success" ? "#10b981" : "#ef4444"}`,
+      borderLeft: `4px solid ${type === "success" ? "#10b981" : "#ef4444"}`,
+      color: "#111827",
+      borderRadius: "8px",
+      padding: "12px 16px",
+      fontSize: "13px",
+      fontWeight: 500,
+      display: "flex",
+      alignItems: "center",
+      gap: "10px",
+      boxShadow: "0 4px 20px rgba(0,0,0,0.12)",
+      minWidth: "260px",
+      maxWidth: "360px",
+      fontFamily: "var(--shipment-font-family)",
+      animation: "toastIn 0.25s ease",
+    }}>
+      <style>{`@keyframes toastIn { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }`}</style>
+      <div style={{
+        width: "22px", height: "22px", borderRadius: "50%", flexShrink: 0,
+        background: type === "success" ? "#10b981" : "#ef4444",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        color: "#fff", fontSize: "12px", fontWeight: 700,
+      }}>
+        {type === "success" ? "✓" : "✕"}
+      </div>
+      <span style={{ flex: 1 }}>{message}</span>
+      <button onClick={onClose} style={{
+        background: "none", border: "none", color: "#9ca3af",
+        cursor: "pointer", fontSize: "18px", padding: 0, lineHeight: 1, flexShrink: 0,
+      }}>×</button>
+    </div>
+  );
+}
+
 export default function ViewOrderDetails({ order, orderId, onBack }: ViewOrderDetailsProps) {
   const BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 
@@ -531,6 +565,7 @@ export default function ViewOrderDetails({ order, orderId, onBack }: ViewOrderDe
   const [processOpen, setProcessOpen]   = useState(false);
   const [agencyOpen, setAgencyOpen]     = useState(false);
   const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [toast, setToast]               = useState<{ message: string; type: "success"|"error" } | null>(null);
 
   const filterBtnRef = useRef<HTMLButtonElement | null>(null);
 
@@ -600,8 +635,8 @@ export default function ViewOrderDetails({ order, orderId, onBack }: ViewOrderDe
 
   const isOutsource    = activeTab === "outsource";
   const tests: TestRow[] = isOutsource ? outsourceTests : inhouseTests;
-  const totalInhouse   = inhouseTests.length;
-  const totalOutsource = outsourceTests.length;
+  const totalInhouse   = realOrderId ? inhouseTests.filter(t => !INHOUSE_TESTS.includes(t)).length || inhouseTests.length : inhouseTests.length;
+  const totalOutsource = realOrderId ? outsourceTests.filter(t => !OUTSOURCE_TESTS.includes(t)).length || outsourceTests.length : outsourceTests.length;
 
   const toggleRow = (id: number) => {
     setCheckedRows((prev) => {
@@ -618,6 +653,91 @@ export default function ViewOrderDetails({ order, orderId, onBack }: ViewOrderDe
     t.code.toLowerCase().includes(search.toLowerCase())
   );
 
+  // ─── Download / Print handlers ────────────────────────────────────────────
+  const handleDownload = (row: typeof tests[0]) => {
+    const NL = String.fromCharCode(10);
+    const text = [
+      "Test Result Report",
+      "==================",
+      "Patient   : " + (patient.patientName ?? "-"),
+      "Age       : " + (patient.patientAge ?? "-") + " Years",
+      "Gender    : " + (patient.gender ?? "-"),
+      "MRN       : " + (patient.mrn ?? "-"),
+      "Cycle ID  : " + (patient.cycleId ?? "-"),
+      "",
+      "Test Code : " + row.code,
+      "Test Name : " + row.name,
+      "Service   : " + row.service,
+      "Specimen  : " + row.specimenNo,
+      "Type      : " + row.type,
+      "Status    : " + row.status,
+      "Date      : " + row.date + " " + row.time,
+    ].join(NL);
+    const blob = new Blob([text], { type: "text/plain" });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href     = url;
+    a.download = "result_" + row.code + "_" + row.name.replace(/\s+/g, "_") + ".txt";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handlePrint = (row: typeof tests[0]) => {
+    const patientName = patient.patientName ?? "-";
+    const patientAge  = patient.patientAge ? patient.patientAge + " Years" : "-";
+    const gender      = patient.gender ?? "-";
+    const mrn         = patient.mrn ?? "-";
+    const cycleId     = patient.cycleId ?? "-";
+    const now         = new Date();
+    const dateStr     = now.toLocaleDateString("en-GB");
+    const timeStr     = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+
+    const html = [
+      "<!DOCTYPE html><html><head>",
+      "<title>Test Result - " + row.name + "</title>",
+      "<style>",
+      "body{font-family:Plus Jakarta Sans,sans-serif;padding:32px;color:#111827;font-size:13px}",
+      "h1{font-size:18px;font-weight:700;margin-bottom:4px}",
+      ".sub{color:#6b7280;font-size:12px;margin-bottom:24px}",
+      "table{width:100%;border-collapse:collapse;margin-top:16px}",
+      "th{text-align:left;font-size:11px;color:#9ca3af;font-weight:400;padding:8px 12px;background:#f9fafb;border-bottom:1px solid #e5e7eb}",
+      "td{padding:10px 12px;font-size:13px;border-bottom:1px solid #f3f4f6}",
+      ".badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;background:#f0fdf4;color:#10b981;border:1px solid #10b981}",
+      ".grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}",
+      ".field label{font-size:10px;color:#9ca3af;display:block;margin-bottom:2px}",
+      ".field span{font-size:13px;font-weight:600;color:#111827}",
+      "@media print{body{padding:16px}}",
+      "</style></head><body>",
+      "<h1>Test Result Report</h1>",
+      "<div class=\"sub\">Generated on " + dateStr + " at " + timeStr + "</div>",
+      "<div class=\"grid\">",
+      "<div class=\"field\"><label>Patient Name</label><span>" + patientName + "</span></div>",
+      "<div class=\"field\"><label>Age</label><span>" + patientAge + "</span></div>",
+      "<div class=\"field\"><label>Gender</label><span>" + gender + "</span></div>",
+      "<div class=\"field\"><label>MRN</label><span>" + mrn + "</span></div>",
+      "<div class=\"field\"><label>Cycle ID</label><span>" + cycleId + "</span></div>",
+      "</div>",
+      "<table><thead><tr>",
+      "<th>Test Code</th><th>Test Name</th><th>Service</th>",
+      "<th>Specimen No.</th><th>Type</th><th>Collector Item</th><th>Status</th><th>Date | Time</th>",
+      "</tr></thead><tbody><tr>",
+      "<td>" + row.code + "</td>",
+      "<td>" + row.name + "</td>",
+      "<td>" + row.service + "</td>",
+      "<td>" + row.specimenNo + "</td>",
+      "<td>" + row.type + "</td>",
+      "<td>" + row.collectorItem + "</td>",
+      "<td><span class=\"badge\">" + row.status + "</span></td>",
+      "<td>" + row.date + " " + row.time + "</td>",
+      "</tr></tbody></table>",
+      "<script>window.onload=function(){window.print();window.onafterprint=function(){window.close();}}<\/script>",
+      "</body></html>",
+    ].join("");
+
+    const w = window.open("", "_blank", "width=900,height=600");
+    if (w) { w.document.write(html); w.document.close(); }
+  };
+
   const patient: PatientOrder = order ?? {
     patientName: "Emilia Williamson",
     patientAge: 27,
@@ -628,6 +748,7 @@ export default function ViewOrderDetails({ order, orderId, onBack }: ViewOrderDe
 
   return (
     <div className={styles.page}>
+      {toast && <VODToast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       <div className={styles.card}>
 
         {/* FIX 3: Card header with back arrow and title */}
@@ -689,10 +810,14 @@ export default function ViewOrderDetails({ order, orderId, onBack }: ViewOrderDe
 
         {/* FIX 4 & 5: Table with proper column spacing, status centered, result icons blue */}
         <div className={styles.tableWrap}>
-          {testsLoading && (
-            <div style={{ padding: "20px", textAlign: "center", color: "#9ca3af", fontSize: "12px" }}>Loading tests...</div>
-          )}
-          <table className={styles.table}>
+          {testsLoading ? (
+            <div style={{ padding: "40px", textAlign: "center", color: "#9ca3af", fontSize: "12px", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+              <div style={{ width: "20px", height: "20px", border: "2px solid #e5e7eb", borderTop: "2px solid #5A8AEA", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+              Loading tests...
+              <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            </div>
+          ) : null}
+          <table className={styles.table} style={{ display: testsLoading ? "none" : "table" }}>
             <thead className={styles.head}>
               <tr>
                 <th style={{ width: "3%"  }}></th>
@@ -767,7 +892,14 @@ export default function ViewOrderDetails({ order, orderId, onBack }: ViewOrderDe
                   <td style={{ textAlign: "center" }}>
                     <div className={styles.resultCell}>
                       {HAS_RESULT.includes(row.status) ? (
-                        <button className={styles.actionBtn} type="button"><IconDownload /></button>
+                        <button
+                          className={styles.actionBtn}
+                          type="button"
+                          title="Download result"
+                          onClick={() => handleDownload(row)}
+                        >
+                          <IconDownload />
+                        </button>
                       ) : (
                         <span className={styles.dash}>—</span>
                       )}
@@ -777,7 +909,14 @@ export default function ViewOrderDetails({ order, orderId, onBack }: ViewOrderDe
                   <td style={{ textAlign: "center" }}>
                     <div className={styles.resultCell}>
                       {HAS_RESULT.includes(row.status) ? (
-                        <button className={styles.actionBtn} type="button"><IconPrint /></button>
+                        <button
+                          className={styles.actionBtn}
+                          type="button"
+                          title="Print result"
+                          onClick={() => handlePrint(row)}
+                        >
+                          <IconPrint />
+                        </button>
                       ) : (
                         <span className={styles.dash}>—</span>
                       )}
@@ -791,9 +930,22 @@ export default function ViewOrderDetails({ order, orderId, onBack }: ViewOrderDe
         </div>
 
         <div className={styles.cardFooter}>
-          <button className={styles.scheduleBtn} onClick={() => setScheduleOpen(true)} type="button">
-            Schedule Collection
-          </button>
+          {(() => {
+            const hasChecked = checkedTests.length > 0;
+            const allDone = checkedTests.every(t => t.status === "Completed" || t.status === "Collected" || t.status === "Shipped" || t.status === "Accepted");
+            const canSchedule = hasChecked && !allDone;
+            return (
+              <button
+                className={styles.scheduleBtn}
+                onClick={() => canSchedule && setScheduleOpen(true)}
+                type="button"
+                disabled={!canSchedule}
+                style={{ opacity: canSchedule ? 1 : 0.4, cursor: canSchedule ? "pointer" : "not-allowed" }}
+              >
+                Schedule Collection
+              </button>
+            );
+          })()}
         </div>
       </div>
 
@@ -803,7 +955,11 @@ export default function ViewOrderDetails({ order, orderId, onBack }: ViewOrderDe
         <ScheduleModal
           rows={checkedTests.length > 0 ? checkedTests : tests.slice(0, 3)}
           onClose={() => setScheduleOpen(false)}
-          onCollect={() => { setScheduleOpen(false); setProcessOpen(true); }}
+          onCollect={() => {
+            setScheduleOpen(false);
+            setCheckedRows(new Set()); // ✅ uncheck all rows after collect
+            setToast({ message: "Samples collected successfully!", type: "success" });
+          }}
         />
       )}
     </div>
