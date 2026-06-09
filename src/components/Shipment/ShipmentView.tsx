@@ -269,7 +269,7 @@ const ShipmentView: React.FC = () => {
   ];
 
   return (
-    <div className="shipment-container" style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", overflow: "hidden", background: "#fff" }}>
+    <div className="shipment-container">
 
       {/* Toast */}
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
@@ -500,9 +500,11 @@ const ShipmentView: React.FC = () => {
                   setSelectedRows([]);
                   setShowShippingModal(false);
 
-                  // Refresh shipped + activity tabs
-                  fetchTabData("shipped");
-                  fetchTabData("activity");
+                  // Refresh ALL tabs to update counts correctly
+                  await fetchTabData("pending");
+                  await fetchTabData("shipped");
+                  await fetchTabData("received");
+                  await fetchTabData("activity");
 
                   showToast(`${shippedIds.length} sample(s) shipped successfully`, "success");
                 } catch (err) {

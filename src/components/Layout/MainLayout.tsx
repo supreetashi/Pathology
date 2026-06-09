@@ -90,7 +90,6 @@ const MainLayout = () => {
                 flexGrow: 1,
                 minHeight: 0,
                 overflowY: "auto",
-                position: "relative",
               }}
             >
               <Outlet />
