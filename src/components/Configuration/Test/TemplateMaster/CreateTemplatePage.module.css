@@ -1,509 +1,577 @@
 /* ─── Page ────────────────────────────────────────────────────────────────── */
+
 .page {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  inset: 0;
-  background: #f3f3f3;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  font-family: 'Nunito', sans-serif;
-  font-size: clamp(13px, 1.6vh, 17px);
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    inset: 0;
+    background: #f3f3f3;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    font-family: 'Nunito', sans-serif;
+    font-size: clamp(13px, 1.6vh, 17px);
 }
 
 .card {
-  background: #fff;
-  border-radius: 16px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
+    background: #fff;
+    border-radius: 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
+
 /* ─── Header ──────────────────────────────────────────────────────────────── */
+
 .header {
-  display: flex;
-  align-items: center;
-  gap: 0.75em;
-  padding: 1.5em 1.5em 1em;
-  flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75em;
+    padding: 1.5em 1.5em 1em;
+    flex-shrink: 0;
 }
 
 .backBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 0.25em;
-  border-radius: 8px;
-  color: #505050;
-  transition: background 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.25em;
+    border-radius: 8px;
+    color: #505050;
+    transition: background 0.2s;
 }
-.backBtn:hover { background: #f3f3f3; }
+
+.backBtn:hover {
+    background: #f3f3f3;
+}
 
 .pageTitle {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 1.1em;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.1em;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
 }
+
 
 /* ─── Content ─────────────────────────────────────────────────────────────── */
+
 .content {
-  flex: 1;
-  padding: 0 1.5em;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  overflow-y: auto;
-  min-height: 0;
+    flex: 1;
+    padding: 0 1.5em;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    overflow-y: auto;
+    min-height: 0;
 }
 
+
 /* ─── Section ─────────────────────────────────────────────────────────────── */
+
 .section {
-  display: flex;
-  flex-direction: column;
-  gap: 1em;
-  padding-bottom: 1.5em;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    padding-bottom: 1.5em;
 }
 
 .sectionTitle {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 0.78em;
-  font-weight: 700;
-  color: #7a7a7a;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.78em;
+    font-weight: 700;
+    color: #7a7a7a;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0;
 }
 
 .sectionDivider {
-  border: none;
-  border-top: 1px solid #E2E3E5;
-  margin: 0 0 0.25em;
+    border: none;
+    border-top: 1px solid #E2E3E5;
+    margin: 0 0 0.25em;
 }
 
+
 /* ─── Form Grid ───────────────────────────────────────────────────────────── */
+
 .formGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.25em 1.5em;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25em 1.5em;
 }
 
 .formGroup {
-  display: flex;
-  flex-direction: column;
-  position: relative;
+    display: flex;
+    flex-direction: column;
+    position: relative;
 }
+
 
 /* ─── Floating label ──────────────────────────────────────────────────────── */
+
 .fieldBorder {
-  position: relative;
-  border: 1px solid #E2E3E5;
-  border-radius: 8px;
-  background: #fff;
-  transition: border-color 0.2s;
+    position: relative;
+    border: 1px solid #E2E3E5;
+    border-radius: 8px;
+    background: #fff;
+    transition: border-color 0.2s;
 }
-.fieldBorder:focus-within { border-color: #9e9e9e; }
+
+.fieldBorder:focus-within {
+    border-color: #9e9e9e;
+}
 
 .floatLabel {
-  position: absolute;
-  top: -0.55em;
-  left: 0.75em;
-  padding: 0 0.3em;
-  background: #fff;
-  font-size: 0.78em;
-  font-weight: 500;
-  color: #9e9e9e;
-  font-family: 'Noto Sans', sans-serif;
-  line-height: 1;
-  pointer-events: none;
-  white-space: nowrap;
-  z-index: 1;
+    position: absolute;
+    top: -0.55em;
+    left: 0.75em;
+    padding: 0 0.3em;
+    background: #fff;
+    font-size: 0.78em;
+    font-weight: 500;
+    color: #9e9e9e;
+    font-family: 'Noto Sans', sans-serif;
+    line-height: 1;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 1;
 }
 
 .floatInput {
-  height: 2.5em;
-  padding: 0 0.875em;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.95em;
-  font-family: 'Nunito', sans-serif;
-  font-weight: 500;
-  color: #1a1a1a;
-  outline: none;
-  box-sizing: border-box;
-  width: 100%;
-  background: transparent;
+    height: 2.5em;
+    padding: 0 0.875em;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95em;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 500;
+    color: #1a1a1a;
+    outline: none;
+    box-sizing: border-box;
+    width: 100%;
+    background: transparent;
 }
 
 .floatSelect {
-  height: 2.5em;
-  padding: 0 2em 0 0.875em;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.95em;
-  font-family: 'Nunito', sans-serif;
-  font-weight: 500;
-  color: #1a1a1a;
-  outline: none;
-  appearance: none;
-  background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239e9e9e' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 0.875em center;
-  box-sizing: border-box;
-  width: 100%;
-  cursor: pointer;
+    height: 2.5em;
+    padding: 0 2em 0 0.875em;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95em;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 500;
+    color: #1a1a1a;
+    outline: none;
+    appearance: none;
+    background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239e9e9e' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 0.875em center;
+    box-sizing: border-box;
+    width: 100%;
+    cursor: pointer;
 }
 
+
 /* ─── Pathologist dropdown trigger ───────────────────────────────────────── */
+
 .pathologistTrigger {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 2.5em;
-  padding: 0 0.875em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 2.5em;
+    padding: 0 0.875em;
 }
 
 .pathologistPlaceholder {
-  font-size: 0.95em;
-  font-family: 'Nunito', sans-serif;
-  font-weight: 500;
-  color: #9e9e9e;
+    font-size: 0.95em;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 500;
+    color: #9e9e9e;
 }
 
+
 /* ─── Dropdown panel ──────────────────────────────────────────────────────── */
+
 .dropdownBackdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 199;
+    position: fixed;
+    inset: 0;
+    z-index: 199;
 }
 
 .dropdownPanel {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  right: 0;
-  min-width: 220px;
-  background: #fff;
-  border: 1px solid #E2E3E5;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
-  z-index: 200;
-  max-height: 220px;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    min-width: 220px;
+    background: #fff;
+    border: 1px solid #E2E3E5;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    z-index: 200;
+    max-height: 220px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 .dropdownRow {
-  display: flex;
-  align-items: center;
-  gap: 0.75em;
-  padding: 0.8em 1em;
-  cursor: pointer;
-  transition: background 0.12s;
+    display: flex;
+    align-items: center;
+    gap: 0.75em;
+    padding: 0.8em 1em;
+    cursor: pointer;
+    transition: background 0.12s;
 }
-.dropdownRow:hover { background: #fafafa; }
+
+.dropdownRow:hover {
+    background: #fafafa;
+}
 
 .dropdownDivider {
-  height: 1px;
-  background: #f0f0f0;
-  margin: 0 0.75em;
+    height: 1px;
+    background: #f0f0f0;
+    margin: 0 0.75em;
 }
 
 .roundCheckOff {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.1em;
-  height: 1.1em;
-  border-radius: 8px;
-  border: 2px solid #E2E3E5;
-  background: #fff;
-  flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.1em;
+    height: 1.1em;
+    border-radius: 8px;
+    border: 2px solid #E2E3E5;
+    background: #fff;
+    flex-shrink: 0;
 }
 
 .roundCheckOn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.1em;
-  height: 1.1em;
-  border-radius: 8px;
-  border: 2px solid #c8e6c9;
-  background: #e8f5e9;
-  flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.1em;
+    height: 1.1em;
+    border-radius: 8px;
+    border: 2px solid #c8e6c9;
+    background: #e8f5e9;
+    flex-shrink: 0;
 }
 
 .dropdownRowLabel {
-  font-size: 0.92em;
-  font-family: 'Nunito', sans-serif;
-  font-weight: 600;
-  color: #1a1a1a;
+    font-size: 0.92em;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 600;
+    color: #1a1a1a;
 }
 
+
 /* ─── Pathologist chips ───────────────────────────────────────────────────── */
+
 .chipsRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5em;
-  justify-content: flex-end;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    justify-content: flex-end;
 }
 
 .chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45em;
-  background: #FFF4F2;
-  border: 1px solid #E2E3E5;
-  border-radius: 6px;
-  padding: 0.4em 0.5em 0.4em 0.75em;
-  font-size: 0.88em;
-  font-family: 'Nunito', sans-serif;
-  font-weight: 600;
-  color: #1a1a1a;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    background: #FFF4F2;
+    border: 1px solid #E2E3E5;
+    border-radius: 6px;
+    padding: 0.4em 0.5em 0.4em 0.75em;
+    font-size: 0.88em;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 600;
+    color: #1a1a1a;
 }
 
 .chipRemove {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
-  background: transparent;
-  border: none;
-  padding: 0;
-  transition: opacity 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    padding: 0;
+    transition: opacity 0.15s;
 }
-.chipRemove:hover { opacity: 0.7; }
+
+.chipRemove:hover {
+    opacity: 0.7;
+}
+
 
 /* ─── Editor card ─────────────────────────────────────────────────────────── */
+
 .editorCard {
-  border: 1px solid #E2E3E5;
-  border-radius: 10px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+    border: 1px solid #E2E3E5;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
+
 /* ─── Toolbar wrapper ─────────────────────────────────────────────────────── */
+
 .toolbarWrapper {
-  display: flex;
-  align-items: flex-start;
-  padding: 0.75em 1em;
-  border-bottom: 1px solid #E2E3E5;
-  background: #fafafa;
-  flex-wrap: wrap;
-  gap: 0.75em;
+    display: flex;
+    align-items: flex-start;
+    padding: 0.75em 1em;
+    border-bottom: 1px solid #E2E3E5;
+    background: #fafafa;
+    flex-wrap: wrap;
+    gap: 0.75em;
 }
 
 .toolbarGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35em;
 }
 
 .toolbarGroupLabel {
-  font-size: 0.68em;
-  font-weight: 700;
-  color: #9e9e9e;
-  font-family: 'Montserrat', sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+    font-size: 0.68em;
+    font-weight: 700;
+    color: #9e9e9e;
+    font-family: 'Montserrat', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
 }
 
 .toolbarGroupBtns {
-  display: flex;
-  align-items: center;
-  gap: 0.2em;
-  flex-wrap: wrap;
+    display: flex;
+    align-items: center;
+    gap: 0.2em;
+    flex-wrap: wrap;
 }
 
 .toolbarSep {
-  width: 1px;
-  background: #E2E3E5;
-  align-self: stretch;
-  margin: 0 0.25em;
+    width: 1px;
+    background: #E2E3E5;
+    align-self: stretch;
+    margin: 0 0.25em;
 }
 
 .toolbarDivider {
-  width: 1px;
-  height: 1.4em;
-  background: #E2E3E5;
-  margin: 0 0.2em;
-  flex-shrink: 0;
+    width: 1px;
+    height: 1.4em;
+    background: #E2E3E5;
+    margin: 0 0.2em;
+    flex-shrink: 0;
 }
 
 .loadBtn {
-  height: 2em;
-  min-width: 2.2em;
-  padding: 0 0.5em;
-  border: 1px solid #E2E3E5;
-  border-radius: 6px;
-  background: #fff;
-  font-size: 0.8em;
-  font-weight: 700;
-  font-family: 'Montserrat', sans-serif;
-  color: #505050;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+    height: 2em;
+    min-width: 2.2em;
+    padding: 0 0.5em;
+    border: 1px solid #E2E3E5;
+    border-radius: 6px;
+    background: #fff;
+    font-size: 0.8em;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    color: #505050;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
 }
-.loadBtn:hover { background: #f0f0f0; border-color: #bbb; }
+
+.loadBtn:hover {
+    background: #f0f0f0;
+    border-color: #bbb;
+}
 
 .toolbarBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 2em;
-  min-width: 2em;
-  padding: 0 0.35em;
-  border: 1px solid transparent;
-  border-radius: 5px;
-  background: transparent;
-  color: #505050;
-  cursor: pointer;
-  font-family: 'Nunito', sans-serif;
-  font-size: 0.88em;
-  transition: background 0.15s, border-color 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2em;
+    min-width: 2em;
+    padding: 0 0.35em;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    background: transparent;
+    color: #505050;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.88em;
+    transition: background 0.15s, border-color 0.15s;
 }
-.toolbarBtn:hover { background: #efefef; border-color: #E2E3E5; }
-.toolbarBtnActive { background: #e8e8e8; border-color: #ccc; }
+
+.toolbarBtn:hover {
+    background: #efefef;
+    border-color: #E2E3E5;
+}
+
+.toolbarBtnActive {
+    background: #e8e8e8;
+    border-color: #ccc;
+}
 
 .toolbarSelect {
-  height: 2em;
-  padding: 0 1.5em 0 0.5em;
-  border: 1px solid #E2E3E5;
-  border-radius: 5px;
-  font-size: 0.85em;
-  font-family: 'Nunito', sans-serif;
-  color: #1a1a1a;
-  outline: none;
-  appearance: none;
-  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%239e9e9e' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 0.4em center;
-  cursor: pointer;
-  min-width: 90px;
+    height: 2em;
+    padding: 0 1.5em 0 0.5em;
+    border: 1px solid #E2E3E5;
+    border-radius: 5px;
+    font-size: 0.85em;
+    font-family: 'Nunito', sans-serif;
+    color: #1a1a1a;
+    outline: none;
+    appearance: none;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%239e9e9e' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 0.4em center;
+    cursor: pointer;
+    min-width: 90px;
 }
 
 .fontSizeControl {
-  display: flex;
-  align-items: center;
-  border: 1px solid #E2E3E5;
-  border-radius: 5px;
-  overflow: hidden;
-  height: 2em;
+    display: flex;
+    align-items: center;
+    border: 1px solid #E2E3E5;
+    border-radius: 5px;
+    overflow: hidden;
+    height: 2em;
 }
 
 .fontSizeBtn {
-  width: 1.6em;
-  height: 100%;
-  background: #fff;
-  border: none;
-  cursor: pointer;
-  font-size: 1em;
-  color: #505050;
-  transition: background 0.15s;
-  flex-shrink: 0;
+    width: 1.6em;
+    height: 100%;
+    background: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 1em;
+    color: #505050;
+    transition: background 0.15s;
+    flex-shrink: 0;
 }
-.fontSizeBtn:hover { background: #f0f0f0; }
+
+.fontSizeBtn:hover {
+    background: #f0f0f0;
+}
 
 .fontSizeValue {
-  min-width: 2em;
-  text-align: center;
-  font-size: 0.85em;
-  font-family: 'Nunito', sans-serif;
-  color: #1a1a1a;
-  border-left: 1px solid #E2E3E5;
-  border-right: 1px solid #E2E3E5;
-  padding: 0 0.25em;
-  line-height: 2em;
+    min-width: 2em;
+    text-align: center;
+    font-size: 0.85em;
+    font-family: 'Nunito', sans-serif;
+    color: #1a1a1a;
+    border-left: 1px solid #E2E3E5;
+    border-right: 1px solid #E2E3E5;
+    padding: 0 0.25em;
+    line-height: 2em;
 }
 
 .colorPickerWrap {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 2em;
-  width: 2em;
-  border: 1px solid transparent;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background 0.15s;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2em;
+    width: 2em;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.15s;
 }
-.colorPickerWrap:hover { background: #efefef; border-color: #E2E3E5; }
+
+.colorPickerWrap:hover {
+    background: #efefef;
+    border-color: #E2E3E5;
+}
 
 .colorPicker {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
-  border: none;
-  padding: 0;
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    border: none;
+    padding: 0;
 }
+
 
 /* ─── Rich text editor ────────────────────────────────────────────────────── */
+
 .editor {
-  flex: 1;
-  min-height: 280px;
-  max-height: 400px;
-  overflow-y: auto;
-  padding: 1.25em 1.5em;
-  outline: none;
-  font-family: 'Nunito', sans-serif;
-  font-size: 0.95em;
-  color: #1a1a1a;
-  line-height: 1.7;
-  overscroll-behavior: contain;
+    flex: 1;
+    min-height: 280px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 1.25em 1.5em;
+    outline: none;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.95em;
+    color: #1a1a1a;
+    line-height: 1.7;
+    overscroll-behavior: contain;
 }
 
-.editor p { margin: 0 0 0.5em; }
-.editor strong { font-weight: 700; }
-.editor blockquote {
-  border-left: 3px solid #E2E3E5;
-  margin: 0.5em 0;
-  padding-left: 1em;
-  color: #505050;
+.editor p {
+    margin: 0 0 0.5em;
 }
+
+.editor strong {
+    font-weight: 700;
+}
+
+.editor blockquote {
+    border-left: 3px solid #E2E3E5;
+    margin: 0.5em 0;
+    padding-left: 1em;
+    color: #505050;
+}
+
 
 /* ─── Footer ──────────────────────────────────────────────────────────────── */
+
 .footerActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75em;
-  padding: 0.875em 1.5em;
-  flex-shrink: 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75em;
+    padding: 0.875em 1.5em;
+    flex-shrink: 0;
 }
 
 .cancelBtn {
-  height: 2.5em;
-  padding: 0 1.5em;
-  border: 1px solid #E2E3E5;
-  border-radius: 10px;
-  background: #fff;
-  font-size: 0.95em;
-  font-weight: 600;
-  color: #505050;
-  cursor: pointer;
-  font-family: 'Montserrat', sans-serif;
-  transition: background 0.2s;
+    height: 2.5em;
+    padding: 0 1.5em;
+    border: 1px solid #E2E3E5;
+    border-radius: 10px;
+    background: #fff;
+    font-size: 0.95em;
+    font-weight: 600;
+    color: #505050;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    transition: background 0.2s;
 }
-.cancelBtn:hover { background: #f3f3f3; }
+
+.cancelBtn:hover {
+    background: #f3f3f3;
+}
 
 .saveBtn {
-  height: 2.5em;
-  padding: 0 2em;
-  border: none;
-  border-radius: 10px;
-  background: #3a3a3a;
-  color: #fff;
-  font-size: 0.95em;
-  font-weight: 700;
-  cursor: pointer;
-  font-family: 'Montserrat', sans-serif;
-  transition: background 0.2s;
+    height: 2.5em;
+    padding: 0 2em;
+    border: none;
+    border-radius: 10px;
+    background: #3a3a3a;
+    color: #fff;
+    font-size: 0.95em;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    transition: background 0.2s;
 }
-.saveBtn:hover { background: #222; }
+
+.saveBtn:hover {
+    background: #222;
+}
