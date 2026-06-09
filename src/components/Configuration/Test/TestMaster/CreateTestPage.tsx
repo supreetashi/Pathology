@@ -7,8 +7,12 @@ import { useDispatch } from "react-redux";
 import { createTest, updateTest } from "../../../../store/testSlice";
 import type { AppDispatch } from "../../../../store";
 import { useSelector } from "react-redux";
-import { selectClinic,fetchFirstClinic } from "../../../../store/clinicSlice";
+import { selectClinic, fetchFirstClinic } from "../../../../store/clinicSlice";
 import { selectTubes, fetchTubes } from "../../../../store/sampleTubeSlice";
+import {
+  fetchLaboratoryTests,
+  selectLaboratoryTests,
+} from "../../../../store/laboratoryTestSlice";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -88,7 +92,6 @@ const CATEGORY_OPTIONS = [
   "Microbiology",
   "Immunology",
 ];
-const SERVICE_OPTIONS = ["", "Natural Killer Self Panel", "Panel A", "Panel B"];
 
 // ─── Floating-label helpers ───────────────────────────────────────────────────
 
@@ -300,16 +303,21 @@ export default function CreateTestPage() {
   const dispatch = useDispatch<AppDispatch>();
   const clinic = useSelector(selectClinic);
   const tubes = useSelector(selectTubes);
+  const laboratoryTests = useSelector(selectLaboratoryTests);
 
   useEffect(() => {
-  dispatch(fetchTubes());
-}, [dispatch]);
+    dispatch(fetchTubes());
+  }, [dispatch]);
 
-useEffect(() => {
-  if (!clinic) {
-    dispatch(fetchFirstClinic());
-  }
-}, [dispatch, clinic]);
+  useEffect(() => {
+    dispatch(fetchLaboratoryTests());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (!clinic) {
+      dispatch(fetchFirstClinic());
+    }
+  }, [dispatch, clinic]);
 
   const editData = location.state?.testData as TestEditData | undefined;
   const isEditMode = location.state?.mode === "edit";
@@ -320,7 +328,7 @@ useEffect(() => {
     printName: editData?.printName ?? "",
     category: "Biochemistry",
     serviceName: editData?.serviceName ?? "",
-   tubeName: editData?.tubeName ?? "Purple Top - K2 - EDTA",
+    tubeName: editData?.tubeName ?? "",
     testCompletionTime: editData?.testCompletionTime ?? "",
     isSensitive: editData?.isSensitive ?? false,
     suggestionNote: editData?.suggestionNote ?? "",
@@ -400,30 +408,30 @@ useEffect(() => {
   }
 
   const handleSave = async () => {
-  const clinicId = clinic?.id;
-  if (!clinicId) return; // silently return, clinic is still loading
+    const clinicId = clinic?.id;
+    if (!clinicId) return;
 
-  const payload = {
-    clinic: clinicId,
-    test_code: form.testCode,
-    test_name: form.testName,
-    print_name: form.printName,
-    service_name: form.serviceName,
-    tube_name: form.tubeName || null,
-    test_completion_time: Number(form.testCompletionTime),
-    is_sensitive: form.isSensitive,
-    suggestion_note: form.suggestionNote,
-    disclaimer: form.disclaimer,
-    report_type: reportMode === "ByParameter" ? "PARAMETER" : "TEMPLATE",
+    const payload = {
+      clinic: clinicId,
+      test_code: form.testCode,
+      test_name: form.testName,
+      print_name: form.printName,
+      service_name: form.serviceName,
+      tube_name: form.tubeName || null,
+      test_completion_time: Number(form.testCompletionTime),
+      is_sensitive: form.isSensitive,
+      suggestion_note: form.suggestionNote,
+      disclaimer: form.disclaimer,
+      report_type: reportMode === "ByParameter" ? "PARAMETER" : "TEMPLATE",
+    };
+
+    if (isEditMode && editData) {
+      await dispatch(updateTest({ id: editData.id, ...payload }));
+    } else {
+      await dispatch(createTest(payload));
+    }
+    navigate("/pathology/configuration/test");
   };
-
-  if (isEditMode && editData) {
-    await dispatch(updateTest({ id: editData.id, ...payload }));
-  } else {
-    await dispatch(createTest(payload));
-  }
-  navigate("/pathology/configuration/test");
-};
 
   return (
     <div className={styles.page}>
@@ -445,6 +453,7 @@ useEffect(() => {
           <div className={styles.section}>
             <p className={styles.sectionTitle}>Basic Details</p>
 
+            {/* Row 1: Test Code, Test Name, Print Name, Category */}
             <div className={styles.formGrid}>
               <FloatInput
                 label="Test Code"
@@ -469,31 +478,51 @@ useEffect(() => {
               />
             </div>
 
+            {/* Row 2: Service Name, Tube Name, Test Completion Time, Is Sensitive */}
             <div className={styles.formGrid}>
-              <FloatSelect
-                label="Service Name"
-                value={form.serviceName}
-                options={SERVICE_OPTIONS}
-                onChange={(v) => set("serviceName", v)}
-              />
+              {/* Service Name — populated from laboratoryTests */}
               <div className={styles.formGroup}>
-  <div className={styles.fieldBorder}>
-    <span className={styles.floatLabel}>Tube Name</span>
-    <select
-      className={styles.floatSelect}
-      value={form.tubeName}
-      onChange={(e) => set("tubeName", e.target.value)}
-    >
-      <option value="">Select...</option>
-      {tubes.map((t) => (
-        <option key={t.id} value={t.id}>
-          {t.name}
-        </option>
-      ))}
-    </select>
-  </div>
-</div>
+                <div className={styles.fieldBorder}>
+                  <span className={styles.floatLabel}>Service Name</span>
+                  <select
+                    className={styles.floatSelect}
+                    value={form.serviceName}
+                    onChange={(e) => set("serviceName", e.target.value)}
+                  >
+                    <option value="">Select...</option>
+                    {laboratoryTests.length === 0 ? (
+                      <option disabled>Loading...</option>
+                    ) : (
+                      laboratoryTests.map((item) => (
+                        <option key={item.id} value={item.name}>
+                          {item.name}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+              </div>
 
+              {/* Tube Name */}
+              <div className={styles.formGroup}>
+                <div className={styles.fieldBorder}>
+                  <span className={styles.floatLabel}>Tube Name</span>
+                  <select
+                    className={styles.floatSelect}
+                    value={form.tubeName}
+                    onChange={(e) => set("tubeName", e.target.value)}
+                  >
+                    <option value="">Select...</option>
+                    {tubes.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Test Completion Time */}
               <div className={styles.formGroup}>
                 <div className={styles.fieldBorder}>
                   <span className={styles.floatLabel}>
@@ -526,6 +555,7 @@ useEffect(() => {
                 </div>
               </div>
 
+              {/* Is Sensitive */}
               <div
                 className={styles.formGroup}
                 style={{ justifyContent: "center" }}
@@ -541,6 +571,7 @@ useEffect(() => {
               </div>
             </div>
 
+            {/* Row 3: Suggestion Note, Disclaimer */}
             <div className={styles.formGrid2}>
               <FloatTextarea
                 label="Suggestion Note"
@@ -555,6 +586,7 @@ useEffect(() => {
             </div>
           </div>
 
+          {/* Reports Details */}
           <div className={styles.section}>
             <hr className={styles.sectionDivider} />
             <p className={styles.sectionTitle}>Reports Details</p>
@@ -676,6 +708,7 @@ useEffect(() => {
             )}
           </div>
 
+          {/* Sample Details */}
           <div className={styles.section}>
             <hr className={styles.sectionDivider} />
 
