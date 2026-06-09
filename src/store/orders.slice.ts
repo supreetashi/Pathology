@@ -14,6 +14,7 @@ type S = {
   selectedOrder: OrderRow | null;
   loading: boolean;
   error: string | null;
+  meta: { total_count: number; next: string | null; offset: number; limit: number } | null;
 };
 
 type DS = WritableDraft<S>;
@@ -56,12 +57,19 @@ const mapOrder = (d: PathologyOrder): OrderRow => ({
 
 // ── Thunk ─────────────────────────────────────────────────────────────────────
 
-export const fetchOrders = createAsyncThunk<OrderRow[], void>(
+export const fetchOrders = createAsyncThunk<
+  { rows: OrderRow[]; meta: { total_count: number; next: string | null; offset: number; limit: number } },
+  { limit?: number; offset?: number } | void
+>(
   "orders/fetchOrders",
-  async () => {
-    // Single fetch — backend returns all available orders
-    const res = await ordersApi.getAll();
-    return res.data.objects.map(mapOrder);
+  async (params) => {
+    const limit  = (params as any)?.limit  ?? 10;
+    const offset = (params as any)?.offset ?? 0;
+    const res = await ordersApi.getAll({ limit, offset });
+    return {
+      rows: res.data.objects.map(mapOrder),
+      meta: res.data.meta,
+    };
   }
 );
 
@@ -74,6 +82,7 @@ const ordersSlice = createSlice({
     selectedOrder: null,
     loading:       false,
     error:         null,
+    meta:          null,
   }),
   reducers: {
     setSelectedOrder(state: DS, action: PayloadAction<OrderRow>) {
@@ -86,7 +95,7 @@ const ordersSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchOrders.pending,   (state: DS) => { state.loading = true;  state.error = null; })
-      .addCase(fetchOrders.fulfilled, (state: DS, { payload }: PayloadAction<OrderRow[]>) => { state.loading = false; state.orders = payload; })
+      .addCase(fetchOrders.fulfilled, (state: DS, { payload }: PayloadAction<{ rows: OrderRow[]; meta: any }>) => { state.loading = false; state.orders = payload.rows; state.meta = payload.meta; })
       .addCase(fetchOrders.rejected,  (state: DS) => { state.loading = false; state.error = "Failed to load orders"; });
   },
 });
@@ -97,6 +106,7 @@ export default ordersSlice.reducer;
 // ── Selectors ─────────────────────────────────────────────────────────────────
 
 export const selectOrders        = (state: RootState) => state.orders.orders;
+export const selectOrdersMeta     = (state: RootState) => state.orders.meta;
 export const selectSelectedOrder = (state: RootState) => state.orders.selectedOrder;
 export const selectOrdersLoading = (state: RootState) => state.orders.loading;
 export const selectOrdersError   = (state: RootState) => state.orders.error;

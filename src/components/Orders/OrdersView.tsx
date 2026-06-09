@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch } from "../../store";
-import { fetchOrders, selectOrders, selectOrdersLoading, setSelectedOrder, selectSelectedOrder, clearSelectedOrder } from "../../store/orders.slice";
+import { fetchOrders, selectOrders, selectOrdersLoading, selectOrdersMeta, setSelectedOrder, selectSelectedOrder, clearSelectedOrder } from "../../store/orders.slice";
 import styles from "./OrdersView.module.css";
 import FilterIcon from "../../assets/icons/filter.svg";
 import SearchIcon from "../../assets/icons/search.png";
@@ -13,7 +13,6 @@ type TabKey = "all" | "inhouse" | "outsource";
 
 const ORDER_STATUSES = ["", "Pending", "Partial", "Complete"];
 const PATIENT_TYPES  = ["", "Walk-In", "Registered"];
-const PAGE_SIZE      = 10;
 
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 
@@ -158,17 +157,21 @@ export default function OrdersView() {
   const orders        = useSelector(selectOrders);
   const loading       = useSelector(selectOrdersLoading);
   const selectedOrder = useSelector(selectSelectedOrder);
+  const meta          = useSelector(selectOrdersMeta);
 
   const [activeTab, setActiveTab]           = useState<TabKey>("all");
   const [search, setSearch]                 = useState("");
-  const [page, setPage]                     = useState(1);
   const [filterOpen, setFilterOpen]         = useState(false);
 
   const emptyFilters: OrderFilters = { fromDate: "", toDate: "", doctor: "", orderStatus: "", patientType: "" };
   const [filters, setFilters]               = useState<OrderFilters>(emptyFilters);
   const [appliedFilters, setAppliedFilters] = useState<OrderFilters>(emptyFilters);
 
-  useEffect(() => { dispatch(fetchOrders()); }, [dispatch]);
+  const [apiPage, setApiPage] = useState(1);
+
+  useEffect(() => {
+    dispatch(fetchOrders({ limit: 10, offset: (apiPage - 1) * 10 }));
+  }, [dispatch, apiPage]);
 
   const doctors = useMemo(() =>
     [...new Set(orders.map((o) => o.doctorName).filter(Boolean))],
@@ -192,24 +195,29 @@ export default function OrdersView() {
     });
   }, [tabFiltered, search, appliedFilters]);
 
-  const totalPages     = Math.ceil(filtered.length / PAGE_SIZE) || 1;
-  const safePage       = Math.min(page, totalPages);
-  const pageRows       = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  // API pagination - 10 records per page
+  const totalCount     = meta?.total_count ?? orders.length;
+  const totalApiPages  = Math.ceil(totalCount / 10) || 1;
+  const hasNext        = !!meta?.next;
+
+  // Client-side filtering on current page records
+  const pageRows       = filtered; // filtered is already current page from API
   const inhouseCount   = orders.filter((o) => o.type === "inhouse").length;
   const outsourceCount = orders.filter((o) => o.type === "outsource").length;
 
-  const handleTabChange = (tab: TabKey) => { setActiveTab(tab); setPage(1); };
+  const handleTabChange = (tab: TabKey) => { setActiveTab(tab); setApiPage(1); };
 
-  // Pagination page numbers — show max 5, centered around current
+  // Show 3 page numbers centered around current API page
   const pageNumbers = useMemo(() => {
-    const total = totalPages;
-    if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1);
-    const start = Math.max(1, Math.min(safePage - 2, total - 4));
-    return Array.from({ length: 5 }, (_, i) => start + i);
-  }, [totalPages, safePage]);
+    const nums: number[] = [];
+    const start = Math.max(1, Math.min(apiPage - 1, totalApiPages - 2));
+    for (let i = start; i <= Math.min(start + 2, totalApiPages); i++) nums.push(i);
+    return nums;
+  }, [apiPage, totalApiPages]);
 
-  const startEntry = filtered.length > 0 ? (safePage - 1) * PAGE_SIZE + 1 : 0;
-  const endEntry   = Math.min(safePage * PAGE_SIZE, filtered.length);
+  const startEntry = totalCount > 0 ? (apiPage - 1) * 10 + 1 : 0;
+  const endEntry   = Math.min(apiPage * 10, totalCount);
 
   if (selectedOrder) {
     return (
@@ -244,7 +252,7 @@ export default function OrdersView() {
               className={styles.searchInput}
               placeholder="Search by Patient Name, MRN No., Bill No."
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              onChange={(e) => { setSearch(e.target.value); setApiPage(1); }}
             />
           </div>
           <button className={styles.filterBtn} onClick={() => setFilterOpen(true)}>
@@ -340,45 +348,22 @@ export default function OrdersView() {
       {/* ── Footer / Pagination ── */}
       <div className={styles.footer}>
         <span>
-          Showing {startEntry} to {endEntry} of {filtered.length} entries
+          Showing {startEntry} to {endEntry} of {totalCount} entries
         </span>
         <div className={styles.pagination}>
-          {/* Prev */}
-          <button className={styles.pageBtn} disabled={safePage === 1} onClick={() => setPage((p) => p - 1)}>
-            <svg width="7" height="11" viewBox="0 0 7 11" fill="none">
-              <path d="M6 1L1 5.5L6 10" stroke="#505050" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-
-          {/* First page + ellipsis if needed */}
-          {pageNumbers[0] > 1 && (
-            <>
-              <button className={`${styles.pageNumBtn} ${safePage === 1 ? styles.pageNumActive : ""}`} onClick={() => setPage(1)}>1</button>
-              {pageNumbers[0] > 2 && <span style={{ color: "#9ca3af", padding: "0 4px" }}>…</span>}
-            </>
-          )}
-
-          {/* Page number buttons */}
+          {/* 3 page numbers */}
           {pageNumbers.map((p) => (
             <button
               key={p}
-              className={`${styles.pageNumBtn} ${p === safePage ? styles.pageNumActive : ""}`}
-              onClick={() => setPage(p)}
+              className={`${styles.pageNumBtn} ${p === apiPage ? styles.pageNumActive : ""}`}
+              onClick={() => setApiPage(p)}
             >
               {p}
             </button>
           ))}
 
-          {/* Last page + ellipsis if needed */}
-          {pageNumbers[pageNumbers.length - 1] < totalPages && (
-            <>
-              {pageNumbers[pageNumbers.length - 1] < totalPages - 1 && <span style={{ color: "#9ca3af", padding: "0 4px" }}>…</span>}
-              <button className={`${styles.pageNumBtn} ${safePage === totalPages ? styles.pageNumActive : ""}`} onClick={() => setPage(totalPages)}>{totalPages}</button>
-            </>
-          )}
-
-          {/* Next */}
-          <button className={styles.pageBtn} disabled={safePage === totalPages} onClick={() => setPage((p) => p + 1)}>
+          {/* Next — enabled only when API has next page */}
+          <button className={styles.pageBtn} disabled={!hasNext} onClick={() => setApiPage((p) => p + 1)}>
             <svg width="7" height="11" viewBox="0 0 7 11" fill="none">
               <path d="M1 1L6 5.5L1 10" stroke="#505050" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
