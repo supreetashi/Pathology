@@ -9,6 +9,8 @@ import { createTemplate, updateTemplate } from "../../../../store/templateSlice"
 import { selectClinic } from "../../../../store/clinicSlice";
 import type { AppDispatch } from "../../../../store";
 import type { TemplateItem } from "../../../../types/template.types";
+import { selectLaboratoryTests, fetchLaboratoryTests } from "../../../../store/laboratoryTestSlice";
+import FormTemplate from "./FormTemplate";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -91,6 +93,11 @@ export default function CreateTemplatePage() {
 
   const editData = location.state?.templateData as TemplateItem | undefined;
   const isEditMode = location.state?.mode === "edit";
+  const laboratoryTests = useSelector(selectLaboratoryTests);
+
+  useEffect(() => {
+  dispatch(fetchLaboratoryTests());
+}, [dispatch]);
 
   const [form, setForm] = useState<FormState>({
     templateCode: editData?.code ?? "",
@@ -207,7 +214,27 @@ export default function CreateTemplatePage() {
             </div>
             <div className={styles.formGrid}>
               <FloatInput label="Template Code" value={form.templateCode} onChange={(v) => set("templateCode", v)} />
-              <FloatInput label="Service Name" value={form.serviceName} onChange={(v) => set("serviceName", v)} />
+              <div className={styles.formGroup}>
+  <div className={styles.fieldBorder}>
+    <span className={styles.floatLabel}>Service Name</span>
+    <select
+      className={styles.floatSelect}
+      value={form.serviceName}
+      onChange={(e) => set("serviceName", e.target.value)}
+    >
+      <option value="">Select...</option>
+      {laboratoryTests.length === 0 ? (
+        <option disabled>Loading...</option>
+      ) : (
+        laboratoryTests.map((item) => (
+          <option key={item.id} value={item.name}>
+            {item.name}
+          </option>
+        ))
+      )}
+    </select>
+  </div>
+</div>
             </div>
           </div>
 
@@ -316,16 +343,14 @@ export default function CreateTemplatePage() {
             </div>
           )}
 
-          {form.templateFormat === "FORM" && (
-            <div className={styles.section}>
-              <p className={styles.sectionTitle}>Form Format</p>
-              <div className={styles.formBuilderPlaceholder}>
-                <p style={{ color: "#9e9e9e", textAlign: "center", padding: "3em" }}>
-                  Form builder coming soon — drag & drop elements will appear here.
-                </p>
-              </div>
-            </div>
-          )}
+       {form.templateFormat === "FORM" && (
+  <div className={styles.section}>
+    <p className={styles.sectionTitle}>Form Format</p>
+    <div style={{ height: "500px", border: "1px solid #E2E3E5", borderRadius: "10px", overflow: "hidden" }}>
+      <FormTemplate />
+    </div>
+  </div>
+)}
         </div>
 
         <div className={styles.footerActions}>

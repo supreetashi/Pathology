@@ -13,6 +13,7 @@ import {
   fetchLaboratoryTests,
   selectLaboratoryTests,
 } from "../../../../store/laboratoryTestSlice";
+import { http } from "../../../../services/http";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -20,6 +21,7 @@ type ReportMode = "ByParameter" | "ByTemplate";
 
 type SampleRow = {
   id: number;
+  sampleId: string;
   sampleType: string;
   frequency: string;
 };
@@ -58,34 +60,6 @@ type TestEditData = {
   isActive: boolean;
 };
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-
-const ALL_PARAMETERS: SelectableItem[] = [
-  { id: "p1", code: "154214", name: "Sodium (Serum)" },
-  { id: "p2", code: "154215", name: "Sodium (Serum)" },
-  { id: "p3", code: "154216", name: "Sodium (Serum)" },
-  { id: "p4", code: "154217", name: "Sodium (Serum)" },
-  { id: "p5", code: "BM501", name: "Potassium (Serum)" },
-  { id: "p6", code: "CM302", name: "Chloride (Serum)" },
-];
-
-const ALL_TEMPLATES: SelectableItem[] = [
-  { id: "t1", code: "TN-041421", name: "Culture & Sensitivity growth" },
-  { id: "t2", code: "TN-041462", name: "Microbial Analysis Report Template" },
-  { id: "t3", code: "TN-0414", name: "Pathogen Sensitivity Report Template" },
-  { id: "t4", code: "TN-041500", name: "Microbiology Template" },
-];
-
-const SAMPLE_OPTIONS: SelectableItem[] = [
-  { id: "s1", code: "", name: "Aminotic Fluid" },
-  { id: "s2", code: "", name: "Biopsy Tissue" },
-  { id: "s3", code: "", name: "Hair sample" },
-  { id: "s4", code: "", name: "Tissue sample" },
-  { id: "s5", code: "", name: "Serum" },
-  { id: "s6", code: "", name: "Plasma" },
-];
-
-const SAMPLE_NAMES = SAMPLE_OPTIONS.map((s) => s.name);
 const CATEGORY_OPTIONS = [
   "Biochemistry",
   "Haematology",
@@ -99,10 +73,12 @@ function FloatInput({
   label,
   value,
   onChange,
+  readOnly = false,
 }: {
   label: string;
   value: string;
-  onChange: (v: string) => void;
+  onChange?: (v: string) => void;
+  readOnly?: boolean;
 }) {
   return (
     <div className={styles.formGroup}>
@@ -111,7 +87,8 @@ function FloatInput({
         <input
           className={styles.floatInput}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          readOnly={readOnly}
+          onChange={(e) => onChange?.(e.target.value)}
         />
       </div>
     </div>
@@ -247,48 +224,54 @@ function FigmaDropdown({
           style={alignRight ? { right: 0, left: "auto" } : { left: 0 }}
           ref={listRef}
         >
-          {items.map((item, idx) => (
-            <div key={item.id}>
-              <div
-                className={styles.dropdownRow}
-                onClick={() => onToggle(item.id)}
-              >
-                <span
-                  className={
-                    selectedIds.includes(item.id)
-                      ? styles.roundCheckOn
-                      : styles.roundCheckOff
-                  }
-                >
-                  {selectedIds.includes(item.id) && (
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <polyline
-                        points="2,6 5,9 10,3"
-                        stroke="#4CAF50"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  )}
-                </span>
-                <span className={styles.dropdownRowLabel}>
-                  {item.code ? (
-                    <>
-                      {item.code}
-                      <span className={styles.dropdownPipe}> | </span>
-                      {item.name}
-                    </>
-                  ) : (
-                    item.name
-                  )}
-                </span>
-              </div>
-              {idx < items.length - 1 && (
-                <div className={styles.dropdownDivider} />
-              )}
+          {items.length === 0 ? (
+            <div style={{ padding: "0.75em 1em", color: "#9e9e9e", fontSize: "0.88em" }}>
+              Loading...
             </div>
-          ))}
+          ) : (
+            items.map((item, idx) => (
+              <div key={item.id}>
+                <div
+                  className={styles.dropdownRow}
+                  onClick={() => onToggle(item.id)}
+                >
+                  <span
+                    className={
+                      selectedIds.includes(item.id)
+                        ? styles.roundCheckOn
+                        : styles.roundCheckOff
+                    }
+                  >
+                    {selectedIds.includes(item.id) && (
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <polyline
+                          points="2,6 5,9 10,3"
+                          stroke="#4CAF50"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    )}
+                  </span>
+                  <span className={styles.dropdownRowLabel}>
+                    {item.code ? (
+                      <>
+                        {item.code}
+                        <span className={styles.dropdownPipe}> | </span>
+                        {item.name}
+                      </>
+                    ) : (
+                      item.name
+                    )}
+                  </span>
+                </div>
+                {idx < items.length - 1 && (
+                  <div className={styles.dropdownDivider} />
+                )}
+              </div>
+            ))
+          )}
         </div>
       )}
     </div>
@@ -305,19 +288,65 @@ export default function CreateTestPage() {
   const tubes = useSelector(selectTubes);
   const laboratoryTests = useSelector(selectLaboratoryTests);
 
+  // ── Real API data ──────────────────────────────────
+  const [allParameters, setAllParameters] = useState<SelectableItem[]>([]);
+  const [allTemplates, setAllTemplates] = useState<SelectableItem[]>([]);
+  const [allSamples, setAllSamples] = useState<SelectableItem[]>([]);
+
   useEffect(() => {
     dispatch(fetchTubes());
-  }, [dispatch]);
-
-  useEffect(() => {
     dispatch(fetchLaboratoryTests());
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (!clinic) {
-      dispatch(fetchFirstClinic());
-    }
+    if (!clinic) dispatch(fetchFirstClinic());
   }, [dispatch, clinic]);
+
+  // Fetch parameters, templates, samples
+  useEffect(() => {
+    const fetchAll = async () => {
+      try {
+        // Parameters
+        const paramItems: SelectableItem[] = [];
+        let paramPage = 1;
+        while (true) {
+          const res = await http.get(`/parameters/?page=${paramPage}`);
+          res.data.results.forEach((p: any) =>
+            paramItems.push({ id: p.id, code: p.parameter_code, name: p.parameter_name })
+          );
+          if (!res.data.next) break;
+          paramPage += 1;
+        }
+        setAllParameters(paramItems);
+
+        // Templates
+        const templateItems: SelectableItem[] = [];
+        let templatePage = 1;
+        while (true) {
+          const res = await http.get(`/templates/?page=${templatePage}`);
+          res.data.results.forEach((t: any) =>
+            templateItems.push({ id: t.id, code: t.template_code, name: t.template_name })
+          );
+          if (!res.data.next) break;
+          templatePage += 1;
+        }
+        setAllTemplates(templateItems);
+
+        // Samples
+        const sampleItems: SelectableItem[] = [];
+        let samplePage = 1;
+        while (true) {
+          const res = await http.get(`/samples/?page=${samplePage}`);
+          res.data.results.forEach((s: any) =>
+            sampleItems.push({ id: s.id, code: s.sample_code, name: s.sample_name })
+          );
+          if (!res.data.next) break;
+          samplePage += 1;
+        }
+        setAllSamples(sampleItems);
+      } catch (err) {
+        console.error("Failed to fetch dropdown data", err);
+      }
+    };
+    fetchAll();
+  }, []);
 
   const editData = location.state?.testData as TestEditData | undefined;
   const isEditMode = location.state?.mode === "edit";
@@ -339,24 +368,10 @@ export default function CreateTestPage() {
     editData?.reportType === "TEMPLATE" ? "ByTemplate" : "ByParameter",
   );
 
-  const [selectedParamIds, setSelectedParamIds] = useState<string[]>([
-    "p1",
-    "p2",
-    "p3",
-    "p4",
-  ]);
-  const [selectedTemplateIds, setSelectedTemplateIds] = useState<string[]>([
-    "t1",
-    "t2",
-    "t3",
-  ]);
-
-  const [sampleRows, setSampleRows] = useState<SampleRow[]>([
-    { id: 1, sampleType: "Aminotic Fluid", frequency: "2" },
-    { id: 2, sampleType: "Biopsy Tissue", frequency: "3" },
-    { id: 3, sampleType: "Hair sample", frequency: "2" },
-  ]);
-  const [nextSampleId, setNextSampleId] = useState(4);
+  const [selectedParamIds, setSelectedParamIds] = useState<string[]>([]);
+  const [selectedTemplateIds, setSelectedTemplateIds] = useState<string[]>([]);
+  const [sampleRows, setSampleRows] = useState<SampleRow[]>([]);
+  const [nextSampleId, setNextSampleId] = useState(1);
 
   const set = (field: keyof FormState, value: string | boolean) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -365,21 +380,22 @@ export default function CreateTestPage() {
     setSelectedParamIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
+
   const toggleTemplate = (id: string) =>
     setSelectedTemplateIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
 
   const toggleSampleById = (id: string) => {
-    const item = SAMPLE_OPTIONS.find((s) => s.id === id);
+    const item = allSamples.find((s) => s.id === id);
     if (!item) return;
-    const exists = sampleRows.find((r) => r.sampleType === item.name);
+    const exists = sampleRows.find((r) => r.sampleId === id);
     if (exists) {
-      setSampleRows((prev) => prev.filter((r) => r.sampleType !== item.name));
+      setSampleRows((prev) => prev.filter((r) => r.sampleId !== id));
     } else {
       setSampleRows((prev) => [
         ...prev,
-        { id: nextSampleId, sampleType: item.name, frequency: "1" },
+        { id: nextSampleId, sampleId: id, sampleType: item.name, frequency: "1" },
       ]);
       setNextSampleId((n) => n + 1);
     }
@@ -387,20 +403,15 @@ export default function CreateTestPage() {
 
   const deleteSample = (id: number) =>
     setSampleRows((prev) => prev.filter((r) => r.id !== id));
-  const updateSample = (id: number, field: keyof SampleRow, value: string) =>
+
+  const updateSampleFrequency = (id: number, value: string) =>
     setSampleRows((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)),
+      prev.map((r) => (r.id === id ? { ...r, frequency: value } : r)),
     );
 
-  const selectedParams = ALL_PARAMETERS.filter((p) =>
-    selectedParamIds.includes(p.id),
-  );
-  const selectedTemplates = ALL_TEMPLATES.filter((t) =>
-    selectedTemplateIds.includes(t.id),
-  );
-  const sampleSelectableIds = SAMPLE_OPTIONS.filter((s) =>
-    sampleRows.some((r) => r.sampleType === s.name),
-  ).map((s) => s.id);
+  const selectedParams = allParameters.filter((p) => selectedParamIds.includes(p.id));
+  const selectedTemplates = allTemplates.filter((t) => selectedTemplateIds.includes(t.id));
+  const sampleSelectableIds = sampleRows.map((r) => r.sampleId);
 
   const samplePairs: SampleRow[][] = [];
   for (let i = 0; i < sampleRows.length; i += 2) {
@@ -423,6 +434,18 @@ export default function CreateTestPage() {
       suggestion_note: form.suggestionNote,
       disclaimer: form.disclaimer,
       report_type: reportMode === "ByParameter" ? "PARAMETER" : "TEMPLATE",
+      test_parameters:
+        reportMode === "ByParameter"
+          ? selectedParamIds.map((id) => ({ parameter: id }))
+          : [],
+      test_templates:
+        reportMode === "ByTemplate"
+          ? selectedTemplateIds.map((id) => ({ template: id }))
+          : [],
+      test_samples: sampleRows.map((row) => ({
+        sample: row.sampleId,
+        frequency: Number(row.frequency) || 1,
+      })),
     };
 
     if (isEditMode && editData) {
@@ -453,7 +476,7 @@ export default function CreateTestPage() {
           <div className={styles.section}>
             <p className={styles.sectionTitle}>Basic Details</p>
 
-            {/* Row 1: Test Code, Test Name, Print Name, Category */}
+            {/* Row 1 */}
             <div className={styles.formGrid}>
               <FloatInput
                 label="Test Code"
@@ -478,9 +501,8 @@ export default function CreateTestPage() {
               />
             </div>
 
-            {/* Row 2: Service Name, Tube Name, Test Completion Time, Is Sensitive */}
+            {/* Row 2 */}
             <div className={styles.formGrid}>
-              {/* Service Name — populated from laboratoryTests */}
               <div className={styles.formGroup}>
                 <div className={styles.fieldBorder}>
                   <span className={styles.floatLabel}>Service Name</span>
@@ -503,7 +525,6 @@ export default function CreateTestPage() {
                 </div>
               </div>
 
-              {/* Tube Name */}
               <div className={styles.formGroup}>
                 <div className={styles.fieldBorder}>
                   <span className={styles.floatLabel}>Tube Name</span>
@@ -522,7 +543,6 @@ export default function CreateTestPage() {
                 </div>
               </div>
 
-              {/* Test Completion Time */}
               <div className={styles.formGroup}>
                 <div className={styles.fieldBorder}>
                   <span className={styles.floatLabel}>
@@ -532,9 +552,7 @@ export default function CreateTestPage() {
                     <input
                       className={styles.floatInputFlex}
                       value={form.testCompletionTime}
-                      onChange={(e) =>
-                        set("testCompletionTime", e.target.value)
-                      }
+                      onChange={(e) => set("testCompletionTime", e.target.value)}
                     />
                     <span className={styles.inputIconRight}>
                       <svg
@@ -555,7 +573,6 @@ export default function CreateTestPage() {
                 </div>
               </div>
 
-              {/* Is Sensitive */}
               <div
                 className={styles.formGroup}
                 style={{ justifyContent: "center" }}
@@ -571,7 +588,7 @@ export default function CreateTestPage() {
               </div>
             </div>
 
-            {/* Row 3: Suggestion Note, Disclaimer */}
+            {/* Row 3 */}
             <div className={styles.formGrid2}>
               <FloatTextarea
                 label="Suggestion Note"
@@ -595,9 +612,7 @@ export default function CreateTestPage() {
               <label className={styles.radioLabel}>
                 <span
                   className={
-                    reportMode === "ByParameter"
-                      ? styles.radioOn
-                      : styles.radioOff
+                    reportMode === "ByParameter" ? styles.radioOn : styles.radioOff
                   }
                 >
                   {reportMode === "ByParameter" && (
@@ -617,9 +632,7 @@ export default function CreateTestPage() {
               <label className={styles.radioLabel}>
                 <span
                   className={
-                    reportMode === "ByTemplate"
-                      ? styles.radioOn
-                      : styles.radioOff
+                    reportMode === "ByTemplate" ? styles.radioOn : styles.radioOff
                   }
                 >
                   {reportMode === "ByTemplate" && (
@@ -644,17 +657,11 @@ export default function CreateTestPage() {
                   ? "Search & Add Parameter"
                   : "Search & Add Template"
               }
-              items={
-                reportMode === "ByParameter" ? ALL_PARAMETERS : ALL_TEMPLATES
-              }
+              items={reportMode === "ByParameter" ? allParameters : allTemplates}
               selectedIds={
-                reportMode === "ByParameter"
-                  ? selectedParamIds
-                  : selectedTemplateIds
+                reportMode === "ByParameter" ? selectedParamIds : selectedTemplateIds
               }
-              onToggle={
-                reportMode === "ByParameter" ? toggleParam : toggleTemplate
-              }
+              onToggle={reportMode === "ByParameter" ? toggleParam : toggleTemplate}
             />
 
             {reportMode === "ByParameter" && selectedParams.length > 0 && (
@@ -670,12 +677,7 @@ export default function CreateTestPage() {
                       className={styles.chipRemove}
                       onClick={() => toggleParam(p.id)}
                     >
-                      <img
-                        src={CloseCircleIcon}
-                        alt="remove"
-                        width={16}
-                        height={16}
-                      />
+                      <img src={CloseCircleIcon} alt="remove" width={16} height={16} />
                     </button>
                   </span>
                 ))}
@@ -695,12 +697,7 @@ export default function CreateTestPage() {
                       className={styles.chipRemove}
                       onClick={() => toggleTemplate(t.id)}
                     >
-                      <img
-                        src={CloseCircleIcon}
-                        alt="remove"
-                        width={16}
-                        height={16}
-                      />
+                      <img src={CloseCircleIcon} alt="remove" width={16} height={16} />
                     </button>
                   </span>
                 ))}
@@ -716,7 +713,7 @@ export default function CreateTestPage() {
               <p className={styles.sectionTitle}>Sample Details</p>
               <FigmaDropdown
                 placeholder="Search & Add Sample"
-                items={SAMPLE_OPTIONS}
+                items={allSamples}
                 selectedIds={sampleSelectableIds}
                 onToggle={toggleSampleById}
                 alignRight
@@ -733,33 +730,18 @@ export default function CreateTestPage() {
                         className={styles.sampleDeleteCircle}
                         onClick={() => deleteSample(row.id)}
                       >
-                        <img
-                          src={CloseCircleIcon}
-                          alt="remove"
-                          width={16}
-                          height={16}
-                        />
+                        <img src={CloseCircleIcon} alt="remove" width={16} height={16} />
                       </button>
 
                       <div className={styles.samplePill}>
                         <div className={styles.samplePillField}>
                           <div className={styles.fieldBorder}>
                             <span className={styles.floatLabel}>Sample</span>
-                            <select
-                              className={styles.floatSelect}
+                            <input
+                              className={styles.floatInput}
                               value={row.sampleType}
-                              onChange={(e) =>
-                                updateSample(
-                                  row.id,
-                                  "sampleType",
-                                  e.target.value,
-                                )
-                              }
-                            >
-                              {SAMPLE_NAMES.map((s) => (
-                                <option key={s}>{s}</option>
-                              ))}
-                            </select>
+                              readOnly
+                            />
                           </div>
                         </div>
 
@@ -770,11 +752,7 @@ export default function CreateTestPage() {
                               className={styles.floatInput}
                               value={row.frequency}
                               onChange={(e) =>
-                                updateSample(
-                                  row.id,
-                                  "frequency",
-                                  e.target.value,
-                                )
+                                updateSampleFrequency(row.id, e.target.value)
                               }
                             />
                           </div>

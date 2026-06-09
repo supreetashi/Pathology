@@ -1,0 +1,473 @@
+.root {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    font-family: 'Nunito', 'Segoe UI', sans-serif;
+    font-size: 13px;
+    color: #2c2c2c;
+    background: #fff;
+}
+
+
+/* ── Sidebar ── */
+
+.sidebar {
+    width: 160px;
+    min-width: 160px;
+    border-right: 1px solid #e5e5e5;
+    padding: 12px 8px;
+    overflow-y: auto;
+    background: #fff;
+}
+
+.sidebarHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.sidebarTitle {
+    font-weight: 700;
+    font-size: 13px;
+    color: #1a1a1a;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.sectionLabel {
+    font-size: 10px;
+    font-weight: 700;
+    color: #aaa;
+    letter-spacing: 0.8px;
+    margin: 0 0 6px 4px;
+}
+
+.sectionLabelMt {
+    composes: sectionLabel;
+    margin-top: 14px;
+}
+
+.sidebarItem {
+    cursor: grab;
+    user-select: none;
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #eee;
+    font-size: 12px;
+    font-weight: 500;
+    color: #333;
+    background: #fff;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.sidebarItem:hover {
+    background: #f0f7ff;
+    border-color: #c8e0f7;
+    color: #1a6bbf;
+}
+
+.sidebarItem:active {
+    cursor: grabbing;
+}
+
+.sidebarIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #666;
+}
+
+.sidebarItem:hover .sidebarIcon {
+    color: #1a6bbf;
+}
+
+
+/* ── Canvas ── */
+
+.canvas {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    position: relative;
+    background: #fff;
+    transition: background 0.15s;
+}
+
+.canvasDragOver {
+    background: #f0f7ff;
+}
+
+
+/* ── Empty state ── */
+
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 200px;
+    gap: 8px;
+}
+
+.emptyTitle {
+    font-size: 15px;
+    font-weight: 700;
+    color: #999;
+    font-family: 'Montserrat', sans-serif;
+    margin: 0;
+}
+
+.emptySubtitle {
+    font-size: 12px;
+    color: #bbb;
+    max-width: 280px;
+    line-height: 1.6;
+    margin: 0;
+    text-align: center;
+}
+
+
+/* ── Section ── */
+
+.sectionWrap {
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.sectionControls {
+    position: absolute;
+    top: -8px;
+    right: 0;
+    display: flex;
+    gap: 2px;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.sectionWrap:hover .sectionControls {
+    opacity: 1;
+}
+
+.ctrlBtn {
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    font-size: 11px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+}
+
+.ctrlBtn:hover {
+    background: #e0e0e0;
+}
+
+
+/* ── Heading ── */
+
+.headingEl {
+    padding: 10px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 4px;
+    outline: 2px solid transparent;
+    transition: outline 0.1s;
+}
+
+.headingEl:hover {
+    outline: 2px solid #2E75B6;
+}
+
+.headingElSelected {
+    outline: 2px solid #2E75B6;
+}
+
+.headingText {
+    font-weight: 700;
+    font-size: 14px;
+    color: #1a1a1a;
+}
+
+.subText {
+    font-size: 11px;
+    color: #888;
+    margin-top: 2px;
+}
+
+
+/* ── Divider ── */
+
+.dividerEl {
+    padding: 6px 0;
+    cursor: pointer;
+    border-radius: 4px;
+    outline: 2px solid transparent;
+    transition: outline 0.1s;
+}
+
+.dividerEl:hover {
+    outline: 2px solid #2E75B6;
+}
+
+.dividerElSelected {
+    outline: 2px solid #2E75B6;
+}
+
+.dividerEl hr {
+    border: none;
+    border-top: 1px solid #e0e0e0;
+    margin: 0;
+}
+
+
+/* ── Columns ── */
+
+.colRow {
+    display: grid;
+    gap: 8px;
+}
+
+.colSlot {
+    border-radius: 6px;
+    padding: 10px;
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border: 2px dashed #d0d0d0;
+    background: #fafafa;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.colSlotDragOver {
+    background: #e8f4ff;
+    border: 2px dashed #2E75B6;
+}
+
+.colPlaceholder {
+    font-size: 11px;
+    color: #bbb;
+    display: block;
+    padding-top: 8px;
+    text-align: center;
+}
+
+
+/* ── Field ── */
+
+.fieldEl {
+    border-radius: 4px;
+    padding: 4px 2px;
+    cursor: pointer;
+    outline: 2px solid transparent;
+    transition: outline 0.1s;
+}
+
+.fieldEl:hover {
+    outline: 2px solid #2E75B6;
+}
+
+.fieldElSelected {
+    outline: 2px solid #2E75B6;
+}
+
+.fieldWrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.fieldLabel {
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+}
+
+.required {
+    color: #e74c3c;
+}
+
+.input {
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-size: 12px;
+    color: #555;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    background: #fff;
+    font-family: 'Nunito', sans-serif;
+}
+
+.input:focus {
+    border-color: #2E75B6;
+}
+
+.dateWrap {
+    display: flex;
+    align-items: center;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.dateWrap .input {
+    border: none;
+    flex: 1;
+}
+
+.calIcon {
+    padding: 0 8px;
+    display: inline-flex;
+    align-items: center;
+    color: #888;
+}
+
+.uploadBox {
+    border: 1px dashed #bbb;
+    border-radius: 4px;
+    padding: 10px;
+    font-size: 12px;
+    color: #999;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #fafafa;
+}
+
+
+/* ── Properties Panel ── */
+
+.propPanel {
+    width: 220px;
+    min-width: 220px;
+    border-left: 1px solid #e5e5e5;
+    padding: 14px;
+    background: #fff;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.propHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.propTitle {
+    font-weight: 700;
+    font-size: 13px;
+    color: #1a1a1a;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.propClose {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #999;
+    padding: 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.propClose:hover {
+    color: #333;
+    background: #f0f0f0;
+}
+
+.propLabel {
+    font-size: 11px;
+    font-weight: 600;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.propInput {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 12px;
+    width: 100%;
+    box-sizing: border-box;
+    outline: none;
+    margin-bottom: 2px;
+    font-family: 'Nunito', sans-serif;
+}
+
+.propInput:focus {
+    border-color: #2E75B6;
+}
+
+.propDelete {
+    background: #fff0f0;
+    border: 1px solid #f5c6c6;
+    color: #e74c3c;
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.propDelete:hover {
+    background: #ffe0e0;
+}
+
+.propAddBtn {
+    background: #f0f7ff;
+    border: 1px solid #b3d4f5;
+    color: #2E75B6;
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.propAddBtn:hover {
+    background: #daeeff;
+}
+
+.radioLabel {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    color: #333;
+}
+
+.optionRow {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 4px;
+    align-items: center;
+}
