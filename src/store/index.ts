@@ -8,6 +8,7 @@ import machineReducer from "./MachineSlice";
 import ordersReducer from "./orders.slice";
 import shipmentReducer from "./shipment.slice";
 import templateReducer from "./templateSlice";
+import receiveReducer from "./ReceiveSlice";
 import laboratoryTestReducer from "./laboratoryTestSlice";
 import agencyReducer from "./agencySlice";
 
@@ -22,6 +23,7 @@ export const store = configureStore({
     orders: ordersReducer,
     shipment: shipmentReducer,
     template: templateReducer,
+    receive: receiveReducer,
     laboratoryTests: laboratoryTestReducer,
     agency: agencyReducer,
   },
