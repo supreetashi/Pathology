@@ -59,6 +59,7 @@ const mapOrder = (d: PathologyOrder): OrderRow => ({
 export const fetchOrders = createAsyncThunk<OrderRow[], void>(
   "orders/fetchOrders",
   async () => {
+    // Single fetch — backend returns all available orders
     const res = await ordersApi.getAll();
     return res.data.objects.map(mapOrder);
   }
