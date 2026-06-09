@@ -23,6 +23,13 @@ import PendingTab from "./PendingTab";
 import ShippedTab from "./ShippedTab";
 import ReceivedTab from "./ReceivedTab";
 import ActivityLogsTab from "./ActivityLogsTab";
+import {
+  PendingFilterModal,
+  ShippedFilterModal,
+  ReceivedFilterModal,
+  ActivityFilterModal,
+} from "./ShipmentFilters";
+import type { ShipmentFilters } from "../../types/shipment.types";
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
 type ToastType = "success" | "error";
@@ -70,6 +77,7 @@ function Toast({ message, type, onClose }: { message: string; type: ToastType; o
   );
 }
 
+// ─── Main component ───────────────────────────────────────────────────────────
 const ShipmentView: React.FC = () => {
   const BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 
@@ -82,7 +90,6 @@ const ShipmentView: React.FC = () => {
   const [showShippingModal, setShowShippingModal] = useState(false);
   const [, setLoading] = useState(false);
 
-  // Toast state
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
   const showToast = useCallback((message: string, type: ToastType = "success") => {
     setToast({ message, type });
@@ -135,6 +142,9 @@ const ShipmentView: React.FC = () => {
           patientCode: d.pending_shipment?.patient?.patient_code ?? "-",
           gender: d.pending_shipment?.patient?.gender ?? "-",
           shipTo: d.ship_to,
+          // tooltip: API pending_shipment has no order_date, so both use ship_date
+          orderDate: d.ship_date ? new Date(d.ship_date).toLocaleDateString("en-GB") : "-",
+          orderTime: d.ship_date ? new Date(d.ship_date).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : "-",
         })));
       } else if (tab === "received") {
         const data = await getReceivedShipments();
@@ -154,6 +164,16 @@ const ShipmentView: React.FC = () => {
           gender: d.shipped_shipment?.pending_shipment?.patient?.gender ?? "-",
           shipTo: d.shipped_shipment?.ship_to ?? "-",
           status: d.status,
+          // tooltip fields — use what API actually returns
+          orderDate: "-",
+          orderTime: "-",
+          shipDate: d.shipped_shipment?.ship_date
+            ? new Date(d.shipped_shipment.ship_date).toLocaleDateString("en-GB")
+            : "-",
+          shipTime: d.shipped_shipment?.ship_date
+            ? new Date(d.shipped_shipment.ship_date).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
+            : "-",
+          shipmentNo: (d as any).shipment_no ?? d.shipped_shipment?.shipment_no ?? "-",
         })));
       } else if (tab === "activity") {
         const data = await getActivityLogs();
@@ -174,7 +194,6 @@ const ShipmentView: React.FC = () => {
     }
   }, []);
 
-  // Load ALL tabs on mount for correct counts
   useEffect(() => {
     fetchTabData("pending");
     fetchTabData("shipped");
@@ -182,11 +201,16 @@ const ShipmentView: React.FC = () => {
     fetchTabData("activity");
   }, [fetchTabData]);
 
-  const [filters, setFilters] = useState({
-    fromDate: "", toDate: "", shipTo: "", specimenType: "",
-    testName: "", service: "", shipFrom: "", shipBy: "", shipmentNo: "",
-  });
-  const [appliedFilters, setAppliedFilters] = useState({ ...filters });
+  // Unified filters state (all tabs share same object, fields used per-tab)
+  const emptyFilters = {
+    fromDate: "", toDate: "",
+    shipTo: "", specimenType: "", testName: "", service: "",
+    shipFrom: "", shipBy: "", shipmentNo: "",
+    shippedDateMode: "ship",   // for shipped tab radio
+    receivedDateMode: "ship",  // for received tab radio
+  };
+  const [filters, setFilters] = useState<ShipmentFilters>({ ...emptyFilters });
+  const [appliedFilters, setAppliedFilters] = useState<ShipmentFilters>({ ...emptyFilters });
 
   const currentDataArray = useMemo(() => {
     switch (activeTab) {
@@ -205,6 +229,7 @@ const ShipmentView: React.FC = () => {
       const tName = (item.testName || "").toLowerCase();
       const query = searchQuery.toLowerCase();
       const matchesSearch = pName.includes(query) || sNo.includes(query) || tName.includes(query);
+
       if (activeTab === "activity") {
         const mSF = appliedFilters.shipFrom ? item.shipFrom?.toLowerCase().includes(appliedFilters.shipFrom.toLowerCase()) : true;
         const mST = appliedFilters.shipTo   ? item.shipTo?.toLowerCase().includes(appliedFilters.shipTo.toLowerCase())   : true;
@@ -212,6 +237,7 @@ const ShipmentView: React.FC = () => {
         const mSN = appliedFilters.shipmentNo ? item.shipNo?.toLowerCase().includes(appliedFilters.shipmentNo.toLowerCase()) : true;
         return matchesSearch && mSF && mST && mSB && mSN;
       }
+
       const mSpec   = appliedFilters.specimenType ? item.type?.toLowerCase() === appliedFilters.specimenType.toLowerCase() : true;
       const mSvc    = appliedFilters.service      ? item.serviceName?.toLowerCase().includes(appliedFilters.service.toLowerCase()) : true;
       const mTest   = appliedFilters.testName     ? item.testName?.toLowerCase().includes(appliedFilters.testName.toLowerCase())   : true;
@@ -245,10 +271,16 @@ const ShipmentView: React.FC = () => {
     }
   };
 
-  const handleApplyFilters = () => { setAppliedFilters({ ...filters }); setCurrentPage(1); setShowFilterModal(false); };
+  const handleApplyFilters = () => {
+    setAppliedFilters({ ...filters });
+    setCurrentPage(1);
+    setShowFilterModal(false);
+  };
   const handleClearFilters = () => {
-    const empty = { fromDate: "", toDate: "", shipTo: "", specimenType: "", testName: "", service: "", shipFrom: "", shipBy: "", shipmentNo: "" };
-    setFilters(empty); setAppliedFilters(empty); setCurrentPage(1); setShowFilterModal(false);
+    setFilters({ ...emptyFilters });
+    setAppliedFilters({ ...emptyFilters });
+    setCurrentPage(1);
+    setShowFilterModal(false);
   };
 
   const renderTabContent = () => {
@@ -267,6 +299,13 @@ const ShipmentView: React.FC = () => {
     { key: "received", label: `Received (${receivedDataOriginal.length})` },
     { key: "activity", label: "Activity Logs" },
   ];
+
+  const filterModalProps = {
+    filters, setFilters,
+    onApply: handleApplyFilters,
+    onClear: handleClearFilters,
+    onClose: () => setShowFilterModal(false),
+  };
 
   return (
     <div className="shipment-container">
@@ -309,9 +348,14 @@ const ShipmentView: React.FC = () => {
         {renderTabContent()}
       </div>
 
-      {/* Schedule Shipping button — inline above footer when rows selected */}
+      {/* Schedule Shipping button — sits between table and footer when rows selected */}
       {activeTab === "pending" && selectedRows.length > 0 && (
-        <div className="shipping-button-container">
+        <div style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          padding: "10px 0 4px 0",
+          flexShrink: 0,
+        }}>
           <button className="schedule-shipping-btn" onClick={() => setShowShippingModal(true)}>
             Schedule Shipping
           </button>
@@ -336,60 +380,11 @@ const ShipmentView: React.FC = () => {
         </div>
       </div>
 
-
-
-      {/* FILTER MODAL */}
-      {showFilterModal && (
-        <div className="modal-overlay" onClick={() => setShowFilterModal(false)}>
-          <div className="fmodal" onClick={(e) => e.stopPropagation()}>
-            <div className="fmodal-header">
-              <span className="fmodal-title">Filters</span>
-              <button className="fmodal-close" onClick={() => setShowFilterModal(false)}>
-                <CloseIcon style={{ fontSize: 16, color: "#6b7280" }} />
-              </button>
-            </div>
-            <div className="fmodal-grid">
-              <div className="fmodal-field" onClick={() => (document.getElementById('filter-from-date') as HTMLInputElement)?.showPicker?.()}>
-                <span className="fmodal-label">From Date</span>
-                <div className="fmodal-input-wrap">
-                  <input id="filter-from-date" className="fmodal-input fmodal-date-input" type="date"
-                    value={filters.fromDate} onChange={(e) => setFilters({ ...filters, fromDate: e.target.value })} />
-                  <CalendarMonthIcon className="fmodal-icon" style={{ cursor: "pointer", pointerEvents: "auto" }}
-                    onClick={() => (document.getElementById('filter-from-date') as HTMLInputElement)?.showPicker?.()} />
-                </div>
-              </div>
-              <div className="fmodal-field" onClick={() => (document.getElementById('filter-to-date') as HTMLInputElement)?.showPicker?.()}>
-                <span className="fmodal-label">To Date</span>
-                <div className="fmodal-input-wrap">
-                  <input id="filter-to-date" className="fmodal-input fmodal-date-input" type="date"
-                    value={filters.toDate} onChange={(e) => setFilters({ ...filters, toDate: e.target.value })} />
-                  <CalendarMonthIcon className="fmodal-icon" style={{ cursor: "pointer", pointerEvents: "auto" }}
-                    onClick={() => (document.getElementById('filter-to-date') as HTMLInputElement)?.showPicker?.()} />
-                </div>
-              </div>
-              {activeTab === "activity" ? (
-                <>
-                  <div className="fmodal-field"><span className="fmodal-label">Ship From</span><div className="fmodal-input-wrap"><select className="fmodal-select" value={filters.shipFrom} onChange={(e) => setFilters({ ...filters, shipFrom: e.target.value })}><option value="">All</option><option value="Vidai, Pune">Vidai, Pune</option></select><KeyboardArrowDownIcon className="fmodal-icon" /></div></div>
-                  <div className="fmodal-field"><span className="fmodal-label">Ship To</span><div className="fmodal-input-wrap"><select className="fmodal-select" value={filters.shipTo} onChange={(e) => setFilters({ ...filters, shipTo: e.target.value })}><option value="">All</option><option value="Willowbrook">Willowbrook</option></select><KeyboardArrowDownIcon className="fmodal-icon" /></div></div>
-                  <div className="fmodal-field"><span className="fmodal-label">Ship By</span><div className="fmodal-input-wrap"><select className="fmodal-select" value={filters.shipBy} onChange={(e) => setFilters({ ...filters, shipBy: e.target.value })}><option value="">All</option></select><KeyboardArrowDownIcon className="fmodal-icon" /></div></div>
-                  <div className="fmodal-field"><span className="fmodal-label">Shipment No.</span><div className="fmodal-input-wrap"><input className="fmodal-input" type="text" placeholder="AH-7651" value={filters.shipmentNo} onChange={(e) => setFilters({ ...filters, shipmentNo: e.target.value })} /></div></div>
-                </>
-              ) : (
-                <>
-                  <div className="fmodal-field"><span className="fmodal-label">Ship To</span><div className="fmodal-input-wrap"><select className="fmodal-select" value={filters.shipTo} onChange={(e) => setFilters({ ...filters, shipTo: e.target.value })}><option value="">All</option><option value="Willowbrook">Willowbrook</option><option value="Rosewood">Rosewood</option></select><KeyboardArrowDownIcon className="fmodal-icon" /></div></div>
-                  <div className="fmodal-field"><span className="fmodal-label">Specimen Type</span><div className="fmodal-input-wrap"><select className="fmodal-select" value={filters.specimenType} onChange={(e) => setFilters({ ...filters, specimenType: e.target.value })}><option value="">All</option><option value="Blood">Blood</option><option value="Urine">Urine</option></select><KeyboardArrowDownIcon className="fmodal-icon" /></div></div>
-                  <div className="fmodal-field"><span className="fmodal-label">Test Name</span><div className="fmodal-input-wrap"><select className="fmodal-select" value={filters.testName} onChange={(e) => setFilters({ ...filters, testName: e.target.value })}><option value="">All</option><option value="CBC">CBC</option><option value="Urine Culture">Urine Culture</option></select><KeyboardArrowDownIcon className="fmodal-icon" /></div></div>
-                  <div className="fmodal-field"><span className="fmodal-label">Service</span><div className="fmodal-input-wrap"><select className="fmodal-select" value={filters.service} onChange={(e) => setFilters({ ...filters, service: e.target.value })}><option value="">All</option><option value="Women Pathology 2026">Women Pathology 2026</option></select><KeyboardArrowDownIcon className="fmodal-icon" /></div></div>
-                </>
-              )}
-            </div>
-            <div className="fmodal-footer">
-              <button className="fmodal-clear" onClick={handleClearFilters}>Clear All</button>
-              <button className="fmodal-apply" onClick={handleApplyFilters}>Apply</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Per-tab filter modals */}
+      {showFilterModal && activeTab === "pending"  && <PendingFilterModal  {...filterModalProps} />}
+      {showFilterModal && activeTab === "shipped"  && <ShippedFilterModal  {...filterModalProps} />}
+      {showFilterModal && activeTab === "received" && <ReceivedFilterModal {...filterModalProps} />}
+      {showFilterModal && activeTab === "activity" && <ActivityFilterModal {...filterModalProps} />}
 
       {/* SCHEDULE SHIPPING MODAL */}
       {showShippingModal && (
@@ -460,7 +455,6 @@ const ShipmentView: React.FC = () => {
               <button className="save-btn" onClick={async () => {
                 const shippedIds = [...selectedRows];
                 try {
-                  // Step 1: POST schedule-shipping for each pending row
                   for (const pendingId of shippedIds) {
                     const res1 = await fetch(`${BASE}/schedule-shipping/`, {
                       method: "POST",
@@ -479,7 +473,6 @@ const ShipmentView: React.FC = () => {
                     }
                   }
 
-                  // Step 2: POST move-to-shipped for each pending row
                   for (const pendingId of shippedIds) {
                     const res2 = await fetch(`${BASE}/move-to-shipped/`, {
                       method: "POST",
@@ -496,13 +489,11 @@ const ShipmentView: React.FC = () => {
                     }
                   }
 
-                  // Remove shipped items from pending immediately
                   setPendingDataOriginal(prev => prev.filter(p => !shippedIds.includes(p.id)));
                   setSelectedRows([]);
                   setShowShippingModal(false);
                   showToast(`${shippedIds.length} sample(s) shipped successfully`, "success");
 
-                  // Refresh shipped + activity immediately and again after delay
                   fetchTabData("shipped");
                   fetchTabData("activity");
                   setTimeout(() => {

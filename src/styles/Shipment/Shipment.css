@@ -185,7 +185,7 @@
 .custom-table tbody td:first-child { padding-left: 0; }
 .custom-table tbody td:last-child  { padding-right: 0; }
 
-/* CHECKBOX */
+/* CHECKBOX — lighter green to match Figma */
 .checkbox-cell {
   width: 36px;
   text-align: left !important;
@@ -209,11 +209,12 @@
   box-sizing: border-box;
 }
 
-.custom-checkbox:hover { border-color: #10b981; }
+.custom-checkbox:hover { border-color: #6ee7b7; }
 
+/* Lighter green — matches Figma's soft teal checkbox */
 .custom-checkbox.checked {
-  background-color: #10b981;
-  border-color: #10b981;
+  background-color: #6ee7b7;
+  border-color: #6ee7b7;
 }
 
 .custom-checkbox.checked::after {
@@ -356,14 +357,7 @@
   font-weight: 500;
 }
 
-/* SCHEDULE SHIPPING BUTTON */
-.shipping-button-container {
-  position: fixed;
-  bottom: 24px;
-  right: 32px;
-  z-index: 100;
-}
-
+/* SCHEDULE SHIPPING BUTTON — inline above footer, no longer fixed */
 .schedule-shipping-btn {
   background: #1f2937;
   color: #ffffff;
