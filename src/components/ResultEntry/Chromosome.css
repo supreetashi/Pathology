@@ -425,6 +425,11 @@
   background: #f3f4f6;
 }
 
+.toolbar-chip.active,
+.tool-btn.active {
+  background: #e5e7eb;
+}
+
 .tool-btn:disabled,
 .tool-select:disabled,
 .tool-select-native:disabled,
@@ -488,6 +493,22 @@
   line-height: 1.5;
   font-family: inherit;
   white-space: pre-wrap;
+}
+
+.quill-clean .ql-editor .ql-font-nunito {
+  font-family: Nunito, sans-serif;
+}
+
+.quill-clean .ql-editor .ql-font-plus-jakarta-sans {
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+.quill-clean .ql-editor .ql-font-arial {
+  font-family: Arial, sans-serif;
+}
+
+.quill-clean .ql-editor .ql-font-times-new-roman {
+  font-family: "Times New Roman", serif;
 }
 
 .editor-main-text p,
