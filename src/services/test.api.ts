@@ -12,12 +12,24 @@ import { http } from "./http";
 
 export const testApi = {
   // ── Tests ──────────────────────────────────────────
-  getTests: () => http.get("/tests/"),
+  getTests: async () => {
+    const allItems: any[] = [];
+    let page = 1;
+
+    while (true) {
+      const res = await http.get(`/tests/?page=${page}`);
+      allItems.push(...res.data.results);
+      if (!res.data.next) break;
+      page += 1;
+    }
+
+    return { data: allItems };
+  },
 
   createTest: (payload: CreateTestPayload) => http.post("/tests/", payload),
 
   updateTest: ({ id, ...payload }: UpdateTestPayload) =>
-  http.put(`/tests/${id}/`, payload),
+    http.put(`/tests/${id}/`, payload),
 
   updateTestStatus: (id: number, status: boolean) =>
     http.patch(`/tests/${id}/`, { status }),
@@ -25,7 +37,19 @@ export const testApi = {
   deleteTest: (id: number) => http.delete(`/tests/${id}/`),
 
   // ── Categories ─────────────────────────────────────
-  getCategories: () => http.get("/categories/"),
+  getCategories: async () => {
+    const allItems: any[] = [];
+    let page = 1;
+
+    while (true) {
+      const res = await http.get(`/categories/?page=${page}`);
+      allItems.push(...res.data.results);
+      if (!res.data.next) break;
+      page += 1;
+    }
+
+    return { data: allItems };
+  },
 
   createCategory: (payload: CreateCategoryPayload) =>
     http.post("/categories/", payload),
