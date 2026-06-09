@@ -1,15 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
+
+
 /* ============================================
    SHIPMENT MODULE - FULL COMPLETE CSS
    Figma Exact - Plus Jakarta Sans
    ============================================ */
 
 .shipment-container {
-  padding: 28px 32px;
+  padding: 20px 28px 0 28px;
   background-color: #ffffff;
   min-height: 100vh;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
 .shipment-header {
@@ -133,6 +138,9 @@
   border-radius: 0;
   border: none;
   overflow: hidden;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .custom-table {
@@ -279,6 +287,10 @@
   padding: 12px 0;
   border-top: 1px solid #f3f4f6;
   background: #ffffff;
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
 }
 
 .showing-entries {
@@ -346,9 +358,10 @@
 
 /* SCHEDULE SHIPPING BUTTON */
 .shipping-button-container {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
+  position: fixed;
+  bottom: 24px;
+  right: 32px;
+  z-index: 100;
 }
 
 .schedule-shipping-btn {

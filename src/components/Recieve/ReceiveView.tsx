@@ -1,9 +1,16 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import { shippedRows, type SampleRow } from "./ReceiveMockData";
+import type { SampleRow } from "./ReceiveMockData";
+import {
+  getAllSamples,
+  getActivityLogSamples,
+  receiveSample,
+  rejectSample,
+  type ReceiveSample,
+} from "../../services/receive.api";
 import ReceiveSpecimenModal from "./ReceiveSpecimenModal";
 import RejectSpecimenModal from "./RejectSpecimenModal";
 import ActivityLogFilterModal, { type ActivityLogFilterValues } from "./ActivityLogFilterModal";
@@ -11,7 +18,7 @@ import ShippedFilterModal, { type ShippedFilterValues } from "./ShippedFilterMod
 import ShippedTab from "./ShippedTab";
 import ReceivedTab from "./ReceivedTab";
 import RejectedTab from "./RejectedTab";
-import ActivityLogsTab, { ACTIVITY_RECEIVED_BY, ACTIVITY_SHIP_BY } from "./ActivityLogsTab";
+import ActivityLogsTab, { ACTIVITY_SHIP_BY, ACTIVITY_RECEIVED_BY } from "./ActivityLogsTab";
 import "../../styles/Recieve/ReceiveView.css";
 
 type ReceiveTab = "shipped" | "received" | "rejected" | "activity";
@@ -43,14 +50,54 @@ const tabConfig: Record<ReceiveTab, { label: string; withCount: boolean }> = {
   activity: { label: "Activity Logs", withCount: false },
 };
 
+// ── Map backend ReceiveSample → frontend SampleRow ────────────────────────────
+
+function toSampleRow(r: ReceiveSample): SampleRow {
+  // "YYYY-MM-DD" → "DD/MM/YYYY"
+  const shipDate = r.ship_date
+    ? r.ship_date.split("-").reverse().join("/")
+    : "—";
+
+  // "HH:MM:SS" → "HH:MM AM/PM"
+  const shipTime = r.ship_time
+    ? (() => {
+        const [h, m] = r.ship_time.split(":").map(Number);
+        const ampm = h >= 12 ? "PM" : "AM";
+        const h12 = h % 12 || 12;
+        return `${String(h12).padStart(2, "0")}:${String(m).padStart(2, "0")} ${ampm}`;
+      })()
+    : "—";
+
+  return {
+    id: r.id,
+    shipDate,
+    shipTime,
+    shipmentNo: r.shipment_no,
+    sampleNo: r.specimen_no,
+    type: r.specimen_type,
+    testCode: r.test_code,
+    testName: r.test_name,
+    serviceName: r.service_name,
+    patientName: r.patient_name,
+    age: r.patient_age,
+    patientCode: r.patient_code,
+    gender: r.patient_gender,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 function ReceiveView() {
-  const [shippedData, setShippedData] = useState<SampleRow[]>(shippedRows);
+  const [shippedData, setShippedData] = useState<SampleRow[]>([]);
   const [receivedData, setReceivedData] = useState<SampleRow[]>([]);
   const [rejectedData, setRejectedData] = useState<SampleRow[]>([]);
-  const [activityData] = useState<SampleRow[]>(shippedRows.slice(0, 5));
+  const [activityData, setActivityData] = useState<SampleRow[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const [activeTab, setActiveTab] = useState<ReceiveTab>("shipped");
   const [searchValue, setSearchValue] = useState("");
-  const [selectedIds, setSelectedIds] = useState<number[]>([1, 2]);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [showReceiveModal, setShowReceiveModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
@@ -59,6 +106,34 @@ function ReceiveView() {
   const [shippedFilters, setShippedFilters] = useState<ShippedFilterValues>(EMPTY_SHIPPED_FILTERS);
   const [receivedFilters, setReceivedFilters] = useState<ShippedFilterValues>(EMPTY_SHIPPED_FILTERS);
   const [activityFilters, setActivityFilters] = useState<ActivityLogFilterValues>(EMPTY_ACTIVITY_FILTERS);
+
+  // ── Fetch all tab data from backend ────────────────────────────────────────
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [allSamples, activitySamples] = await Promise.all([
+        getAllSamples(),
+        getActivityLogSamples(),
+      ]);
+
+      setShippedData(allSamples.filter((r) => r.status === "Shipped").map(toSampleRow));
+      setReceivedData(allSamples.filter((r) => r.status === "Received").map(toSampleRow));
+      setRejectedData(allSamples.filter((r) => r.status === "Rejected").map(toSampleRow));
+      setActivityData(activitySamples.map(toSampleRow));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load data");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // ── Filter option derivation ────────────────────────────────────────────────
 
   const filterSourceRows = activeTab === "received" ? receivedData : shippedData;
 
@@ -81,6 +156,8 @@ function ReceiveView() {
     () => Array.from(new Set(activityData.map((row) => row.serviceName))),
     [activityData],
   );
+
+  // ── Date parsing helper ─────────────────────────────────────────────────────
 
   const parseDate = (value: string) => {
     if (!value) {
@@ -251,42 +328,42 @@ function ReceiveView() {
     [shippedData, selectedIds],
   );
 
-  const handleReceiveConfirm = () => {
-    if (selectedRows.length === 0) {
+  // ── Receive / Reject handlers ───────────────────────────────────────────────
+
+  const handleReceiveConfirm = async () => {
+    if (selectedIds.length === 0) {
       setShowReceiveModal(false);
       return;
     }
 
-    const selectedIdSet = new Set(selectedRows.map((row) => row.id));
-
-    setShippedData((prev) => prev.filter((row) => !selectedIdSet.has(row.id)));
-    setReceivedData((prev) => {
-      const remaining = prev.filter((row) => !selectedIdSet.has(row.id));
-      return [...selectedRows, ...remaining];
-    });
-    setSelectedIds([]);
-    setShowReceiveModal(false);
-    setActiveTab("received");
-    setCurrentPage(1);
+    try {
+      await Promise.all(selectedIds.map((id) => receiveSample(id)));
+      setSelectedIds([]);
+      setShowReceiveModal(false);
+      setActiveTab("received");
+      setCurrentPage(1);
+      await fetchData();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to receive samples");
+    }
   };
 
-  const handleRejectConfirm = () => {
-    if (selectedRows.length === 0) {
+  const handleRejectConfirm = async () => {
+    if (selectedIds.length === 0) {
       setShowRejectModal(false);
       return;
     }
 
-    const selectedIdSet = new Set(selectedRows.map((row) => row.id));
-
-    setShippedData((prev) => prev.filter((row) => !selectedIdSet.has(row.id)));
-    setRejectedData((prev) => {
-      const remaining = prev.filter((row) => !selectedIdSet.has(row.id));
-      return [...selectedRows, ...remaining];
-    });
-    setSelectedIds([]);
-    setShowRejectModal(false);
-    setActiveTab("rejected");
-    setCurrentPage(1);
+    try {
+      await Promise.all(selectedIds.map((id) => rejectSample(id)));
+      setSelectedIds([]);
+      setShowRejectModal(false);
+      setActiveTab("rejected");
+      setCurrentPage(1);
+      await fetchData();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to reject samples");
+    }
   };
 
   const toggleAllRows = () => {
@@ -396,7 +473,24 @@ function ReceiveView() {
       </div>
 
       <div className="receive-table-shell">
-        {renderActiveTab()}
+        {loading && (
+          <p style={{ textAlign: "center", padding: "2rem", color: "#666" }}>Loading…</p>
+        )}
+
+        {error && !loading && (
+          <p style={{ textAlign: "center", padding: "2rem", color: "#d32f2f" }}>
+            {error}{" "}
+            <button
+              type="button"
+              onClick={fetchData}
+              style={{ textDecoration: "underline", background: "none", border: "none", cursor: "pointer" }}
+            >
+              Retry
+            </button>
+          </p>
+        )}
+
+        {!loading && !error && renderActiveTab()}
 
         <div className="receive-table-footer">
           <span>
@@ -521,5 +615,4 @@ function ReceiveView() {
     </section>
   );
 }
-
 export default ReceiveView;

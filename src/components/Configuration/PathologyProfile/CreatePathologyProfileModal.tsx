@@ -2,9 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import styles from "../../../styles/Configuration/SampleTube/CreateSampleTubeModal.module.css";
 import stylesTest from "../Test/TestMaster/CreateTestPage.module.css";
 import CloseCircleIcon from "../../../assets/icons/close-circle.svg";
-import { fetchServiceNameLists, selectServiceNames } from "../../../store/pathologyProfileSlice";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch } from "../../../store";
+import { selectServiceNames } from "../../../store/pathologyProfileSlice";
+import { useSelector } from "react-redux";
 
 interface Props {
     isOpen: boolean;
@@ -175,7 +174,6 @@ type FormState = {
 
 
 function CreatePathologyProfileModal({ isOpen, onClose, onSave }: Props) {
-    const dispatch = useDispatch<AppDispatch>();
     const [tests, setTests] = useState("");
     const [name, setName] = useState("");
     // const SERVICE_OPTIONS = ["", "Natural Killer Self Panel", "Panel A", "Panel B"];
