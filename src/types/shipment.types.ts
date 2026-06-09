@@ -168,6 +168,7 @@ export interface ScheduleShippingPayload {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 9.  Filter shape (mirrors ShipmentView local state)
+//     Added: shippedDateMode, receivedDateMode for per-tab date radio buttons
 // ─────────────────────────────────────────────────────────────────────────────
 export interface ShipmentFilters {
   fromDate: string;
@@ -179,4 +180,31 @@ export interface ShipmentFilters {
   shipFrom: string;
   shipBy: string;
   shipmentNo: string;
+  shippedDateMode: string;   // "ship" | "order"
+  receivedDateMode: string;  // "ship" | "receive" | "order"
+}
+
+export const emptyFilters: ShipmentFilters = {
+  fromDate: "",
+  toDate: "",
+  shipTo: "",
+  specimenType: "",
+  testName: "",
+  service: "",
+  shipFrom: "",
+  shipBy: "",
+  shipmentNo: "",
+  shippedDateMode: "ship",
+  receivedDateMode: "ship",
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 10.  Filter modal props  (shared by all 4 filter modals in ShipmentFilters.tsx)
+// ─────────────────────────────────────────────────────────────────────────────
+export interface FilterModalProps {
+  filters: ShipmentFilters;
+  setFilters: (f: ShipmentFilters) => void;
+  onApply: () => void;
+  onClear: () => void;
+  onClose: () => void;
 }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 
 interface ShippedTabProps {
@@ -6,6 +6,8 @@ interface ShippedTabProps {
 }
 
 const ShippedTab: React.FC<ShippedTabProps> = ({ data }) => {
+  const [tooltip, setTooltip] = useState<{ id: number } | null>(null);
+
   return (
     <table className="custom-table" style={{ tableLayout: "fixed", width: "100%" }}>
       <colgroup>
@@ -289,7 +291,7 @@ const ShippedTab: React.FC<ShippedTabProps> = ({ data }) => {
               </div>
             </td>
 
-            {/* Action icon */}
+            {/* Action icon — hover shows 3-row tooltip: Order Date & Time, Ship Date & Time, Shipment No. */}
             <td
               style={{
                 padding: "14px 8px",
@@ -298,15 +300,48 @@ const ShippedTab: React.FC<ShippedTabProps> = ({ data }) => {
                 width: "48px",
               }}
             >
-              <ErrorOutlineIcon
-                style={{
-                  color: "#fb923c",
-                  fontSize: "18px",
-                  cursor: "pointer",
-                  display: "block",
-                  margin: "0 auto",
-                }}
-              />
+              <div
+                style={{ position: "relative", display: "inline-block" }}
+                onMouseEnter={() => setTooltip({ id: row.id })}
+                onMouseLeave={() => setTooltip(null)}
+              >
+                <ErrorOutlineIcon
+                  style={{
+                    color: "#fb923c",
+                    fontSize: "18px",
+                    cursor: "pointer",
+                    display: "block",
+                    margin: "0 auto",
+                  }}
+                />
+                {tooltip?.id === row.id && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      right: "28px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "#ffffff",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: "8px",
+                      padding: "8px 12px",
+                      boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
+                      zIndex: 200,
+                      minWidth: "210px",
+                      whiteSpace: "nowrap",
+                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
+                      <span style={{ fontSize: "10px", color: "#9ca3af", minWidth: "110px" }}>Order Date &amp; Time</span>
+                      <span style={{ fontSize: "11px", color: "#374151" }}>:</span>
+                      <span style={{ fontSize: "11px", fontWeight: 500, color: "#111827" }}>
+                        {row.orderDate || "-"} | {row.orderTime || "-"}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </td>
           </tr>
         ))}

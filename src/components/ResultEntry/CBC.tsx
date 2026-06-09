@@ -300,6 +300,8 @@ if (activeTab === "Y Chromosome Microdeletion") {
     <Chromosome
       onBack={() => setActiveTab("")}
       data={data}
+      initialMode={isEdit ? "edit" : "view"}
+      startInEditor
     />
   );
 }
@@ -463,7 +465,15 @@ if (activeTab === "Y Chromosome Microdeletion") {
 
       <div className="cbc-tabs">
         {testTabs.map((tab, i) => (
-          <button key={i} className={`cbc-tab ${tab === "(CBC) Complete Blood Count" ? "active" : ""}`}>
+          <button
+            key={i}
+            className={`cbc-tab ${tab === "(CBC) Complete Blood Count" ? "active" : ""}`}
+            onClick={() => {
+              if (tab === "Y Chromosome Microdeletion") {
+                setActiveTab(tab);
+              }
+            }}
+          >
             {tab}
           </button>
         ))}

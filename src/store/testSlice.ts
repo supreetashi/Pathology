@@ -27,7 +27,11 @@ const initialState: TestState = {
 // Helpers
 // =====================================================
 
-const getResults = (payload: any) => payload?.results ?? [];
+// Handles both flat array (all-pages fetch) and paginated { results: [] }
+const getResults = (payload: any): any[] => {
+  if (Array.isArray(payload)) return payload;
+  return payload?.results ?? [];
+};
 
 // =====================================================
 // Thunks — Tests

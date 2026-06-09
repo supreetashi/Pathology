@@ -10,9 +10,21 @@ import { pathologyProfileApi } from "../services/pathologyprofile.api";
 // Initial Redux state
 const initialState: PathologyProfileState = {
     pathologyProfiles: [],
+    serviceNames: [],
     loading: false,
     error: null,
 };
+
+// =====================================================
+// API calls to fetch and create Pathology Profile data
+// =====================================================
+export const fetchServiceNameLists = createAsyncThunk(
+    "pathologyProfile/fetchServiceNameLists",
+    async () => {
+        const res = await pathologyProfileApi.getServiceNameLists();
+        return res.data.results;
+    },
+);
 
 // =====================================================
 // API calls to fetch and create Pathology Profile data
@@ -21,7 +33,7 @@ export const fetchPathologyProfiles = createAsyncThunk(
     "pathologyProfile/fetchPathologyProfiles",
     async () => {
         const res = await pathologyProfileApi.getPathologyProfiles();
-        return res.data;
+        return res.data.results;
     },
 );
 
@@ -48,7 +60,7 @@ const pathologyProfileSlice = createSlice({
             const pathologyProfile = state.pathologyProfiles.find((item) => item.id === action.payload);
 
             if (pathologyProfile) {
-                pathologyProfile.isActive = !pathologyProfile.isActive;
+                pathologyProfile.status = !pathologyProfile.status;
             }
         },
     },
@@ -65,9 +77,26 @@ const pathologyProfileSlice = createSlice({
                 state.loading = false;
                 state.pathologyProfiles = action.payload.map((item: any) => ({
                     id: item.id,
-                    name: item.sample_code,
-                    tests: item.sample_name,
-                    isActive: item.status,
+                    service_name: item.service_name,
+                    tests: item.tests,
+                    status: item.status,
+                }));
+            })
+            .addCase(fetchServiceNameLists.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchServiceNameLists.rejected, (state) => {
+                state.loading = false;
+                state.error = "Failed to load Service Lists";
+            })
+            .addCase(fetchServiceNameLists.fulfilled, (state, action) => {
+                state.loading = false;
+                state.serviceNames = action.payload.map((item: any) => ({
+                    id: item.id,
+                    identifier: item.identifier,
+                    name: item.name,
+                    tag_name: item.tag_name,
+                    icon_url: item.icon_url,
                 }));
             })
     },
@@ -84,3 +113,4 @@ export default pathologyProfileSlice.reducer;
 // Selectors
 // =====================================================
 export const selectPathologyProfiles = (state: RootState) => state.pathologyProfile.pathologyProfiles;
+export const selectServiceNames = (state: RootState) => state.pathologyProfile.serviceNames;
