@@ -1,5 +1,4 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-
 import type {
   CreateParameterPayload,
   UpdateParameterPayload,
@@ -9,10 +8,6 @@ import type {
 } from "../types/parameter.types";
 import type { RootState } from ".";
 import { parameterApi } from "../services/parameter.api";
-
-// =====================================================
-// Initial State
-// =====================================================
 
 const initialState: ParameterState = {
   parameters: [],
@@ -29,7 +24,7 @@ export const fetchParameters = createAsyncThunk(
   "parameter/fetchParameters",
   async () => {
     const res = await parameterApi.getParameters();
-    return res.data;
+    return res.data; // flat array
   },
 );
 
@@ -38,7 +33,7 @@ export const createParameter = createAsyncThunk(
   async (payload: CreateParameterPayload, { dispatch }) => {
     const res = await parameterApi.createParameter(payload);
     dispatch(fetchParameters());
-    return res.data; // ← return created parameter
+    return res.data;
   },
 );
 
@@ -52,9 +47,7 @@ export const updateParameter = createAsyncThunk(
 
 export const toggleParameterStatus = createAsyncThunk(
   "parameter/toggleParameterStatus",
-  async ({ id, status }: { id: string; status: boolean }, 
-    { dispatch, getState },
-  ) => {
+  async ({ id, status }: { id: string; status: boolean }, { dispatch, getState }) => {
     const state = getState() as RootState;
     const param = state.parameter.parameters.find((p) => p.id === id);
     if (!param) return;
@@ -85,9 +78,10 @@ export const deleteParameter = createAsyncThunk(
 
 export const fetchReferenceRanges = createAsyncThunk(
   "parameter/fetchReferenceRanges",
-  async (parameterId?: string) => {
+  async (parameterId: string) => {
     const res = await parameterApi.getReferenceRanges(parameterId);
-    return res.data;
+    // ranges are nested inside parameter object
+    return res.data.reference_ranges ?? [];
   },
 );
 
@@ -109,10 +103,8 @@ export const updateReferenceRange = createAsyncThunk(
 
 export const deleteReferenceRange = createAsyncThunk(
   "parameter/deleteReferenceRange",
-  async ({ id, parameterId }: { id: number; parameterId: string },
-    { dispatch },
-  ) => {
-    await parameterApi.deleteReferenceRange(id);
+  async ({ id, parameterId }: { id: number; parameterId: string }, { dispatch }) => {
+    await parameterApi.deleteReferenceRange(id, parameterId);
     dispatch(fetchReferenceRanges(parameterId));
   },
 );
@@ -137,22 +129,24 @@ const parameterSlice = createSlice({
         state.error = "Failed to load parameters";
       })
       .addCase(fetchParameters.fulfilled, (state, action) => {
-        state.loading = false;
-        state.parameters = action.payload.results.map((item: any) => ({
-          id: item.id,
-          code: item.parameter_code,
-          name: item.parameter_name,
-          printName: item.parameter_print_name ?? "",
-          typeOfValue: item.type_of_value ?? "NUMERIC",
-          unit: item.unit ?? "",
-          deltaCheckPercentage: item.delta_check_percentage ?? "",
-          techniqueUsed: item.technique_used ?? "",
-          executionCalendarLinking: item.execution_calendar_linking ?? "",
-          formula: item.formula ?? "",
-          skipNumericResultEntry: item.skip_numeric_result_entry ?? false,
-          isActive: item.status ?? true,
-        }));
-      })
+  state.loading = false;
+  const payload = action.payload as any;
+  const items = Array.isArray(payload) ? payload : payload?.results ?? [];
+  state.parameters = items.map((item: any) => ({
+    id: item.id,
+    code: item.parameter_code,
+    name: item.parameter_name,
+    printName: item.parameter_print_name ?? "",
+    typeOfValue: item.type_of_value ?? "NUMERIC",
+    unit: item.unit ?? "",
+    deltaCheckPercentage: item.delta_check_percentage ?? "",
+    techniqueUsed: item.technique_used ?? "",
+    executionCalendarLinking: item.execution_calendar_linking ?? "",
+    formula: item.formula ?? "",
+    skipNumericResultEntry: item.skip_numeric_result_entry ?? false,
+    isActive: item.status ?? true,
+  }));
+})
 
       // ── Reference Ranges ─────────────────────────────
       .addCase(fetchReferenceRanges.pending, (state) => {
@@ -165,7 +159,7 @@ const parameterSlice = createSlice({
       })
       .addCase(fetchReferenceRanges.fulfilled, (state, action) => {
         state.loading = false;
-        const items = action.payload?.results ?? action.payload ?? []; // ← handle both
+        const items = Array.isArray(action.payload) ? action.payload : [];
         state.referenceRanges = items.map((item: any) => ({
           id: item.id,
           parameterId: item.parameter,
@@ -195,14 +189,7 @@ const parameterSlice = createSlice({
 
 export default parameterSlice.reducer;
 
-// =====================================================
-// Selectors
-// =====================================================
-
-export const selectParameters = (state: RootState) =>
-  state.parameter.parameters;
-export const selectReferenceRanges = (state: RootState) =>
-  state.parameter.referenceRanges;
-export const selectParameterLoading = (state: RootState) =>
-  state.parameter.loading;
+export const selectParameters = (state: RootState) => state.parameter.parameters;
+export const selectReferenceRanges = (state: RootState) => state.parameter.referenceRanges;
+export const selectParameterLoading = (state: RootState) => state.parameter.loading;
 export const selectParameterError = (state: RootState) => state.parameter.error;
