@@ -2,7 +2,22 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CloseIcon from "@mui/icons-material/Close";
-import type { SampleRow } from "./ReceiveMockData";
+
+type SampleRow = {
+  id: number;
+  shipDate: string;
+  shipTime: string;
+  shipmentNo: string;
+  sampleNo: string;
+  type: string;
+  testCode: string;
+  testName: string;
+  serviceName: string;
+  patientName: string;
+  age: number;
+  patientCode: string;
+  gender: string;
+};
 
 type RejectSpecimenModalProps = {
   isOpen: boolean;
@@ -17,9 +32,7 @@ function RejectSpecimenModal({
   onClose,
   onConfirm,
 }: RejectSpecimenModalProps) {
-  if (!isOpen) {
-    return null;
-  }
+  if (!isOpen) return null;
 
   return (
     <div className="receive-modal-overlay" role="presentation" onClick={onClose}>
@@ -70,7 +83,10 @@ function RejectSpecimenModal({
         <div className="receive-modal-field remark-field">
           <label>Remark</label>
           <div className="receive-modal-input-wrap">
-            <input type="text" defaultValue="Sample Is Damaged (Hemolysis) Or Clotted" />
+            <input
+              type="text"
+              defaultValue="Sample Is Damaged (Hemolysis) Or Clotted"
+            />
           </div>
         </div>
 
@@ -79,7 +95,9 @@ function RejectSpecimenModal({
           <span>Resend For New Sample</span>
         </label>
 
-        <h4 className="receive-modal-section-title">RECEIVE SPECIMEN DETAILS ({rows.length})</h4>
+        <h4 className="receive-modal-section-title">
+          RECEIVE SPECIMEN DETAILS ({rows.length})
+        </h4>
 
         <div className="receive-modal-table-shell">
           <table className="receive-modal-table">
@@ -129,10 +147,18 @@ function RejectSpecimenModal({
         </div>
 
         <div className="receive-modal-actions">
-          <button type="button" className="receive-modal-cancel" onClick={onClose}>
+          <button
+            type="button"
+            className="receive-modal-cancel"
+            onClick={onClose}
+          >
             Cancel
           </button>
-          <button type="button" className="receive-modal-confirm" onClick={onConfirm}>
+          <button
+            type="button"
+            className="receive-modal-confirm"
+            onClick={onConfirm}
+          >
             Reject
           </button>
         </div>

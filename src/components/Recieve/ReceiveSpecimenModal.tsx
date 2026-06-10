@@ -2,7 +2,22 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CloseIcon from "@mui/icons-material/Close";
-import type { SampleRow } from "./ReceiveMockData";
+
+type SampleRow = {
+  id: number;
+  shipDate: string;
+  shipTime: string;
+  shipmentNo: string;
+  sampleNo: string;
+  type: string;
+  testCode: string;
+  testName: string;
+  serviceName: string;
+  patientName: string;
+  age: number;
+  patientCode: string;
+  gender: string;
+};
 
 type ReceiveSpecimenModalProps = {
   isOpen: boolean;
@@ -70,7 +85,10 @@ function ReceiveSpecimenModal({
         <div className="receive-modal-field remark-field">
           <label>Remark</label>
           <div className="receive-modal-input-wrap">
-            <input type="text" defaultValue="Sample Is Collected In The Correct Container" />
+            <input
+              type="text"
+              defaultValue="Sample Is Collected In The Correct Container"
+            />
           </div>
         </div>
 
@@ -79,7 +97,9 @@ function ReceiveSpecimenModal({
           <span>Sub-Optimal</span>
         </label>
 
-        <h4 className="receive-modal-section-title">RECEIVE SPECIMEN DETAILS ({rows.length})</h4>
+        <h4 className="receive-modal-section-title">
+          RECEIVE SPECIMEN DETAILS ({rows.length})
+        </h4>
 
         <div className="receive-modal-table-shell">
           <table className="receive-modal-table">
@@ -129,10 +149,18 @@ function ReceiveSpecimenModal({
         </div>
 
         <div className="receive-modal-actions">
-          <button type="button" className="receive-modal-cancel" onClick={onClose}>
+          <button
+            type="button"
+            className="receive-modal-cancel"
+            onClick={onClose}
+          >
             Cancel
           </button>
-          <button type="button" className="receive-modal-confirm" onClick={onConfirm}>
+          <button
+            type="button"
+            className="receive-modal-confirm"
+            onClick={onConfirm}
+          >
             Receive
           </button>
         </div>
