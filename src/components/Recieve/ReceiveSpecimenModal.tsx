@@ -1,3 +1,4 @@
+import { useRef, useState } from "react";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -23,18 +24,31 @@ type ReceiveSpecimenModalProps = {
   isOpen: boolean;
   rows: SampleRow[];
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: (payload: {
+    receiveDate: string;
+    receiveTime: string;
+    remark: string;
+    subOptimal: boolean;
+  }) => void;
 };
 
-function ReceiveSpecimenModal({
-  isOpen,
-  rows,
-  onClose,
-  onConfirm,
-}: ReceiveSpecimenModalProps) {
-  if (!isOpen) {
-    return null;
-  }
+function ReceiveSpecimenModal({ isOpen, rows, onClose, onConfirm }: ReceiveSpecimenModalProps) {
+  const today = new Date();
+  const [receiveDate, setReceiveDate] = useState(today.toISOString().split("T")[0]);
+  const [receiveTime, setReceiveTime] = useState(today.toTimeString().slice(0, 5));
+  const [remark, setRemark] = useState("Sample Is Collected In The Correct Container");
+  const [subOptimal, setSubOptimal] = useState(false);
+
+  const dateInputRef = useRef<HTMLInputElement>(null);
+  const timeInputRef = useRef<HTMLInputElement>(null);
+
+  if (!isOpen) return null;
+
+  const formatDateDisplay = (iso: string) => {
+    if (!iso) return "";
+    const [y, m, d] = iso.split("-");
+    return `${d}/${m}/${y}`;
+  };
 
   return (
     <div className="receive-modal-overlay" role="presentation" onClick={onClose}>
@@ -43,7 +57,7 @@ function ReceiveSpecimenModal({
         role="dialog"
         aria-modal="true"
         aria-label="Receive Specimen"
-        onClick={(event) => event.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="receive-modal-header">
           <h3>Receive Specimen</h3>
@@ -58,19 +72,47 @@ function ReceiveSpecimenModal({
         </div>
 
         <div className="receive-modal-form-grid">
-          <div className="receive-modal-field disabled">
+          <div className="receive-modal-field">
             <label>Sample Receive Date</label>
             <div className="receive-modal-input-wrap">
-              <input type="text" value="13/03/2026" readOnly />
-              <CalendarMonthIcon className="field-icon" fontSize="small" />
+              <input
+                type="text"
+                value={formatDateDisplay(receiveDate)}
+                readOnly
+                style={{ cursor: "pointer" }}
+                onClick={() => dateInputRef.current?.showPicker()}
+              />
+              <input
+                ref={dateInputRef}
+                type="date"
+                value={receiveDate}
+                onChange={(e) => setReceiveDate(e.target.value)}
+                style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: 0 }}
+              />
+              <CalendarMonthIcon
+                className="field-icon"
+                fontSize="small"
+                style={{ cursor: "pointer" }}
+                onClick={() => dateInputRef.current?.showPicker()}
+              />
             </div>
           </div>
 
           <div className="receive-modal-field">
             <label>Sample Receive Time</label>
             <div className="receive-modal-input-wrap">
-              <input type="text" defaultValue="11:30" />
-              <AccessTimeIcon className="field-icon" fontSize="small" />
+              <input
+                ref={timeInputRef}
+                type="time"
+                value={receiveTime}
+                onChange={(e) => setReceiveTime(e.target.value)}
+              />
+              <AccessTimeIcon
+                className="field-icon"
+                fontSize="small"
+                style={{ cursor: "pointer" }}
+                onClick={() => timeInputRef.current?.showPicker()}
+              />
             </div>
           </div>
 
@@ -87,14 +129,19 @@ function ReceiveSpecimenModal({
           <div className="receive-modal-input-wrap">
             <input
               type="text"
-              defaultValue="Sample Is Collected In The Correct Container"
+              value={remark}
+              onChange={(e) => setRemark(e.target.value)}
             />
           </div>
         </div>
 
-        <label className="sub-optimal-toggle">
-          <CheckCircleIcon fontSize="small" />
-          <span>Sub-Optimal</span>
+        <label className="sub-optimal-toggle" style={{ cursor: "pointer" }}>
+          <CheckCircleIcon
+            fontSize="small"
+            style={{ color: subOptimal ? "#10b981" : "#9ca3af" }}
+            onClick={() => setSubOptimal((prev) => !prev)}
+          />
+          <span onClick={() => setSubOptimal((prev) => !prev)}>Sub-Optimal</span>
         </label>
 
         <h4 className="receive-modal-section-title">
@@ -135,12 +182,8 @@ function ReceiveSpecimenModal({
                     <div className="cell-primary">{row.serviceName}</div>
                   </td>
                   <td>
-                    <div className="patient-primary">
-                      {row.patientName} | {row.age}
-                    </div>
-                    <div className="patient-secondary">
-                      {row.patientCode} | {row.gender}
-                    </div>
+                    <div className="patient-primary">{row.patientName} | {row.age}</div>
+                    <div className="patient-secondary">{row.patientCode} | {row.gender}</div>
                   </td>
                 </tr>
               ))}
@@ -149,17 +192,13 @@ function ReceiveSpecimenModal({
         </div>
 
         <div className="receive-modal-actions">
-          <button
-            type="button"
-            className="receive-modal-cancel"
-            onClick={onClose}
-          >
+          <button type="button" className="receive-modal-cancel" onClick={onClose}>
             Cancel
           </button>
           <button
             type="button"
             className="receive-modal-confirm"
-            onClick={onConfirm}
+            onClick={() => onConfirm({ receiveDate, receiveTime, remark, subOptimal })}
           >
             Receive
           </button>
