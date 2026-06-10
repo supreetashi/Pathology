@@ -79,7 +79,7 @@ function toSampleRow(r: ReceiveSample): SampleRow {
     testName: r.test_name,
     serviceName: r.service_name,
     patientName: r.patient_name,
-    age: r.patient_age,
+    age: Number(r.patient_age) || 0,
     patientCode: r.patient_code,
     gender: r.patient_gender,
   };
