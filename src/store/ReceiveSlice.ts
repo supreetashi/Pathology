@@ -7,7 +7,7 @@ import type {
   RejectSamplePayload,
 } from "../types/Receive.types";
 import type { RootState } from ".";
-import { receiveApi } from "../services/Receive.api";
+import { receiveApi } from "../services/receive.api";
 
 // =====================================================
 // Raw API response shape (snake_case from Django)

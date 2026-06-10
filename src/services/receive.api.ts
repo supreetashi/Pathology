@@ -2,7 +2,7 @@ import {
   CreateReceiveSamplePayload,
   ReceiveSamplePayload,
   RejectSamplePayload,
-} from "../types/receive.types";
+} from "../types/Receive.types";
 import { http } from "./http";
 
 export interface ReceiveSample {

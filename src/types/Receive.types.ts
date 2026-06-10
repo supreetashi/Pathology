@@ -1,6 +1,37 @@
-// =====================================================
-// UI Models
-// =====================================================
+export interface CreateReceiveSamplePayload {
+  shipment_no?: string;
+  specimen_no?: string;
+  specimen_type?: string;
+  test_code?: string;
+  test_name?: string;
+  service_name?: string;
+  patient_name?: string;
+  patient_age?: string | number;
+  patient_code?: string;
+  patient_gender?: string;
+  ship_date?: string;
+  ship_time?: string;
+  status?: string;
+  [key: string]: unknown;
+}
+
+export interface ReceiveSamplePayload {
+  received_at?: string;
+  received_time?: string;
+  accepted_by?: string;
+  remark?: string;
+  is_sub_optimal?: boolean;
+  [key: string]: unknown;
+}
+
+export interface RejectSamplePayload {
+  rejected_at?: string;
+  rejected_time?: string;
+  rejected_by?: string;
+  remark?: string;
+  resend_for_new_sample?: boolean;
+  [key: string]: unknown;
+}
 
 export interface ReceiveSampleItem {
   id: number;
@@ -28,52 +59,10 @@ export interface ReceiveSampleItem {
   deletedAt: string | null;
 }
 
-// =====================================================
-// Redux State
-// =====================================================
-
 export interface ReceiveState {
   samples: ReceiveSampleItem[];
   activityLogs: ReceiveSampleItem[];
   loading: boolean;
   activityLoading: boolean;
   error: string | null;
-}
-
-// =====================================================
-// API Request Payloads
-// =====================================================
-
-export interface CreateReceiveSamplePayload {
-  ship_date: string;
-  ship_time: string;
-  shipment_no: string;
-  specimen_no: string;
-  specimen_type: string;
-  test_code: string;
-  test_name: string;
-  service_name: string;
-  patient_name: string;
-  patient_age: number;
-  patient_gender: string;
-  patient_code: string;
-  shipment_received?: number | null;
-  status?: string;
-}
-
-export interface ReceiveSamplePayload {
-  receive_date: string;
-  receive_time: string;
-  accepted_by: string;
-  remark?: string;
-  sub_optimal?: boolean;
-  shipment_received?: number | null;
-}
-
-export interface RejectSamplePayload {
-  receive_date: string;
-  receive_time: string;
-  rejected_by: string;
-  remark?: string;
-  resend_new_sample?: boolean;
 }
