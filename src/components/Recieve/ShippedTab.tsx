@@ -18,7 +18,7 @@ type SampleRow = {
 };
 
 type ShippedTabProps = {
-  rows: SampleRow[];
+  data: SampleRow[];
   selectedIds: number[];
   allSelected: boolean;
   onToggleAllRows: () => void;
@@ -26,7 +26,7 @@ type ShippedTabProps = {
 };
 
 function ShippedTab({
-  rows,
+  data,
   selectedIds,
   allSelected,
   onToggleAllRows,
@@ -55,7 +55,7 @@ function ShippedTab({
       </thead>
 
       <tbody>
-        {rows.map((row) => {
+        {data.map((row) => {
           const selected = selectedIds.includes(row.id);
           return (
             <tr key={row.id}>
@@ -118,7 +118,7 @@ function ShippedTab({
           );
         })}
 
-        {rows.length === 0 && (
+        {data.length === 0 && (
           <tr>
             <td colSpan={8} className="empty-row">
               No matching records found.

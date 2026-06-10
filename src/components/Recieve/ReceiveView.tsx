@@ -27,6 +27,7 @@ import "../../styles/Recieve/ReceiveView.css";
 type ReceiveTab = "shipped" | "received" | "rejected" | "activity";
 
 const ITEMS_PER_PAGE = 10;
+
 const EMPTY_SHIPPED_FILTERS: ShippedFilterValues = {
   fromDate: "",
   toDate: "",
@@ -34,6 +35,7 @@ const EMPTY_SHIPPED_FILTERS: ShippedFilterValues = {
   testName: "",
   service: "",
 };
+
 const EMPTY_ACTIVITY_FILTERS: ActivityLogFilterValues = {
   dateFilterType: "ship",
   fromDate: "",
@@ -89,6 +91,21 @@ function toSampleRow(r: ReceiveSample) {
 
 type SampleRow = ReturnType<typeof toSampleRow>;
 
+// ── Payload types ────────────────────────────────────────────
+type ReceivePayload = {
+  receiveDate: string;
+  receiveTime: string;
+  remark: string;
+  subOptimal: boolean;
+};
+
+type RejectPayload = {
+  rejectDate: string;
+  rejectTime: string;
+  remark: string;
+  resend: boolean;
+};
+
 function ReceiveView() {
   const [shippedData, setShippedData] = useState<SampleRow[]>([]);
   const [receivedData, setReceivedData] = useState<SampleRow[]>([]);
@@ -105,14 +122,9 @@ function ReceiveView() {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showShippedFilterModal, setShowShippedFilterModal] = useState(false);
   const [showActivityFilterModal, setShowActivityFilterModal] = useState(false);
-  const [shippedFilters, setShippedFilters] = useState<ShippedFilterValues>(
-    EMPTY_SHIPPED_FILTERS,
-  );
-  const [receivedFilters, setReceivedFilters] = useState<ShippedFilterValues>(
-    EMPTY_SHIPPED_FILTERS,
-  );
-  const [activityFilters, setActivityFilters] =
-    useState<ActivityLogFilterValues>(EMPTY_ACTIVITY_FILTERS);
+  const [shippedFilters, setShippedFilters] = useState<ShippedFilterValues>(EMPTY_SHIPPED_FILTERS);
+  const [receivedFilters, setReceivedFilters] = useState<ShippedFilterValues>(EMPTY_SHIPPED_FILTERS);
+  const [activityFilters, setActivityFilters] = useState<ActivityLogFilterValues>(EMPTY_ACTIVITY_FILTERS);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -122,15 +134,9 @@ function ReceiveView() {
         getAllSamples(),
         getActivityLogSamples(),
       ]);
-      setShippedData(
-        allSamples.filter((r) => r.status === "Shipped").map(toSampleRow),
-      );
-      setReceivedData(
-        allSamples.filter((r) => r.status === "Received").map(toSampleRow),
-      );
-      setRejectedData(
-        allSamples.filter((r) => r.status === "Rejected").map(toSampleRow),
-      );
+      setShippedData(allSamples.filter((r) => r.status === "Shipped").map(toSampleRow));
+      setReceivedData(allSamples.filter((r) => r.status === "Received").map(toSampleRow));
+      setRejectedData(allSamples.filter((r) => r.status === "Rejected").map(toSampleRow));
       setActivityData(activitySamples.map(toSampleRow));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load data");
@@ -143,8 +149,7 @@ function ReceiveView() {
     fetchData();
   }, [fetchData]);
 
-  const filterSourceRows =
-    activeTab === "received" ? receivedData : shippedData;
+  const filterSourceRows = activeTab === "received" ? receivedData : shippedData;
 
   const specimenOptions = useMemo(
     () => Array.from(new Set(filterSourceRows.map((row) => row.type))),
@@ -179,12 +184,7 @@ function ReceiveView() {
       month = Number(parts[1]) - 1;
       day = Number(parts[2]);
     } else return null;
-    if (
-      !Number.isFinite(day) ||
-      !Number.isFinite(month) ||
-      !Number.isFinite(year)
-    )
-      return null;
+    if (!Number.isFinite(day) || !Number.isFinite(month) || !Number.isFinite(year)) return null;
     const parsed = new Date(year, month, day);
     if (Number.isNaN(parsed.getTime())) return null;
     parsed.setHours(0, 0, 0, 0);
@@ -225,20 +225,16 @@ function ReceiveView() {
         const toDate = parseDate(activityFilters.toDate);
         return (
           matchesSearch &&
-          (!fromDate ||
-            (activityDate !== null && activityDate >= fromDate)) &&
+          (!fromDate || (activityDate !== null && activityDate >= fromDate)) &&
           (!toDate || (activityDate !== null && activityDate <= toDate)) &&
           (!activityFilters.service ||
-            row.serviceName.toLowerCase() ===
-              activityFilters.service.toLowerCase())
+            row.serviceName.toLowerCase() === activityFilters.service.toLowerCase())
         );
       }
 
-      if (activeTab !== "shipped" && activeTab !== "received")
-        return matchesSearch;
+      if (activeTab !== "shipped" && activeTab !== "received") return matchesSearch;
 
-      const activeFilters =
-        activeTab === "received" ? receivedFilters : shippedFilters;
+      const activeFilters = activeTab === "received" ? receivedFilters : shippedFilters;
       const rowDate = parseDate(row.shipDate);
       const fromDate = parseDate(activeFilters.fromDate);
       const toDate = parseDate(activeFilters.toDate);
@@ -248,29 +244,16 @@ function ReceiveView() {
         (!fromDate || (rowDate !== null && rowDate >= fromDate)) &&
         (!toDate || (rowDate !== null && rowDate <= toDate)) &&
         (!activeFilters.specimenType ||
-          row.type.toLowerCase() ===
-            activeFilters.specimenType.toLowerCase()) &&
+          row.type.toLowerCase() === activeFilters.specimenType.toLowerCase()) &&
         (!activeFilters.testName ||
-          row.testName.toLowerCase() ===
-            activeFilters.testName.toLowerCase()) &&
+          row.testName.toLowerCase() === activeFilters.testName.toLowerCase()) &&
         (!activeFilters.service ||
-          row.serviceName.toLowerCase() ===
-            activeFilters.service.toLowerCase())
+          row.serviceName.toLowerCase() === activeFilters.service.toLowerCase())
       );
     });
-  }, [
-    sourceRows,
-    searchValue,
-    activeTab,
-    shippedFilters,
-    receivedFilters,
-    activityFilters,
-  ]);
+  }, [sourceRows, searchValue, activeTab, shippedFilters, receivedFilters, activityFilters]);
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredRows.length / ITEMS_PER_PAGE),
-  );
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / ITEMS_PER_PAGE));
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const pagedRows = filteredRows.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
@@ -288,13 +271,23 @@ function ReceiveView() {
     [shippedData, selectedIds],
   );
 
-  const handleReceiveConfirm = async () => {
+  // ── Confirm handlers with payload ───────────────────────────
+  const handleReceiveConfirm = async (payload: ReceivePayload) => {
     if (selectedIds.length === 0) {
       setShowReceiveModal(false);
       return;
     }
     try {
-      await Promise.all(selectedIds.map((id) => receiveSample(id)));
+      await Promise.all(
+        selectedIds.map((id) =>
+          receiveSample(id, {
+            receive_date: payload.receiveDate,
+            receive_time: payload.receiveTime + ":00",
+            remark: payload.remark,
+            sub_optimal: payload.subOptimal,
+          })
+        )
+      );
       setSelectedIds([]);
       setShowReceiveModal(false);
       setActiveTab("received");
@@ -305,13 +298,22 @@ function ReceiveView() {
     }
   };
 
-  const handleRejectConfirm = async () => {
+  const handleRejectConfirm = async (payload: RejectPayload) => {
     if (selectedIds.length === 0) {
       setShowRejectModal(false);
       return;
     }
     try {
-      await Promise.all(selectedIds.map((id) => rejectSample(id)));
+      await Promise.all(
+        selectedIds.map((id) =>
+          rejectSample(id, {
+            reject_date: payload.rejectDate,
+            reject_time: payload.rejectTime + ":00",
+            remark: payload.remark,
+            resend: payload.resend,
+          })
+        )
+      );
       setSelectedIds([]);
       setShowRejectModal(false);
       setActiveTab("rejected");
@@ -324,23 +326,19 @@ function ReceiveView() {
 
   const toggleAllRows = () => {
     if (allSelected) {
-      setSelectedIds((prev) =>
-        prev.filter((id) => !pagedRows.some((row) => row.id === id)),
-      );
+      setSelectedIds((prev) => prev.filter((id) => !pagedRows.some((row) => row.id === id)));
       return;
     }
     setSelectedIds((prev) => {
       const next = [...prev];
-      pagedRows.forEach((row) => {
-        if (!next.includes(row.id)) next.push(row.id);
-      });
+      pagedRows.forEach((row) => { if (!next.includes(row.id)) next.push(row.id); });
       return next;
     });
   };
 
   const toggleSingleRow = (id: number) =>
     setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     );
 
   const renderActiveTab = () => {
@@ -352,7 +350,7 @@ function ReceiveView() {
       return <ActivityLogsTab rows={pagedRows} rowOffset={startIndex} />;
     return (
       <ShippedTab
-        rows={pagedRows}
+        data={pagedRows}
         selectedIds={selectedIds}
         allSelected={allSelected}
         onToggleAllRows={toggleAllRows}
@@ -366,10 +364,7 @@ function ReceiveView() {
       <div className="receive-header">
         <h2 className="receive-title">Sample List ({filteredRows.length})</h2>
         <div className="receive-header-actions">
-          <label
-            className="receive-search-box"
-            aria-label="Search in receive table"
-          >
+          <label className="receive-search-box" aria-label="Search in receive table">
             <SearchIcon className="receive-search-icon" fontSize="small" />
             <input
               type="text"
@@ -410,13 +405,9 @@ function ReceiveView() {
               key={tab}
               aria-selected={isActive}
               className={`receive-tab ${isActive ? "active" : ""}`}
-              onClick={() => {
-                setActiveTab(tab);
-                setCurrentPage(1);
-              }}
+              onClick={() => { setActiveTab(tab); setCurrentPage(1); }}
             >
-              {label}
-              {withCount ? ` (${tabCounts[tab]})` : ""}
+              {label}{withCount ? ` (${tabCounts[tab]})` : ""}
             </button>
           );
         })}
@@ -424,9 +415,7 @@ function ReceiveView() {
 
       <div className="receive-table-shell">
         {loading && (
-          <p style={{ textAlign: "center", padding: "2rem", color: "#666" }}>
-            Loading…
-          </p>
+          <p style={{ textAlign: "center", padding: "2rem", color: "#666" }}>Loading…</p>
         )}
         {error && !loading && (
           <p style={{ textAlign: "center", padding: "2rem", color: "#d32f2f" }}>
@@ -434,12 +423,7 @@ function ReceiveView() {
             <button
               type="button"
               onClick={fetchData}
-              style={{
-                textDecoration: "underline",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-              }}
+              style={{ textDecoration: "underline", background: "none", border: "none", cursor: "pointer" }}
             >
               Retry
             </button>
@@ -463,18 +447,16 @@ function ReceiveView() {
             >
               <ChevronLeftIcon fontSize="small" />
             </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-              (pageNo) => (
-                <button
-                  type="button"
-                  key={pageNo}
-                  className={`page-number ${currentPage === pageNo ? "active" : ""}`}
-                  onClick={() => setCurrentPage(pageNo)}
-                >
-                  {pageNo}
-                </button>
-              ),
-            )}
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNo) => (
+              <button
+                type="button"
+                key={pageNo}
+                className={`page-number ${currentPage === pageNo ? "active" : ""}`}
+                onClick={() => setCurrentPage(pageNo)}
+              >
+                {pageNo}
+              </button>
+            ))}
             <button
               type="button"
               className="pagination-arrow"
@@ -524,9 +506,7 @@ function ReceiveView() {
 
       <ShippedFilterModal
         isOpen={showShippedFilterModal}
-        initialValues={
-          activeTab === "received" ? receivedFilters : shippedFilters
-        }
+        initialValues={activeTab === "received" ? receivedFilters : shippedFilters}
         specimenOptions={specimenOptions}
         testOptions={testOptions}
         serviceOptions={serviceOptions}
@@ -538,8 +518,7 @@ function ReceiveView() {
           setShowShippedFilterModal(false);
         }}
         onClear={() => {
-          if (activeTab === "received")
-            setReceivedFilters(EMPTY_SHIPPED_FILTERS);
+          if (activeTab === "received") setReceivedFilters(EMPTY_SHIPPED_FILTERS);
           else setShippedFilters(EMPTY_SHIPPED_FILTERS);
           setCurrentPage(1);
           setShowShippedFilterModal(false);
