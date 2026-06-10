@@ -39,6 +39,40 @@ interface RawReceiveSample {
   deleted_at: string | null;
 }
 
+// Raw shape returned by /shipped-shipment/
+interface RawShippedShipment {
+  id: number;
+  ship_date: string;
+  shipment_no: string;
+  ship_to: string;
+  pending_shipment: {
+    id: number;
+    order_date: string;
+    sample_no: string | null;
+    sample_type: string;
+    test_code: string;
+    test_name: string;
+    service_name: string;
+    patient: {
+      id: number;
+      name: string;
+      age: number;
+      patient_code: string;
+      gender: string;
+    } | null;
+  } | null;
+}
+
+// Raw shape returned by /received-shipment/
+interface RawReceivedShipment {
+  id: number;
+  receive_date: string;
+  received_no: string;
+  status: "Accepted" | "Rejected";
+  result: string;
+  shipped_shipment: RawShippedShipment | null;
+}
+
 // =====================================================
 // Helpers
 // =====================================================
@@ -68,6 +102,63 @@ function mapRaw(item: RawReceiveSample): ReceiveSampleItem {
     createdAt: item.created_at,
     deletedAt: item.deleted_at,
   };
+}
+
+function mapShipped(d: RawShippedShipment): RawReceiveSample {
+  const dt = d.ship_date ? new Date(d.ship_date) : null;
+  return {
+    id: d.id,
+    shipment_received: null,
+    ship_date: dt ? dt.toISOString().split("T")[0] : "",
+    ship_time: dt
+      ? dt.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })
+      : "",
+    shipment_no: d.shipment_no ?? "-",
+    specimen_no: d.pending_shipment?.sample_no ?? "-",
+    specimen_type: d.pending_shipment?.sample_type ?? "-",
+    test_code: d.pending_shipment?.test_code ?? "-",
+    test_name: d.pending_shipment?.test_name ?? "-",
+    service_name: d.pending_shipment?.service_name ?? "-",
+    patient_name: d.pending_shipment?.patient?.name ?? "-",
+    patient_age: d.pending_shipment?.patient?.age ?? 0,
+    patient_gender: d.pending_shipment?.patient?.gender ?? "-",
+    patient_code: d.pending_shipment?.patient?.patient_code ?? "-",
+    receive_date: null,
+    receive_time: null,
+    accepted_by: null,
+    remark: null,
+    sub_optimal: false,
+    status: "Shipped",
+    is_deleted: false,
+    created_at: d.ship_date ?? "",
+    deleted_at: null,
+  };
+}
+
+function mapReceived(d: RawReceivedShipment): RawReceiveSample {
+  const base = mapShipped(d.shipped_shipment ?? ({} as RawShippedShipment));
+  const receiveDt = d.receive_date ? new Date(d.receive_date) : null;
+  return {
+    ...base,
+    id: d.id,
+    status: d.status === "Rejected" ? "Rejected" : "Received",
+    receive_date: receiveDt ? receiveDt.toISOString().split("T")[0] : null,
+    receive_time: receiveDt
+      ? receiveDt.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })
+      : null,
+  };
+}
+
+function toArray<T>(response: unknown): T[] {
+  const payload = (response as { data?: unknown })?.data ?? response;
+  if (Array.isArray(payload)) return payload as T[];
+  if (payload && typeof payload === "object") {
+    if (Array.isArray((payload as { results?: unknown }).results))
+      return (payload as { results: T[] }).results;
+    if (Array.isArray((payload as { data?: unknown }).data))
+      return (payload as { data: T[] }).data;
+  }
+  return [];
 }
 
 function extractErrorMessage(data: unknown): string {
@@ -103,8 +194,13 @@ export const fetchReceiveSamples = createAsyncThunk(
   "receive/fetchSamples",
   async (_, { rejectWithValue }) => {
     try {
-      const res = await receiveApi.getSamples();
-      return res.data as RawReceiveSample[];
+      const [shippedRes, receivedRes] = await Promise.all([
+        receiveApi.getShippedSamples(),
+        receiveApi.getReceivedSamples(),
+      ]);
+      const shipped = toArray<RawShippedShipment>(shippedRes).map(mapShipped);
+      const received = toArray<RawReceivedShipment>(receivedRes).map(mapReceived);
+      return [...shipped, ...received];
     } catch (error: any) {
       return rejectWithValue(
         extractErrorMessage(error.response?.data) ?? "Failed to fetch samples",
@@ -115,10 +211,7 @@ export const fetchReceiveSamples = createAsyncThunk(
 
 export const createReceiveSample = createAsyncThunk(
   "receive/createSample",
-  async (
-    payload: CreateReceiveSamplePayload,
-    { dispatch, rejectWithValue },
-  ) => {
+  async (payload: CreateReceiveSamplePayload, { dispatch, rejectWithValue }) => {
     try {
       const res = await receiveApi.createSample(payload);
       await dispatch(fetchReceiveSamples());
@@ -174,11 +267,10 @@ export const fetchActivityLogs = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const res = await receiveApi.getActivityLogs();
-      return res.data as RawReceiveSample[];
+      return toArray<RawReceiveSample>(res);
     } catch (error: any) {
       return rejectWithValue(
-        extractErrorMessage(error.response?.data) ??
-          "Failed to fetch activity logs",
+        extractErrorMessage(error.response?.data) ?? "Failed to fetch activity logs",
       );
     }
   },
@@ -207,7 +299,6 @@ const receiveSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // ----- Fetch Samples -----
       .addCase(fetchReceiveSamples.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -221,22 +312,19 @@ const receiveSlice = createSlice({
         state.samples = action.payload.map(mapRaw);
       })
 
-      // ----- Fetch Activity Logs -----
       .addCase(fetchActivityLogs.pending, (state) => {
         state.activityLoading = true;
         state.error = null;
       })
       .addCase(fetchActivityLogs.rejected, (state, action) => {
         state.activityLoading = false;
-        state.error =
-          (action.payload as string) ?? "Failed to load activity logs";
+        state.error = (action.payload as string) ?? "Failed to load activity logs";
       })
       .addCase(fetchActivityLogs.fulfilled, (state, action) => {
         state.activityLoading = false;
         state.activityLogs = action.payload.map(mapRaw);
       })
 
-      // ----- Error cases -----
       .addCase(createReceiveSample.rejected, (state, action) => {
         state.error = (action.payload as string) ?? "Failed to create sample";
       })
@@ -258,14 +346,11 @@ export default receiveSlice.reducer;
 // Selectors
 // =====================================================
 export const selectReceiveSamples = (state: RootState) => state.receive.samples;
-export const selectActivityLogs = (state: RootState) =>
-  state.receive.activityLogs;
+export const selectActivityLogs = (state: RootState) => state.receive.activityLogs;
 export const selectReceiveLoading = (state: RootState) => state.receive.loading;
-export const selectActivityLoading = (state: RootState) =>
-  state.receive.activityLoading;
+export const selectActivityLoading = (state: RootState) => state.receive.activityLoading;
 export const selectReceiveError = (state: RootState) => state.receive.error;
 
-// Derived selectors
 export const selectShippedSamples = (state: RootState) =>
   state.receive.samples.filter((s) => s.status === "Shipped" && !s.isDeleted);
 
