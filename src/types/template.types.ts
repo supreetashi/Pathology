@@ -12,6 +12,7 @@ export interface TemplateItem {
   userType: string;
   templateFormat: string;
   templateText: string;
+  templateJson?: string | null;
   isActive: boolean;
 }
 
@@ -38,7 +39,8 @@ export interface CreateTemplatePayload {
   gender?: string;
   user_type?: string;
   template_format?: string;
-  template_text?: string;
+  template_text?: string | null;  
+  template_json?: string | null;
   status?: boolean;
 }
 

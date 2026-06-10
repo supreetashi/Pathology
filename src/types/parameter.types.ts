@@ -65,7 +65,7 @@ export interface CreateParameterPayload {
   delta_check_percentage?: string | null;
   technique_used?: string;
   execution_calendar_linking?: string;
-  formula?: string;
+  formula?: string | null;
   skip_numeric_result_entry?: boolean;
   status?: boolean;
 }

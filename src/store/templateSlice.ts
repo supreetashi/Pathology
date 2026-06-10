@@ -81,6 +81,7 @@ const templateSlice = createSlice({
           userType: item.user_type ?? "",
           templateFormat: item.template_format ?? "TEXT",
           templateText: item.template_text ?? "",
+          templateJson: item.template_json ?? null,
           isActive: item.status ?? true,
         }));
       });

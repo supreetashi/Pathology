@@ -93,6 +93,9 @@ export default function CreateTemplatePage() {
 
   const editData = location.state?.templateData as TemplateItem | undefined;
   const isEditMode = location.state?.mode === "edit";
+    const [formSections, setFormSections] = useState<any[]>(
+  editData?.templateJson ? JSON.parse(editData.templateJson) : []
+);
   const laboratoryTests = useSelector(selectLaboratoryTests);
 
   useEffect(() => {
@@ -173,7 +176,8 @@ export default function CreateTemplatePage() {
       user_type: form.userType,
       service_name: form.serviceName,
       template_format: form.templateFormat,
-      template_text: form.templateFormat === "TEXT" ? (editorRef.current?.innerHTML ?? "") : undefined,
+      template_text: form.templateFormat === "TEXT" ? (editorRef.current?.innerHTML ?? "") : null,
+      template_json: form.templateFormat === "FORM" ? JSON.stringify(formSections) : null,
       status: true,
     };
 
@@ -347,7 +351,10 @@ export default function CreateTemplatePage() {
   <div className={styles.section}>
     <p className={styles.sectionTitle}>Form Format</p>
     <div style={{ height: "500px", border: "1px solid #E2E3E5", borderRadius: "10px", overflow: "hidden" }}>
-      <FormTemplate />
+      <FormTemplate
+  value={formSections}
+  onChange={setFormSections}
+/>
     </div>
   </div>
 )}
