@@ -7,6 +7,7 @@ import type {
   RejectSamplePayload,
 } from "../types/Receive.types";
 import type { RootState } from ".";
+
 import { receiveApi } from "../services/Receive.api";
 
 // =====================================================
@@ -114,7 +115,10 @@ export const fetchReceiveSamples = createAsyncThunk(
 
 export const createReceiveSample = createAsyncThunk(
   "receive/createSample",
-  async (payload: CreateReceiveSamplePayload, { dispatch, rejectWithValue }) => {
+  async (
+    payload: CreateReceiveSamplePayload,
+    { dispatch, rejectWithValue },
+  ) => {
     try {
       const res = await receiveApi.createSample(payload);
       await dispatch(fetchReceiveSamples());
@@ -173,7 +177,8 @@ export const fetchActivityLogs = createAsyncThunk(
       return res.data as RawReceiveSample[];
     } catch (error: any) {
       return rejectWithValue(
-        extractErrorMessage(error.response?.data) ?? "Failed to fetch activity logs",
+        extractErrorMessage(error.response?.data) ??
+          "Failed to fetch activity logs",
       );
     }
   },
@@ -223,7 +228,8 @@ const receiveSlice = createSlice({
       })
       .addCase(fetchActivityLogs.rejected, (state, action) => {
         state.activityLoading = false;
-        state.error = (action.payload as string) ?? "Failed to load activity logs";
+        state.error =
+          (action.payload as string) ?? "Failed to load activity logs";
       })
       .addCase(fetchActivityLogs.fulfilled, (state, action) => {
         state.activityLoading = false;
@@ -252,9 +258,11 @@ export default receiveSlice.reducer;
 // Selectors
 // =====================================================
 export const selectReceiveSamples = (state: RootState) => state.receive.samples;
-export const selectActivityLogs = (state: RootState) => state.receive.activityLogs;
+export const selectActivityLogs = (state: RootState) =>
+  state.receive.activityLogs;
 export const selectReceiveLoading = (state: RootState) => state.receive.loading;
-export const selectActivityLoading = (state: RootState) => state.receive.activityLoading;
+export const selectActivityLoading = (state: RootState) =>
+  state.receive.activityLoading;
 export const selectReceiveError = (state: RootState) => state.receive.error;
 
 // Derived selectors

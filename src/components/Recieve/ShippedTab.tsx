@@ -1,5 +1,21 @@
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import type { SampleRow } from "./ReceiveMockData";
+
+type SampleRow = {
+  id: number;
+  shipDate: string;
+  shipTime: string;
+  shipmentNo: string;
+  sampleNo: string;
+  type: string;
+  testCode: string;
+  testName: string;
+  serviceName: string;
+  patientName: string;
+  age: number;
+  patientCode: string;
+  gender: string;
+  remark?: string | null;
+};
 
 type ShippedTabProps = {
   rows: SampleRow[];
@@ -41,7 +57,6 @@ function ShippedTab({
       <tbody>
         {rows.map((row) => {
           const selected = selectedIds.includes(row.id);
-
           return (
             <tr key={row.id}>
               <td className="checkbox-column">
@@ -83,12 +98,6 @@ function ShippedTab({
                   <ErrorOutlineIcon className="warning-icon" fontSize="small" />
                   <span className="info-hover-card" role="tooltip">
                     <span className="info-hover-row">
-                      <span>Order Date & Time</span>
-                      <strong>
-                        {row.shipDate} | {row.shipTime}
-                      </strong>
-                    </span>
-                    <span className="info-hover-row">
                       <span>Ship Date & Time</span>
                       <strong>
                         {row.shipDate} | {row.shipTime}
@@ -100,7 +109,7 @@ function ShippedTab({
                     </span>
                     <span className="info-hover-row">
                       <span>Receive Remark</span>
-                      <strong>Sample is collected in the correct container</strong>
+                      <strong>{row.remark ?? "—"}</strong>
                     </span>
                   </span>
                 </span>
@@ -109,13 +118,13 @@ function ShippedTab({
           );
         })}
 
-        {rows.length === 0 ? (
+        {rows.length === 0 && (
           <tr>
             <td colSpan={8} className="empty-row">
               No matching records found.
             </td>
           </tr>
-        ) : null}
+        )}
       </tbody>
     </table>
   );

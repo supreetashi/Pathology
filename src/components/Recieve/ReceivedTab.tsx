@@ -1,14 +1,33 @@
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
-import type { SampleRow } from "./ReceiveMockData";
+
+type ReceivedRow = {
+  id: number;
+  shipDate: string;
+  shipTime: string;
+  shipmentNo: string;
+  sampleNo: string;
+  type: string;
+  testCode: string;
+  testName: string;
+  serviceName: string;
+  patientName: string;
+  age: number;
+  patientCode: string;
+  gender: string;
+  receiveDate?: string | null;
+  receiveTime?: string | null;
+  remark?: string | null;
+  resultStatus?: string | null;
+};
 
 type ReceivedTabProps = {
-  rows: SampleRow[];
+  rows: ReceivedRow[];
   rowOffset: number;
 };
 
-function ReceivedTab({ rows, rowOffset }: ReceivedTabProps) {
+function ReceivedTab({ rows }: ReceivedTabProps) {
   return (
     <table className="receive-table">
       <thead>
@@ -26,14 +45,14 @@ function ReceivedTab({ rows, rowOffset }: ReceivedTabProps) {
       </thead>
 
       <tbody>
-        {rows.map((row, rowIndex) => {
-          const isPending = rowOffset + rowIndex < 3;
+        {rows.map((row) => {
+          const isPending = !row.resultStatus || row.resultStatus === "Pending";
 
           return (
             <tr key={row.id}>
               <td>
-                <div className="cell-primary">{row.shipDate}</div>
-                <div className="cell-secondary">{row.shipTime}</div>
+                <div className="cell-primary">{row.receiveDate ?? "—"}</div>
+                <div className="cell-secondary">{row.receiveTime ?? "—"}</div>
               </td>
               <td>
                 <div className="cell-primary">{row.shipmentNo}</div>
@@ -58,27 +77,29 @@ function ReceivedTab({ rows, rowOffset }: ReceivedTabProps) {
                 </div>
               </td>
               <td>
-                <span className={`result-status-pill ${isPending ? "pending" : "complete"}`}>
+                <span
+                  className={`result-status-pill ${isPending ? "pending" : "complete"}`}
+                >
                   {isPending ? "Pending" : "Complete"}
                 </span>
               </td>
               <td>
                 {isPending ? (
-                  <AddCircleOutlineIcon className="result-icon" fontSize="small" />
+                  <AddCircleOutlineIcon
+                    className="result-icon"
+                    fontSize="small"
+                  />
                 ) : (
-                  <DescriptionOutlinedIcon className="result-icon" fontSize="small" />
+                  <DescriptionOutlinedIcon
+                    className="result-icon"
+                    fontSize="small"
+                  />
                 )}
               </td>
               <td className="info-column">
                 <span className="info-hover-target">
                   <ErrorOutlineIcon className="warning-icon" fontSize="small" />
                   <span className="info-hover-card" role="tooltip">
-                    <span className="info-hover-row">
-                      <span>Order Date & Time</span>
-                      <strong>
-                        {row.shipDate} | {row.shipTime}
-                      </strong>
-                    </span>
                     <span className="info-hover-row">
                       <span>Ship Date & Time</span>
                       <strong>
@@ -91,7 +112,7 @@ function ReceivedTab({ rows, rowOffset }: ReceivedTabProps) {
                     </span>
                     <span className="info-hover-row">
                       <span>Receive Remark</span>
-                      <strong>Sample is collected in the correct container</strong>
+                      <strong>{row.remark ?? "—"}</strong>
                     </span>
                   </span>
                 </span>
@@ -100,13 +121,13 @@ function ReceivedTab({ rows, rowOffset }: ReceivedTabProps) {
           );
         })}
 
-        {rows.length === 0 ? (
+        {rows.length === 0 && (
           <tr>
             <td colSpan={9} className="empty-row">
               No matching records found.
             </td>
           </tr>
-        ) : null}
+        )}
       </tbody>
     </table>
   );
