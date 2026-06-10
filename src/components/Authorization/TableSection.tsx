@@ -1,14 +1,26 @@
-import React from "react";
+import React, { useState } from "react";
 import { AuthorizationItem } from "../../types/index";
 import "../../styles/Authorization/TableSection.css";
 import resultIcon from "../Authorization/Icons/resultIcon.png";
 
 type Props = {
     data: AuthorizationItem[];
-    onViewResult: () => void;   // ✅ ADD THIS
+    onViewResult: (item: AuthorizationItem) => void;
 };
 
+
 const TableSection: React.FC<Props> = ({ data, onViewResult }) => {
+    const [currentPage, setCurrentPage] = useState(1);
+    const recordsPerPage = 10;
+    const totalPages = Math.ceil(data.length / recordsPerPage);
+
+    const startIndex = (currentPage - 1) * recordsPerPage;
+    const endIndex = startIndex + recordsPerPage;
+
+
+
+    const currentData = data.slice(startIndex, endIndex);
+
     return (
         <>
             <table className="table">
@@ -25,34 +37,33 @@ const TableSection: React.FC<Props> = ({ data, onViewResult }) => {
                 </thead>
 
                 <tbody>
-                    {data.map((item) => (
+                    {currentData.map((item) => (
                         <tr key={item.id}>
                             <td>
-                                <div>{item.date}</div>
-                                <span className="sub">{item.time}</span>
+                                <div>{item.order_date}</div>
+                                <span className="sub">{item.order_time}</span>
                             </td>
 
                             <td>
                                 <div>
-                                    {item.patient.name} | {item.patient.age}
+                                    {item.patient_name} | {item.patient_age}
                                 </div>
                                 <span className="sub">
-                                    {item.patient.code} | {item.patient.gender}
+                                    {item.patient_code} | {item.patient_gender}
                                 </span>
                             </td>
 
-                            <td>{item.patientType}</td>
+                            <td>{item.patient_type}</td>
 
-                            <td>{item.doctorName}</td>
+                            <td>{item.doctor_name}</td>
 
                             <td>
-                                <span className="bill">{item.billId}</span>
+                                <span className="bill">{item.bill_no}</span>
                             </td>
 
-                            <td>{item.orders}</td>
-
+                            <td>{item.no_of_orders}</td>
                             <td>
-                                <button className="icon-btn" onClick={onViewResult}>
+                                <button className="icon-btn" onClick={() => onViewResult(item)}>
                                     <img src={resultIcon} alt="result" className="icon-img" />
                                 </button>
                             </td>
@@ -63,14 +74,38 @@ const TableSection: React.FC<Props> = ({ data, onViewResult }) => {
 
             {/* Pagination */}
             <div className="footer">
-                <span>Showing 1 to {data.length} of 100 entries</span>
+                <span>
+                    Showing {startIndex + 1} to{" "}
+                    {Math.min(endIndex, data.length)} of{" "}
+                    {data.length} entries
+                </span>
 
                 <div className="pagination">
-                    <button>{"<"}</button>
-                    <button className="active">1</button>
-                    <button>2</button>
-                    <button>3</button>
-                    <button>{">"}</button>
+
+                    <button
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage(currentPage - 1)}
+                    >
+                        {"<"}
+                    </button>
+
+                    {[...Array(totalPages)].map((_, index) => (
+                        <button
+                            key={index + 1}
+                            className={currentPage === index + 1 ? "active" : ""}
+                            onClick={() => setCurrentPage(index + 1)}
+                        >
+                            {index + 1}
+                        </button>
+                    ))}
+
+                    <button
+                        disabled={currentPage === totalPages}
+                        onClick={() => setCurrentPage(currentPage + 1)}
+                    >
+                        {">"}
+                    </button>
+
                 </div>
             </div>
         </>

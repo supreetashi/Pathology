@@ -1,58 +1,55 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import TopSection from "../components/Authorization/TopSection";
 import TableSection from "../components/Authorization/TableSection";
-import { AuthorizationItem } from "../types/index";
-import "../styles/Authorization/AuthorizationPage.css";
 import ResultDetails from "../components/Authorization/ResultDetails";
-
-const mockData: AuthorizationItem[] = [
-  {
-    id: "1",
-    date: "04/02/2024",
-    time: "10:30 AM",
-    patient: {
-      id: "p1",
-      name: "Emilia Williamson",
-      age: 27,
-      gender: "Female",
-      code: "PCC-1719",
-    },
-    patientType: "Walk-In",
-    doctorName: "Dr. Emilia Clarke",
-    billId: "PCC/25/OP/000134",
-    orders: 6,
-  },
-  {
-    id: "2",
-    date: "04/02/2024",
-    time: "10:30 AM",
-    patient: {
-      id: "p2",
-      name: "Olivia Anderson",
-      age: 29,
-      gender: "Female",
-      code: "PCC-1719",
-    },
-    patientType: "Registered",
-    doctorName: "Dr. Olivia Bennett",
-    billId: "PCC/25/OP/000134",
-    orders: 6,
-  },
-];
+import { AuthorizationItem } from "../types";
+import { getAuthorizations } from "../services/authorizationService";
+import "../styles/Authorization/AuthorizationPage.css";
 
 const AuthorizationPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"pending" | "approved">("pending");
   const [search, setSearch] = useState("");
-  const [showResult, setShowResult] = useState(false); // ✅ MOVED HERE
+  const [showResult, setShowResult] = useState(false);
 
-  const filteredData: AuthorizationItem[] = mockData.filter((item) =>
-    item.patient.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const [selectedAuthorization, setSelectedAuthorization] =
+    useState<AuthorizationItem | null>(null);
+
+  const [data, setData] = useState<AuthorizationItem[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchAuthorizations = async () => {
+    try {
+      setLoading(true);
+
+      const status =
+        activeTab === "pending"
+          ? "Pending"
+          : "APPROVED";
+
+      const response = await getAuthorizations(
+        status,
+        search
+      );
+
+      setData(response);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAuthorizations();
+  }, [activeTab, search]);
 
   return (
     <div className="container">
       {showResult ? (
-        <ResultDetails onBack={() => setShowResult(false)} />
+        <ResultDetails
+          onBack={() => setShowResult(false)}
+          authorization={selectedAuthorization}
+        />
       ) : (
         <>
           <TopSection
@@ -62,10 +59,17 @@ const AuthorizationPage: React.FC = () => {
             setSearch={setSearch}
           />
 
-          <TableSection
-            data={filteredData}
-            onViewResult={() => setShowResult(true)}
-          />
+          {loading ? (
+            <p>Loading...</p>
+          ) : (
+            <TableSection
+              data={data}
+              onViewResult={(item) => {
+                setSelectedAuthorization(item);
+                setShowResult(true);
+              }}
+            />
+          )}
         </>
       )}
     </div>

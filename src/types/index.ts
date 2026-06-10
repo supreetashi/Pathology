@@ -1,20 +1,32 @@
-export type Nullable<T> = T | null;
-
-export type Patient = {
-    id: string;
-    name: string;
-    age: number;
-    gender: string;
-    code: string;
-};
-
 export type AuthorizationItem = {
-    id: string;
-    date: string;
-    time: string;
-    patient: Patient;
-    patientType: "Walk-In" | "Registered";
-    doctorName: string;
-    billId: string;
-    orders: number;
+    id: number;
+
+    order_date: string;
+    order_time: string;
+
+    patient_name: string;
+    patient_age: number;
+    patient_gender: string;
+    patient_code: string;
+
+    patient_type: string;
+    doctor_name: string;
+
+    bill_no: string;
+    no_of_orders: number;
+
+    test_name: string;
+    result_status: string;
+    authorization_status: string;
+
+    authorized_by: string | null;
+    authorized_date: string | null;
+
+    remark: string | null;
+
+    is_deleted: boolean;
+    created_at: string;
+    deleted_at: string | null;
+
+    result_entry: number;
 };
