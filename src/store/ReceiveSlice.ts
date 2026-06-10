@@ -31,8 +31,10 @@ interface RawReceiveSample {
   receive_date: string | null;
   receive_time: string | null;
   accepted_by: string | null;
+  rejected_by: string | null;
   remark: string | null;
   sub_optimal: boolean;
+  resend_new_sample: boolean;
   status: "Shipped" | "Received" | "Rejected";
   is_deleted: boolean;
   created_at: string;
@@ -46,15 +48,15 @@ interface RawShippedShipment {
   shipment_no: string;
   ship_to: string;
   pending_shipment: {
-    id: number;
-    order_date: string;
+    id?: number;
+    order_date?: string;
     sample_no: string | null;
     sample_type: string;
     test_code: string;
     test_name: string;
     service_name: string;
     patient: {
-      id: number;
+      id?: number;
       name: string;
       age: number;
       patient_code: string;
@@ -63,19 +65,41 @@ interface RawShippedShipment {
   } | null;
 }
 
-// Raw shape returned by /received-shipment/
-interface RawReceivedShipment {
+// Shape returned by /receive-activity-logs/
+// This is the authoritative source for Received and Rejected tabs.
+// Returns status: "Received" | "Rejected" directly — no mapping needed.
+interface RawActivityLog {
   id: number;
-  receive_date: string;
-  received_no: string;
-  status: "Accepted" | "Rejected";
-  result: string;
-  shipped_shipment: RawShippedShipment | null;
+  ship_date: string;
+  ship_time: string;
+  shipment_no: string;
+  specimen_no: string;
+  specimen_type: string;
+  test_code: string;
+  test_name: string;
+  service_name: string;
+  patient_name: string;
+  patient_age: number;
+  patient_gender: string;
+  patient_code: string;
+  receive_date: string | null;
+  receive_time: string | null;
+  accepted_by: string | null;
+  rejected_by: string | null;
+  remark: string | null;
+  sub_optimal: boolean;
+  resend_new_sample: boolean;
+  status: "Received" | "Rejected";
+  is_deleted: boolean;
+  created_at: string;
+  deleted_at: string | null;
+  shipment: null;
 }
 
 // =====================================================
 // Helpers
 // =====================================================
+
 function mapRaw(item: RawReceiveSample): ReceiveSampleItem {
   return {
     id: item.id,
@@ -104,6 +128,37 @@ function mapRaw(item: RawReceiveSample): ReceiveSampleItem {
   };
 }
 
+function mapActivityLog(item: RawActivityLog): RawReceiveSample {
+  return {
+    id: item.id,
+    shipment_received: null,
+    ship_date: item.ship_date,
+    ship_time: item.ship_time,
+    shipment_no: item.shipment_no,
+    specimen_no: item.specimen_no,
+    specimen_type: item.specimen_type,
+    test_code: item.test_code,
+    test_name: item.test_name,
+    service_name: item.service_name,
+    patient_name: item.patient_name,
+    patient_age: item.patient_age,
+    patient_gender: item.patient_gender,
+    patient_code: item.patient_code,
+    receive_date: item.receive_date,
+    receive_time: item.receive_time,
+    accepted_by: item.accepted_by,
+    rejected_by: item.rejected_by,
+    remark: item.remark,
+    sub_optimal: item.sub_optimal,
+    resend_new_sample: item.resend_new_sample,
+    // status comes directly as "Received" | "Rejected" — no translation needed
+    status: item.status,
+    is_deleted: item.is_deleted,
+    created_at: item.created_at,
+    deleted_at: item.deleted_at,
+  };
+}
+
 function mapShipped(d: RawShippedShipment): RawReceiveSample {
   const dt = d.ship_date ? new Date(d.ship_date) : null;
   return {
@@ -111,7 +166,11 @@ function mapShipped(d: RawShippedShipment): RawReceiveSample {
     shipment_received: null,
     ship_date: dt ? dt.toISOString().split("T")[0] : "",
     ship_time: dt
-      ? dt.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })
+      ? dt.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        })
       : "",
     shipment_no: d.shipment_no ?? "-",
     specimen_no: d.pending_shipment?.sample_no ?? "-",
@@ -126,26 +185,14 @@ function mapShipped(d: RawShippedShipment): RawReceiveSample {
     receive_date: null,
     receive_time: null,
     accepted_by: null,
+    rejected_by: null,
     remark: null,
     sub_optimal: false,
+    resend_new_sample: false,
     status: "Shipped",
     is_deleted: false,
     created_at: d.ship_date ?? "",
     deleted_at: null,
-  };
-}
-
-function mapReceived(d: RawReceivedShipment): RawReceiveSample {
-  const base = mapShipped(d.shipped_shipment ?? ({} as RawShippedShipment));
-  const receiveDt = d.receive_date ? new Date(d.receive_date) : null;
-  return {
-    ...base,
-    id: d.id,
-    status: d.status === "Rejected" ? "Rejected" : "Received",
-    receive_date: receiveDt ? receiveDt.toISOString().split("T")[0] : null,
-    receive_time: receiveDt
-      ? receiveDt.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })
-      : null,
   };
 }
 
@@ -194,13 +241,30 @@ export const fetchReceiveSamples = createAsyncThunk(
   "receive/fetchSamples",
   async (_, { rejectWithValue }) => {
     try {
-      const [shippedRes, receivedRes] = await Promise.all([
+      const [shippedRes, activityRes] = await Promise.all([
         receiveApi.getShippedSamples(),
-        receiveApi.getReceivedSamples(),
+        receiveApi.getActivityLogs(), // SOURCE OF TRUTH for Received + Rejected
       ]);
-      const shipped = toArray<RawShippedShipment>(shippedRes).map(mapShipped);
-      const received = toArray<RawReceivedShipment>(receivedRes).map(mapReceived);
-      return [...shipped, ...received];
+
+      const shippedRaw = toArray<RawShippedShipment>(shippedRes);
+      const activityRaw = toArray<RawActivityLog>(activityRes)
+        .filter((r) => !r.is_deleted); // exclude soft-deleted records
+
+      // Build set of already-actioned shipment_nos to exclude from Shipped tab
+      const processedShipmentNos = new Set<string>(
+        activityRaw
+          .map((r) => r.shipment_no)
+          .filter((n): n is string => Boolean(n)),
+      );
+
+      const shipped = shippedRaw
+        .filter((s) => !processedShipmentNos.has(s.shipment_no))
+        .map(mapShipped);
+
+      // Activity log returns "Received" | "Rejected" directly — no status translation needed
+      const receivedAndRejected = activityRaw.map(mapActivityLog);
+
+      return [...shipped, ...receivedAndRejected];
     } catch (error: any) {
       return rejectWithValue(
         extractErrorMessage(error.response?.data) ?? "Failed to fetch samples",
@@ -211,7 +275,10 @@ export const fetchReceiveSamples = createAsyncThunk(
 
 export const createReceiveSample = createAsyncThunk(
   "receive/createSample",
-  async (payload: CreateReceiveSamplePayload, { dispatch, rejectWithValue }) => {
+  async (
+    payload: CreateReceiveSamplePayload,
+    { dispatch, rejectWithValue },
+  ) => {
     try {
       const res = await receiveApi.createSample(payload);
       await dispatch(fetchReceiveSamples());
@@ -237,7 +304,8 @@ export const receiveSample = createAsyncThunk(
       return res.data;
     } catch (error: any) {
       return rejectWithValue(
-        extractErrorMessage(error.response?.data) ?? "Failed to receive sample",
+        extractErrorMessage(error.response?.data) ??
+          "Failed to receive sample",
       );
     }
   },
@@ -267,10 +335,14 @@ export const fetchActivityLogs = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const res = await receiveApi.getActivityLogs();
-      return toArray<RawReceiveSample>(res);
+      // Activity logs tab shows all records including duplicates (full history)
+      return toArray<RawActivityLog>(res)
+        .filter((r) => !r.is_deleted)
+        .map(mapActivityLog);
     } catch (error: any) {
       return rejectWithValue(
-        extractErrorMessage(error.response?.data) ?? "Failed to fetch activity logs",
+        extractErrorMessage(error.response?.data) ??
+          "Failed to fetch activity logs",
       );
     }
   },
@@ -284,7 +356,8 @@ export const deleteReceiveSample = createAsyncThunk(
       await dispatch(fetchReceiveSamples());
     } catch (error: any) {
       return rejectWithValue(
-        extractErrorMessage(error.response?.data) ?? "Failed to delete sample",
+        extractErrorMessage(error.response?.data) ??
+          "Failed to delete sample",
       );
     }
   },
@@ -318,7 +391,8 @@ const receiveSlice = createSlice({
       })
       .addCase(fetchActivityLogs.rejected, (state, action) => {
         state.activityLoading = false;
-        state.error = (action.payload as string) ?? "Failed to load activity logs";
+        state.error =
+          (action.payload as string) ?? "Failed to load activity logs";
       })
       .addCase(fetchActivityLogs.fulfilled, (state, action) => {
         state.activityLoading = false;
@@ -326,16 +400,20 @@ const receiveSlice = createSlice({
       })
 
       .addCase(createReceiveSample.rejected, (state, action) => {
-        state.error = (action.payload as string) ?? "Failed to create sample";
+        state.error =
+          (action.payload as string) ?? "Failed to create sample";
       })
       .addCase(receiveSample.rejected, (state, action) => {
-        state.error = (action.payload as string) ?? "Failed to receive sample";
+        state.error =
+          (action.payload as string) ?? "Failed to receive sample";
       })
       .addCase(rejectSample.rejected, (state, action) => {
-        state.error = (action.payload as string) ?? "Failed to reject sample";
+        state.error =
+          (action.payload as string) ?? "Failed to reject sample";
       })
       .addCase(deleteReceiveSample.rejected, (state, action) => {
-        state.error = (action.payload as string) ?? "Failed to delete sample";
+        state.error =
+          (action.payload as string) ?? "Failed to delete sample";
       });
   },
 });
@@ -345,17 +423,25 @@ export default receiveSlice.reducer;
 // =====================================================
 // Selectors
 // =====================================================
-export const selectReceiveSamples = (state: RootState) => state.receive.samples;
-export const selectActivityLogs = (state: RootState) => state.receive.activityLogs;
-export const selectReceiveLoading = (state: RootState) => state.receive.loading;
-export const selectActivityLoading = (state: RootState) => state.receive.activityLoading;
+export const selectReceiveSamples = (state: RootState) =>
+  state.receive.samples;
+export const selectActivityLogs = (state: RootState) =>
+  state.receive.activityLogs;
+export const selectReceiveLoading = (state: RootState) =>
+  state.receive.loading;
+export const selectActivityLoading = (state: RootState) =>
+  state.receive.activityLoading;
 export const selectReceiveError = (state: RootState) => state.receive.error;
 
 export const selectShippedSamples = (state: RootState) =>
   state.receive.samples.filter((s) => s.status === "Shipped" && !s.isDeleted);
 
 export const selectReceivedSamples = (state: RootState) =>
-  state.receive.samples.filter((s) => s.status === "Received" && !s.isDeleted);
+  state.receive.samples.filter(
+    (s) => s.status === "Received" && !s.isDeleted,
+  );
 
 export const selectRejectedSamples = (state: RootState) =>
-  state.receive.samples.filter((s) => s.status === "Rejected" && !s.isDeleted);
+  state.receive.samples.filter(
+    (s) => s.status === "Rejected" && !s.isDeleted,
+  );

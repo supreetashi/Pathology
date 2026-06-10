@@ -15,23 +15,22 @@ export interface CreateReceiveSamplePayload {
   [key: string]: unknown;
 }
 
-export interface ReceiveSamplePayload {
-  received_at?: string;
-  received_time?: string;
+export type ReceiveSamplePayload = {
+  receive_date?: string;
+  receive_time?: string;
+  remark?: string;
+  sub_optimal?: boolean;
   accepted_by?: string;
-  remark?: string;
-  is_sub_optimal?: boolean;
-  [key: string]: unknown;
-}
+  shipment_received?: number;
+};
 
-export interface RejectSamplePayload {
-  rejected_at?: string;
-  rejected_time?: string;
-  rejected_by?: string;
+export type RejectSamplePayload = {
+  receive_date?: string;
+  receive_time?: string;
   remark?: string;
-  resend_for_new_sample?: boolean;
-  [key: string]: unknown;
-}
+  resend_new_sample?: boolean;
+  rejected_by?: string;
+};
 
 export interface ReceiveSampleItem {
   id: number;
