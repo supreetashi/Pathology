@@ -1,12 +1,14 @@
+import {
+  CreateReceiveSamplePayload,
+  ReceiveSamplePayload,
+  RejectSamplePayload,
+} from "../types/receive.types";
 import { http } from "./http";
-
-// ── Types (mirror ReceiveSample Django model) ─────────────────────────────────
 
 export interface ReceiveSample {
   id: number;
-  shipment: number | null;
-  ship_date: string;         // "YYYY-MM-DD"
-  ship_time: string;         // "HH:MM:SS"
+  ship_date: string;
+  ship_time: string;
   shipment_no: string;
   specimen_no: string;
   specimen_type: string;
@@ -14,69 +16,119 @@ export interface ReceiveSample {
   test_name: string;
   service_name: string;
   patient_name: string;
-  patient_age: number;
-  patient_gender: string;
+  patient_age: string | number;
   patient_code: string;
-  receive_date: string | null;
-  receive_time: string | null;
-  accepted_by: string | null;
-  remark: string | null;
-  sub_optimal: boolean;
-  status: "Shipped" | "Received" | "Rejected";
-  is_deleted: boolean;
-  created_at: string;
-  deleted_at: string | null;
+  patient_gender: string;
+  status: string;
+  [key: string]: unknown;
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+const toArray = <T>(response: unknown): T[] => {
+  const payload = (response as { data?: unknown })?.data ?? response;
 
-function todayDate(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
+  if (Array.isArray(payload)) {
+    return payload as T[];
+  }
 
-function currentTime(): string {
-  const d = new Date();
-  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}`;
-}
+  if (
+    payload &&
+    typeof payload === "object" &&
+    Array.isArray((payload as { results?: unknown }).results)
+  ) {
+    return (payload as { results: T[] }).results;
+  }
 
-// ── API calls ─────────────────────────────────────────────────────────────────
+  if (
+    payload &&
+    typeof payload === "object" &&
+    Array.isArray((payload as { data?: unknown }).data)
+  ) {
+    return (payload as { data: T[] }).data;
+  }
 
-/**
- * GET /api/active-samples/  — all non-deleted ReceiveSamples.
- * Returns { message, data: ReceiveSample[] }.
- * We filter by status on the frontend to populate each tab.
- */
+  return [];
+};
+
+// =====================================================
+// Receive Sample APIs
+// =====================================================
+export const receiveApi = {
+
+  // GET /api/samples/ — list all active samples
+  getSamples: () => http.get("/samples/"),
+
+  // POST /api/create-sample/ — create a new sample
+  createSample: async (payload: CreateReceiveSamplePayload) => {
+    try {
+      return await http.post("/create-sample/", payload);
+    } catch (error: any) {
+      console.error(
+        "[createSample] error:",
+        JSON.stringify(error.response?.data ?? error.message, null, 2),
+      );
+      throw error;
+    }
+  },
+
+  // POST /api/receive-sample/<sample_id>/ — mark sample as received
+  receiveSample: async (sampleId: number, payload: ReceiveSamplePayload) => {
+    try {
+      return await http.post(`/receive-sample/${sampleId}/`, payload);
+    } catch (error: any) {
+      console.error(
+        "[receiveSample] error:",
+        JSON.stringify(error.response?.data ?? error.message, null, 2),
+      );
+      throw error;
+    }
+  },
+
+  // POST /api/reject-sample/<sample_id>/ — mark sample as rejected
+  rejectSample: async (sampleId: number, payload: RejectSamplePayload) => {
+    try {
+      return await http.post(`/reject-sample/${sampleId}/`, payload);
+    } catch (error: any) {
+      console.error(
+        "[rejectSample] error:",
+        JSON.stringify(error.response?.data ?? error.message, null, 2),
+      );
+      throw error;
+    }
+  },
+
+  // GET /api/receive-activity-logs/ — receive and reject history
+  getActivityLogs: () => http.get("/receive-activity-logs/"),
+
+  // DELETE /api/delete-sample/<sample_id>/ — soft delete
+  deleteSample: async (sampleId: number) => {
+    try {
+      return await http.delete(`/delete-sample/${sampleId}/`);
+    } catch (error: any) {
+      console.error(
+        "[deleteSample] error:",
+        JSON.stringify(error.response?.data ?? error.message, null, 2),
+      );
+      throw error;
+    }
+  },
+};
+
 export const getAllSamples = async (): Promise<ReceiveSample[]> => {
-  const res = await http.get<{ message: string; data: ReceiveSample[] }>("/active-samples/");
-  return res.data.data;
+  const response = await receiveApi.getSamples();
+  return toArray<ReceiveSample>(response);
 };
 
-/**
- * GET /api/receive-activity-logs/  — samples with status Received or Rejected.
- * Returns { message, data: ReceiveSample[] }.
- */
 export const getActivityLogSamples = async (): Promise<ReceiveSample[]> => {
-  const res = await http.get<{ message: string; data: ReceiveSample[] }>("/receive-activity-logs/");
-  return res.data.data;
+  const response = await receiveApi.getActivityLogs();
+  return toArray<ReceiveSample>(response);
 };
 
-/**
- * POST /api/receive-sample/<id>/  — mark a sample as Received.
- */
-export const receiveSample = async (sampleId: number): Promise<void> => {
-  await http.post(`/receive-sample/${sampleId}/`, {
-    receive_date: todayDate(),
-    receive_time: currentTime(),
-  });
-};
+export const receiveSample = async (
+  sampleId: number,
+  payload: ReceiveSamplePayload = {},
+) => receiveApi.receiveSample(sampleId, payload);
 
-/**
- * POST /api/reject-sample/<id>/  — mark a sample as Rejected.
- */
-export const rejectSample = async (sampleId: number): Promise<void> => {
-  await http.post(`/reject-sample/${sampleId}/`, {
-    receive_date: todayDate(),
-    receive_time: currentTime(),
-  });
-};
+export const rejectSample = async (
+  sampleId: number,
+  payload: RejectSamplePayload = {},
+) => receiveApi.rejectSample(sampleId, payload);
