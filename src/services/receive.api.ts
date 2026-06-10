@@ -5,6 +5,56 @@ import {
 } from "../types/Receive.types";
 import { http } from "./http";
 
+// =====================================================
+// Receive Sample APIs
+// =====================================================
+export const receiveApi = {
+
+  // GET /api/samples/ — list all active samples
+  getSamples: () => http.get("/samples/"),
+
+  // POST /api/create-sample/ — create a new sample
+  createSample: async (payload: CreateReceiveSamplePayload) => {
+    try {
+      return await http.post("/create-sample/", payload);
+    } catch (error: any) {
+      console.error(
+        "[createSample] error:",
+        JSON.stringify(error.response?.data ?? error.message, null, 2),
+      );
+      throw error;
+    }
+  },
+
+  // POST /api/receive-sample/<sample_id>/ — mark sample as received
+  receiveSample: async (sampleId: number, payload: ReceiveSamplePayload) => {
+    try {
+      return await http.post(`/receive-sample/${sampleId}/`, payload);
+    } catch (error: any) {
+      console.error(
+        "[receiveSample] error:",
+        JSON.stringify(error.response?.data ?? error.message, null, 2),
+      );
+      throw error;
+    }
+  },
+
+  // POST /api/reject-sample/<sample_id>/ — mark sample as rejected
+  rejectSample: async (sampleId: number, payload: RejectSamplePayload) => {
+    try {
+      return await http.post(`/reject-sample/${sampleId}/`, payload);
+    } catch (error: any) {
+      console.error(
+        "[rejectSample] error:",
+        JSON.stringify(error.response?.data ?? error.message, null, 2),
+      );
+      throw error;
+    }
+  },
+
+  // GET /api/receive-activity-logs/ — receive and reject history
+  getActivityLogs: () => http.get("/receive-activity-logs/"),
+
 export interface ReceiveSample {
   id: number;
   ship_date: string;
@@ -111,6 +161,7 @@ export const receiveApi = {
       throw error;
     }
   },
+};
 };
 
 export const getAllSamples = async (): Promise<ReceiveSample[]> => {
