@@ -9,7 +9,7 @@ import {
   receiveSample,
   rejectSample,
   type ReceiveSample,
-} from "../../services/Receive.api";
+} from "../../services/ReceiveTab.api";
 import ReceiveSpecimenModal from "./ReceiveSpecimenModal";
 import RejectSpecimenModal from "./RejectSpecimenModal";
 import ActivityLogFilterModal, {

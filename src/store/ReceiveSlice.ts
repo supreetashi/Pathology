@@ -8,7 +8,7 @@ import type {
 } from "../types/Receive.types";
 import type { RootState } from ".";
 
-import { receiveApi } from "../services/Receive.api";
+import { receiveApi } from "../services/ReceiveTab.api";
 
 // =====================================================
 // Raw API response shape (snake_case from Django)
