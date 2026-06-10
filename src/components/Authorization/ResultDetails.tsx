@@ -1,12 +1,53 @@
 import React, { useState } from "react";
 import "../../styles/Authorization/ResultDetails.css";
 import backIcon from "../Authorization/Icons/back-icon.png";
+import { AuthorizationItem } from "../../types";
+import {
+    approveAuthorization,
+    rejectAuthorization,
+} from "../../services/authorizationService";
 
 type Props = {
     onBack: () => void;
+    authorization?: AuthorizationItem | null;
 };
 
-const ResultDetails: React.FC<Props> = ({ onBack }) => {
+
+const ResultDetails: React.FC<Props> = ({
+    onBack,
+    authorization,
+}) => {
+    const handleApprove = async () => {
+        if (!authorization) return;
+
+        try {
+            await approveAuthorization(
+                Number(authorization.id)
+            );
+
+            alert("Approved Successfully");
+            onBack();
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleReject = async () => {
+        if (!authorization) return;
+
+        try {
+            await rejectAuthorization(
+                Number(authorization.id)
+            );
+
+            alert("Rejected Successfully");
+            onBack();
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+
     const [selectedTests, setSelectedTests] = useState<string[]>([
         "HIV (Rapid Card)",
         "HCV (Rapid Card)",
@@ -25,6 +66,75 @@ const ResultDetails: React.FC<Props> = ({ onBack }) => {
         "VDRL (Rapid Card)",
         "Blood Glucose (RBS)",
     ];
+
+    const handleParameterChange = (
+        index: number,
+        field: string,
+        value: string
+    ) => {
+        const updated = [...parameters];
+
+        updated[index] = {
+            ...updated[index],
+            [field]: value,
+        };
+
+        setParameters(updated);
+    };
+
+
+    const [parameters, setParameters] = useState([
+        {
+            parameter: "Heamoglobin (hb)",
+            category: "Female",
+            machine: "Manual",
+            operator: "+",
+            resultValue: "14",
+            referenceRange: "12 - 16.5",
+            authRange: "14",
+            status: "Normal",
+        },
+        {
+            parameter: "MCV",
+            category: "Female",
+            machine: "Manual",
+            operator: "-",
+            resultValue: "91",
+            referenceRange: "80 - 100",
+            authRange: "90",
+            status: "Abnormal",
+        },
+        {
+            parameter: "Hematocrit",
+            category: "Female",
+            machine: "Manual",
+            operator: "+",
+            resultValue: "Red",
+            referenceRange: "40 - 52.5",
+            authRange: "45",
+            status: "Reflex",
+        },
+        {
+            parameter: "RDW",
+            category: "Female",
+            machine: "Manual",
+            operator: "",
+            resultValue: "12.8",
+            referenceRange: "12 - 16.5",
+            authRange: "13",
+            status: "Panic",
+        },
+        {
+            parameter: "MCHC",
+            category: "Female",
+            machine: "Manual",
+            operator: "",
+            resultValue: "14",
+            referenceRange: "12 - 16.5",
+            authRange: "14",
+            status: "Improbable",
+        },
+    ]);
 
     return (
         <div className="result-container">
@@ -198,109 +308,74 @@ const ResultDetails: React.FC<Props> = ({ onBack }) => {
                                 </thead>
 
                                 <tbody>
+                                    {parameters.map((row, index) => (
+                                        <tr key={index}>
+                                            <td>{row.parameter}</td>
+                                            <td>{row.category}</td>
+                                            <td>{row.machine}</td>
 
-                                    <tr>
-                                        <td>Heamoglobin (hb)</td>
-                                        <td>Female</td>
-                                        <td>Manual</td>
-                                        <td>
-                                            <select className="table-select">
-                                                <option>+</option>
-                                                <option>-</option>
-                                                <option>Select</option>
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <select className="table-select">
-                                                <option>14</option>
-                                                <option>15</option>
-                                                <option>16</option>
-                                            </select>
-                                        </td>
-                                        <td>12 - 16.5</td>
-                                        <td>14</td>
-                                        <td>
-                                            Female: 12-16.5 g/dl <br />
-                                            Newborn: 14-22 g/dl
-                                        </td>
-                                        <td>
-                                            <span className="badge normal">Normal</span>
-                                        </td>
-                                        <td>⚠️</td>
-                                    </tr>
+                                            {/* Operator Dropdown */}
+                                            <td>
+                                                <select
+                                                    className="table-select"
+                                                    value={row.operator}
+                                                    onChange={(e) =>
+                                                        handleParameterChange(
+                                                            index,
+                                                            "operator",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                >
+                                                    <option value="">Select</option>
+                                                    <option value="+">+</option>
+                                                    <option value="-">-</option>
+                                                </select>
+                                            </td>
 
-                                    <tr>
-                                        <td>MCV</td>
-                                        <td>Female</td>
-                                        <td>Manual</td>
-                                        <td>+</td>
-                                        <td>91</td>
-                                        <td>80 - 100</td>
-                                        <td>90</td>
-                                        <td>
-                                            Female: 12-16.5 g/dl <br />
-                                            Newborn: 14-22 g/dl
-                                        </td>
-                                        <td>
-                                            <span className="badge abnormal">Abnormal</span>
-                                        </td>
-                                        <td>-</td>
-                                    </tr>
+                                            {/* Result Value Editable Dropdown */}
+                                            <td>
+                                                <input
+                                                    list={`result-options-${index}`}
+                                                    className="table-input"
+                                                    value={row.resultValue}
+                                                    onChange={(e) =>
+                                                        handleParameterChange(
+                                                            index,
+                                                            "resultValue",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                />
 
-                                    <tr>
-                                        <td>Hematocrit</td>
-                                        <td>Female</td>
-                                        <td>Manual</td>
-                                        <td>+</td>
-                                        <td>47.2</td>
-                                        <td>40 - 52.5</td>
-                                        <td>45</td>
-                                        <td>
-                                            Female: 12-16.5 g/dl <br />
-                                            Newborn: 14-22 g/dl
-                                        </td>
-                                        <td>
-                                            <span className="badge reflex">Reflex</span>
-                                        </td>
-                                        <td>-</td>
-                                    </tr>
+                                                <datalist id={`result-options-${index}`}>
+                                                    <option value="14" />
+                                                    <option value="15" />
+                                                    <option value="16" />
+                                                    <option value="91" />
+                                                    <option value="12.8" />
+                                                    <option value="Red" />
+                                                </datalist>
+                                            </td>
 
-                                    <tr>
-                                        <td>RDW</td>
-                                        <td>Female</td>
-                                        <td>Manual</td>
-                                        <td>+</td>
-                                        <td>12.8</td>
-                                        <td>12 - 16.5</td>
-                                        <td>13</td>
-                                        <td>
-                                            Female: 12-16.5 g/dl <br />
-                                            Newborn: 14-22 g/dl
-                                        </td>
-                                        <td>
-                                            <span className="badge panic">Panic</span>
-                                        </td>
-                                        <td>⚠️</td>
-                                    </tr>
+                                            <td>{row.referenceRange}</td>
+                                            <td>{row.authRange}</td>
 
-                                    <tr>
-                                        <td>MCHC</td>
-                                        <td>Female</td>
-                                        <td>Manual</td>
-                                        <td>-</td>
-                                        <td>14</td>
-                                        <td>12 - 16.5</td>
-                                        <td>14</td>
-                                        <td>
-                                            Female: 12-16.5 g/dl <br />
-                                            Newborn: 14-22 g/dl
-                                        </td>
-                                        <td>
-                                            <span className="badge improbable">Improbable</span>
-                                        </td>
-                                        <td>⚠️</td>
-                                    </tr>
+                                            <td>
+                                                Female: 12-16.5 g/dl
+                                                <br />
+                                                Newborn: 14-22 g/dl
+                                            </td>
 
+                                            <td>
+                                                <span className={`badge ${row.status.toLowerCase()}`}>
+                                                    {row.status}
+                                                </span>
+                                            </td>
+
+                                            <td>⚠️</td>
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </table>
                         </div>
@@ -325,20 +400,22 @@ const ResultDetails: React.FC<Props> = ({ onBack }) => {
                             </p>
                         </div>
 
-                        {/* <div>
-                            <strong>Authorization Status :</strong>
-
-                            <span className="badge success">
-                                Authorized
-                            </span>
-                        </div> */}
-
                     </div>
 
                     {/* BUTTON */}
                     <div className="authorize-btn-wrap">
-                        <button className="authorize-btn">
+                        <button
+                            className="authorize-btn"
+                            onClick={handleApprove}
+                        >
                             Authorize
+                        </button>
+
+                        <button
+                            className="authorize-btn"
+                            onClick={handleReject}
+                        >
+                            Reject
                         </button>
                     </div>
 
