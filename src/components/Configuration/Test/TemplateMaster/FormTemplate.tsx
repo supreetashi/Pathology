@@ -369,13 +369,27 @@ function PropertiesPanel({
   return null;
 }
 
+interface FormTemplateProps {
+  value?: FormSection[];
+  onChange?: (sections: FormSection[]) => void;
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export default function FormTemplate() {
-  const [sections, setSections] = useState<FormSection[]>([]);
+export default function FormTemplate({ value: initialValue, onChange }: FormTemplateProps) {
+  const [sections, setSections] = useState<FormSection[]>(initialValue ?? []);
   const [selected, setSelected] = useState<SelectedTarget | null>(null);
   const [dragOverCanvas, setDragOverCanvas] = useState(false);
   const [dragOverCol, setDragOverCol] = useState<{ sId: string; col: number } | null>(null);
+
+  // ── Central update — notifies parent on every change ──
+  const updateSections = (updated: FormSection[] | ((prev: FormSection[]) => FormSection[])) => {
+    setSections((prev) => {
+      const next = typeof updated === "function" ? updated(prev) : updated;
+      onChange?.(next);
+      return next;
+    });
+  };
 
   const onSidebarDragStart = (e: React.DragEvent, itemType: string) => {
     e.dataTransfer.setData("itemType", itemType);
@@ -388,7 +402,7 @@ export default function FormTemplate() {
     const isLayout = LAYOUT_ELEMENTS.find((l) => l.type === itemType);
     if (isLayout) {
       const cols = colCount(itemType as LayoutType);
-      setSections((prev) => [...prev, {
+      updateSections((prev) => [...prev, {   // ← was setSections
         id: uid(),
         layout: itemType as LayoutType,
         headingText: itemType === "heading" ? "Heading" : undefined,
@@ -406,7 +420,7 @@ export default function FormTemplate() {
     if (!itemType) return;
     const isField = FORM_ELEMENTS.find((f) => f.type === itemType);
     if (isField) {
-      setSections((prev) => prev.map((s) =>
+      updateSections((prev) => prev.map((s) =>   // ← was setSections
         s.id !== sectionId ? s : {
           ...s,
           columns: s.columns.map((col, ci) =>
@@ -417,12 +431,12 @@ export default function FormTemplate() {
   };
 
   const deleteSection = (sectionId: string) => {
-    setSections((prev) => prev.filter((s) => s.id !== sectionId));
+    updateSections((prev) => prev.filter((s) => s.id !== sectionId));  // ← was setSections
     setSelected(null);
   };
 
   const deleteField = (sectionId: string, colIdx: number, fieldIdx: number) => {
-    setSections((prev) => prev.map((s) =>
+    updateSections((prev) => prev.map((s) =>   // ← was setSections
       s.id !== sectionId ? s : {
         ...s,
         columns: s.columns.map((col, ci) =>
@@ -432,7 +446,7 @@ export default function FormTemplate() {
   };
 
   const moveSection = (idx: number, dir: -1 | 1) => {
-    setSections((prev) => {
+    updateSections((prev) => {   // ← was setSections
       const arr = [...prev];
       const swap = idx + dir;
       if (swap < 0 || swap >= arr.length) return arr;
@@ -549,7 +563,7 @@ export default function FormTemplate() {
         <PropertiesPanel
           target={selected}
           sections={sections}
-          onUpdate={setSections}
+          onUpdate={updateSections} 
           onDelete={() => {
             if (selected.type === "field") deleteField(selected.sectionId, selected.colIdx!, selected.fieldIdx!);
             else deleteSection(selected.sectionId);

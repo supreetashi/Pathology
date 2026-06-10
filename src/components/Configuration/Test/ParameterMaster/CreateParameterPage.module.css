@@ -1,894 +1,1075 @@
 /* ─── Page Layout ─────────────────────────────────────────────────────────── */
+
 .page {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  inset: 0;
-  background: #f3f3f3;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  font-family: 'Nunito', sans-serif;
-  font-size: clamp(14px, 1.5vh, 16px); 
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    inset: 0;
+    background: #f3f3f3;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    font-family: 'Nunito', sans-serif;
+    font-size: clamp(14px, 1.5vh, 16px);
 }
 
 .card {
-  background: #fff;
-  border-radius: 16px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
+    background: #fff;
+    border-radius: 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
+
 /* ─── Header ──────────────────────────────────────────────────────────────── */
+
 .header {
-  display: flex;
-  align-items: center;
-  gap: 0.75em;
-  padding: 1em 1.5em ;
-  flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75em;
+    padding: 1em 1.5em;
+    flex-shrink: 0;
 }
 
 .backBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  border-radius: 8px;
-  color: #505050;
-  transition: background 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    border-radius: 8px;
+    color: #505050;
+    transition: background 0.2s;
 }
 
 .pageTitle {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 1.125em;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.125em;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
 }
+
 
 /* ─── Content ─────────────────────────────────────────────────────────────── */
+
 .content {
-  flex: 1;
-  padding: 0 1.5em;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5em;
-  overflow-y: auto;
-  min-height: 0;
+    flex: 1;
+    padding: 0 1.5em;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5em;
+    overflow-y: auto;
+    min-height: 0;
 }
 
+
 /* ─── Section ─────────────────────────────────────────────────────────────── */
+
 .section {
-  display: flex;
-  flex-direction: column;
-  gap: 1em;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
 }
 
 .sectionTitle {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 0.8em;
-  font-weight: 700;
-  color: #7a7a7a;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.8em;
+    font-weight: 700;
+    color: #7a7a7a;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0;
 }
 
+
 /* ─── Form Grid ───────────────────────────────────────────────────────────── */
+
 .formGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.25em 1.5em;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25em 1.5em;
 }
 
 .formGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
 }
 
+
 /* ── Floating-label field wrapper ── */
+
 .fieldBorder {
-  position: relative;
-  border: 1px solid #E2E3E5;
-  border-radius: 8px;
-  background: #fff;
-  transition: border-color 0.2s;
+    position: relative;
+    border: 1px solid #E2E3E5;
+    border-radius: 8px;
+    background: #fff;
+    transition: border-color 0.2s;
 }
 
 .fieldBorder:focus-within {
-  border-color: #9e9e9e;
+    border-color: #9e9e9e;
 }
 
+
 /* The label floats up and sits ON the border line */
+
 .floatLabel {
-  position: absolute;
-  top: -0.55em;
-  left: 0.75em;
-  padding: 0 0.3em;
-  background: #fff;
-  font-size: 0.78em;
-  font-weight: 500;
-  color: #9e9e9e;
-  font-family: 'Noto Sans', sans-serif;
-  line-height: 1;
-  pointer-events: none;
-  white-space: nowrap;
-  z-index: 1;
+    position: absolute;
+    top: -0.55em;
+    left: 0.75em;
+    padding: 0 0.3em;
+    background: #fff;
+    font-size: 0.78em;
+    font-weight: 500;
+    color: #9e9e9e;
+    font-family: 'Noto Sans', sans-serif;
+    line-height: 1;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 1;
 }
 
 .floatInput {
-  height: 2.6em;
-  padding: 0 0.875em;
-  border: none;
-  border-radius: 8px;
-  font-size: 1em;
-  font-family: 'Nunito', sans-serif;
-  font-weight: 500;
-  color: #1a1a1a;
-  outline: none;
-  box-sizing: border-box;
-  width: 100%;
-  background: transparent;
+    height: 2.6em;
+    padding: 0 0.875em;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 500;
+    color: #1a1a1a;
+    outline: none;
+    box-sizing: border-box;
+    width: 100%;
+    background: transparent;
 }
 
 .floatSelect {
-  height: 2.6em;
-  padding: 0 2em 0 0.875em;
-  border: none;
-  border-radius: 8px;
-  font-size: 1em;
-  font-family: 'Nunito', sans-serif;
-  font-weight: 500;
-  color: #1a1a1a;
-  outline: none;
-  appearance: none;
-  background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239e9e9e' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 0.875em center;
-  box-sizing: border-box;
-  width: 100%;
-  cursor: pointer;
+    height: 2.6em;
+    padding: 0 2em 0 0.875em;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 500;
+    color: #1a1a1a;
+    outline: none;
+    appearance: none;
+    background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239e9e9e' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 0.875em center;
+    box-sizing: border-box;
+    width: 100%;
+    cursor: pointer;
 }
 
+
 /* Legacy (kept for side panel) */
+
 .label {
-  font-size: 0.85em;
-  font-weight: 400;
-  color: #9e9e9e;
-  font-family: 'Noto Sans', sans-serif;
+    font-size: 0.85em;
+    font-weight: 400;
+    color: #9e9e9e;
+    font-family: 'Noto Sans', sans-serif;
 }
 
 .input {
-  height: 2.75em;
-  padding: 0 0.875em;
-  border: 1px solid #E2E3E5;
-  border-radius: 8px;
-  font-size: 0.9em;
-  font-family: 'Nunito', sans-serif;
-  font-weight: 500;
-  color: #1a1a1a;
-  outline: none;
-  transition: border 0.2s;
-  box-sizing: border-box;
-  width: 100%;
+    height: 2.75em;
+    padding: 0 0.875em;
+    border: 1px solid #E2E3E5;
+    border-radius: 8px;
+    font-size: 0.9em;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 500;
+    color: #1a1a1a;
+    outline: none;
+    transition: border 0.2s;
+    box-sizing: border-box;
+    width: 100%;
 }
 
 .input:focus {
-  border-color: #9e9e9e;
+    border-color: #9e9e9e;
 }
 
 .select {
-  height: 2.75em;
-  padding: 0 2em 0 0.875em;
-  border: 1px solid #E2E3E5;
-  border-radius: 8px;
-  font-size: 0.9em;
-  font-family: 'Nunito', sans-serif;
-  font-weight: 500;
-  color: #1a1a1a;
-  outline: none;
-  appearance: none;
-  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239e9e9e' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 0.875em center;
-  transition: border 0.2s;
-  box-sizing: border-box;
-  width: 100%;
-  cursor: pointer;
+    height: 2.75em;
+    padding: 0 2em 0 0.875em;
+    border: 1px solid #E2E3E5;
+    border-radius: 8px;
+    font-size: 0.9em;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 500;
+    color: #1a1a1a;
+    outline: none;
+    appearance: none;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239e9e9e' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 0.875em center;
+    transition: border 0.2s;
+    box-sizing: border-box;
+    width: 100%;
+    cursor: pointer;
 }
 
 .select:focus {
-  border-color: #9e9e9e;
+    border-color: #9e9e9e;
 }
 
+
 /* ─── Number Input (floating label variant) ───────────────────────────────── */
+
 .numberFieldBorder {
-  position: relative;
-  border: 1px solid #E2E3E5;
-  border-radius: 8px;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  transition: border-color 0.2s;
+    position: relative;
+    border: 1px solid #E2E3E5;
+    border-radius: 8px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    transition: border-color 0.2s;
 }
 
 .numberFieldBorder:focus-within {
-  border-color: #9e9e9e;
+    border-color: #9e9e9e;
 }
 
 .numberFloatLabel {
-  position: absolute;
-  top: -0.55em;
-  left: 0.75em;
-  padding: 0 0.3em;
-  background: #fff;
-  font-size: 0.78em;
-  font-weight: 500;
-  color: #9e9e9e;
-  font-family: 'Noto Sans', sans-serif;
-  line-height: 1;
-  pointer-events: none;
-  white-space: nowrap;
-  z-index: 1;
+    position: absolute;
+    top: -0.55em;
+    left: 0.75em;
+    padding: 0 0.3em;
+    background: #fff;
+    font-size: 0.78em;
+    font-weight: 500;
+    color: #9e9e9e;
+    font-family: 'Noto Sans', sans-serif;
+    line-height: 1;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 1;
 }
 
 .floatNumberInput {
-  height: 2.6em;
-  padding: 0 2.5em 0 0.875em;
-  border: none;
-  border-radius: 8px;
-  font-size: 1em;
-  font-family: 'Nunito', sans-serif;
-  font-weight: 500;
-  color: #1a1a1a;
-  outline: none;
-  box-sizing: border-box;
-  width: 100%;
-  background: transparent;
-  /* hide native number arrows */
-  -moz-appearance: textfield;
+    height: 2.6em;
+    padding: 0 2.5em 0 0.875em;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 500;
+    color: #1a1a1a;
+    outline: none;
+    box-sizing: border-box;
+    width: 100%;
+    background: transparent;
+    /* hide native number arrows */
+    -moz-appearance: textfield;
 }
 
 .floatNumberInput::-webkit-outer-spin-button,
 .floatNumberInput::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 .numberControls {
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  display: flex;
-  flex-direction: column;
-  width: 2em;
-  border-left: 1px solid #E2E3E5;
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    width: 2em;
+    border-left: 1px solid #E2E3E5;
 }
 
 .numberBtn {
-  flex: 1;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.6em;
-  color: #9e9e9e;
-  transition: background 0.2s;
-  line-height: 1;
+    flex: 1;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6em;
+    color: #9e9e9e;
+    transition: background 0.2s;
+    line-height: 1;
 }
 
 .numberBtn:first-child {
-  border-bottom: 1px solid #E2E3E5;
-  border-radius: 0 8px 0 0;
+    border-bottom: 1px solid #E2E3E5;
+    border-radius: 0 8px 0 0;
 }
 
 .numberBtn:last-child {
-  border-radius: 0 0 8px 0;
+    border-radius: 0 0 8px 0;
 }
 
 .numberBtn:hover {
-  background: #f3f3f3;
+    background: #f3f3f3;
 }
 
+
 /* ─── Radio Group (Figma style) ───────────────────────────────────────────── */
+
+
 /* Wrapper that looks like a floating-label field */
+
 .radioFieldBorder {
-  position: relative;
-  background: #fff;
-  height: 2.6em;
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
+    position: relative;
+    background: #fff;
+    height: 2.6em;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
 }
 
 .radioFloatLabel {
-  position: absolute;
-  top: -0.55em;
-  left: 0.75em;
-  padding: 0 0.3em;
-  background: #fff;
-  font-size: 0.72em;
-  font-weight: 500;
-  color: #9e9e9e;
-  font-family: 'Noto Sans', sans-serif;
-  line-height: 1;
-  pointer-events: none;
-  white-space: nowrap;
-  z-index: 1;
+    position: absolute;
+    top: -0.55em;
+    left: 0.75em;
+    padding: 0 0.3em;
+    background: #fff;
+    font-size: 0.72em;
+    font-weight: 500;
+    color: #9e9e9e;
+    font-family: 'Noto Sans', sans-serif;
+    line-height: 1;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 1;
 }
 
 .radioLabel {
-  display: flex;
-  align-items: center;
-  gap: 0.45em;
-  font-size: 0.9em;
-  font-weight: 500;
-  color: #1a1a1a;
-  cursor: pointer;
-  user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 0.45em;
+    font-size: 0.9em;
+    font-weight: 500;
+    color: #1a1a1a;
+    cursor: pointer;
+    user-select: none;
 }
+
 
 /* Hide native radio */
+
 .radioLabel input[type="radio"] {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 1em;
-  height: 1em;
-  border-radius: 50%;
-  border: 2px solid #ccc;
-  background: #fff;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: border-color 0.15s, background 0.15s;
-  position: relative;
+    appearance: none;
+    -webkit-appearance: none;
+    width: 1em;
+    height: 1em;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    background: #fff;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: border-color 0.15s, background 0.15s;
+    position: relative;
 }
+
 
 /* Checked state — filled orange dot */
+
 .radioLabel input[type="radio"]:checked {
-  border-color: black;
-  background: #E17C64;
-  box-shadow: inset 0 0 0 1px #fff;
+    border-color: black;
+    background: #E17C64;
+    box-shadow: inset 0 0 0 1px #fff;
 }
 
+
 /* ─── Checkbox ────────────────────────────────────────────────────────────── */
+
 .checkboxLabel {
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
-  font-size: 0.875em;
-  font-weight: 500;
-  color: #1a1a1a;
-  cursor: pointer;
-  user-select: none;
-  height: 2.6em;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    font-size: 0.875em;
+    font-weight: 500;
+    color: #1a1a1a;
+    cursor: pointer;
+    user-select: none;
+    height: 2.6em;
 }
 
 .checkboxLabel input[type="checkbox"] {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 1em;
-  height: 1em;
-  border-radius: 3px;
-  border: 2px solid #ccc;
-  background: #fff;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: border-color 0.15s, background 0.15s;
-  position: relative;
+    appearance: none;
+    -webkit-appearance: none;
+    width: 1em;
+    height: 1em;
+    border-radius: 3px;
+    border: 2px solid #ccc;
+    background: #fff;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: border-color 0.15s, background 0.15s;
+    position: relative;
 }
 
 .checkboxLabel input[type="checkbox"]:checked {
-  border-color: #bbfebd;
-  background: #bbfebd;
+    border-color: #bbfebd;
+    background: #bbfebd;
 }
+
 
 /* Checkmark via pseudo */
+
 .checkboxLabel input[type="checkbox"]:checked::after {
-  content: '';
-  position: absolute;
-  left: 3px;
-  top: -1px;
-  width: 3px;
-  height: 7px;
-  border: 2px solid green;
-  border-top: none;
-  border-left: none;
-  transform: rotate(45deg);
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: -1px;
+    width: 3px;
+    height: 7px;
+    border: 2px solid green;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg);
 }
 
+
 /* ─── Reference Ranges ────────────────────────────────────────────────────── */
+
 .refRangesHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .addRangeBtn {
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-size: 0.875em;
-  font-weight: 600;
-  color: #5A8AEA;
-  font-family: 'Montserrat', sans-serif;
-  padding: 0.5em 0;
-  transition: opacity 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 0.875em;
+    font-weight: 600;
+    color: #5A8AEA;
+    font-family: 'Montserrat', sans-serif;
+    padding: 0.5em 0;
+    transition: opacity 0.2s;
 }
 
 .addRangeBtn:hover {
-  opacity: 0.75;
+    opacity: 0.75;
 }
 
+
 /* Table container: fixed height + scroll, edit col sticky */
+
 .refTableWrapper {
-  overflow-x: auto;
-  border: 1px solid #E2E3E5;
-  border-radius: 10px;
+    overflow-x: auto;
+    border: 1px solid #E2E3E5;
+    border-radius: 10px;
 }
 
 .refTable {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.95em;
-  table-layout: auto;
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95em;
+    table-layout: auto;
 }
 
 .refTable thead th {
-  padding: 0.75em 1em;
-  background: #fafafa;
-  color: #7a7a7a;
-  font-family: 'Noto Sans', sans-serif;
-  font-size: 0.9em;
-  font-weight: 400;
-  text-align: left;
-  white-space: nowrap;
-  position: sticky;
-  top: 0;
-  z-index: 2;
+    padding: 0.75em 1em;
+    background: #fafafa;
+    color: #7a7a7a;
+    font-family: 'Noto Sans', sans-serif;
+    font-size: 0.9em;
+    font-weight: 400;
+    text-align: left;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 2;
 }
+
 
 /* Sticky delete column (first) */
+
 .refTable thead th:first-child,
 .refTable tbody tr td:first-child {
-  position: sticky;
-  left: 0;
-  background: #fafafa;
-  z-index: 3;
-  min-width: 2.5em;
+    position: sticky;
+    left: 0;
+    background: #fafafa;
+    z-index: 3;
+    min-width: 2.5em;
 }
 
 .refTable tbody tr td:first-child {
-  background: #fff;
-  z-index: 2;
+    background: #fff;
+    z-index: 2;
 }
+
 
 /* Sticky edit column (last) */
+
 .refTable thead th:last-child,
 .refTable tbody tr td:last-child {
-  position: sticky;
-  right: 0;
-  background: #fafafa;
-  z-index: 3;
-  text-align: right;
-  padding-right: 0.75em;
-  min-width: 3em;
-  box-shadow: -2px 0 6px rgba(0,0,0,0.06);
+    position: sticky;
+    right: 0;
+    background: #fafafa;
+    z-index: 3;
+    text-align: right;
+    padding-right: 0.75em;
+    min-width: 3em;
+    box-shadow: -2px 0 6px rgba(0, 0, 0, 0.06);
 }
 
 .refTable tbody tr td:last-child {
-  background: #fff;
-  z-index: 2;
+    background: #fff;
+    z-index: 2;
 }
 
 .refTable tbody tr td {
-  padding: 0.75em 1em;
-  border-top: 1px solid #e2e3e599;
-  color: #232323;
-  font-weight: 500;
-  vertical-align: middle;
-  white-space: nowrap;
+    padding: 0.75em 1em;
+    border-top: 1px solid #e2e3e599;
+    color: #232323;
+    font-weight: 500;
+    vertical-align: middle;
+    white-space: nowrap;
 }
 
 .refTable tbody tr:first-child td {
-  border-top: none;
+    border-top: none;
 }
 
 .deleteBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.4em;
-  height: 1.4em;
-  border-radius: 50%;
-  background: #fff;
-  border: 1px solid #ff4d4f;
-  cursor: pointer;
-  color: #ff4d4f;
-  font-size: 0.8em;
-  flex-shrink: 0;
-  transition: background 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.4em;
+    height: 1.4em;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid #ff4d4f;
+    cursor: pointer;
+    color: #ff4d4f;
+    font-size: 0.8em;
+    flex-shrink: 0;
+    transition: background 0.2s;
 }
 
 .deleteBtn:hover {
-  background: #d9363e;
-  color: #fff;
+    background: #d9363e;
+    color: #fff;
 }
 
 .editRowBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 0.25em;
-  opacity: 0.6;
-  transition: opacity 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.25em;
+    opacity: 0.6;
+    transition: opacity 0.2s;
 }
 
 .editRowBtn:hover {
-  opacity: 1;
+    opacity: 1;
 }
 
 .checkIcon {
-  color: #4caf50;
-  font-size: 1.1em;
+    color: #4caf50;
+    font-size: 1.1em;
 }
 
+
 /* ─── Formula ─────────────────────────────────────────────────────────────── */
+
 .formulaBox {
-  border: 1px solid #E2E3E5;
-  background-color: #F8F8F9;
-  border-radius: 16px;
-  padding: 1.5em 1.25em 1em;
-  display: flex;
-  align-items: stretch;
-  gap: 1em;
-  min-height: 9em;
+    border: 1px solid #E2E3E5;
+    background-color: #F8F8F9;
+    border-radius: 16px;
+    padding: 1.5em 1.25em 1em;
+    display: flex;
+    align-items: stretch;
+    gap: 1em;
+    min-height: 9em;
 }
 
 .formulaInner {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 1em 1.25em;
-  box-shadow: 0 0 0 1px #e5e5e5 inset; /* subtle border */
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1em 1.25em;
+    box-shadow: 0 0 0 1px #e5e5e5 inset;
+    /* subtle border */
 }
 
+
 /* Left: expression display area */
+
 .formulaExpression {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5em;
-  flex-wrap: wrap;
-  min-height: 3em;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5em;
+    flex-wrap: wrap;
+    min-height: 3em;
 }
 
 .formulaText {
-  height: 2.7em;
-  min-width: 2.7em;
-  padding: 0 0.5em;
-  border: 1px solid #E2E3E5;
-  border-radius: 6px;
-  background: #F1F1F1;
-  font-size: 1em;
-  color: #505050;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    height: 2.7em;
+    min-width: 2.7em;
+    padding: 0 0.5em;
+    border: 1px solid #E2E3E5;
+    border-radius: 6px;
+    background: #F1F1F1;
+    font-size: 1em;
+    color: #505050;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .formulaSelect {
-  height: 3em;
-  padding: 0 1.5em 0 0.5em;
-  border: 1px solid #E2E3E5;
-  border-radius: 6px;
-  font-size: 0.875em;
-  font-family: 'Nunito', sans-serif;
-  color: #1a1a1a;
-  outline: none;
-  appearance: none;
-  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%239e9e9e' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 0.5em center;
-  cursor: pointer;
+    height: 3em;
+    padding: 0 1.5em 0 0.5em;
+    border: 1px solid #E2E3E5;
+    border-radius: 6px;
+    font-size: 0.875em;
+    font-family: 'Nunito', sans-serif;
+    color: #1a1a1a;
+    outline: none;
+    appearance: none;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%239e9e9e' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 0.5em center;
+    cursor: pointer;
 }
 
 .formulaOperator {
-  height: 2.7em;
-  min-width: 2.7em;
-  padding: 0 0.5em;
-  border: 1px solid #E2E3E5;
-  border-radius: 6px;
-  background: #F1F1F1;
-  font-size: 1em;
-  color: #505050;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    height: 2.7em;
+    min-width: 2.7em;
+    padding: 0 0.5em;
+    border: 1px solid #E2E3E5;
+    border-radius: 6px;
+    background: #F1F1F1;
+    font-size: 1em;
+    color: #505050;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
+
 
 /* Vertical divider between expression and controls */
+
 .formulaDivider {
-  width: 1px;
-  background: #E2E3E5;
-  flex-shrink: 0;
-  align-self: stretch;
+    width: 1px;
+    background: #E2E3E5;
+    flex-shrink: 0;
+    align-self: stretch;
 }
 
+
 /* Right: operator buttons + action buttons stacked in 2 rows */
+
 .formulaControls {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5em;
-  justify-content: center;
-  flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .formulaRow {
-  display: flex;
-  gap: 0.4em;
-  align-items: center;
+    display: flex;
+    gap: 0.4em;
+    align-items: center;
 }
 
 .formulaBtn {
-  height: 2.7em;
-  min-width: 2.7em;
-  padding: 0 0.5em;
-  border: 1px solid #E2E3E5;
-  border-radius: 6px;
-  background: #F1F1F1;
-  font-size: 0.95em;
-  font-weight: 600;
-  color: #505050;
-  cursor: pointer;
-  transition: background 0.2s;
-  font-family: 'Nunito', sans-serif;
+    height: 2.7em;
+    min-width: 2.7em;
+    padding: 0 0.5em;
+    border: 1px solid #E2E3E5;
+    border-radius: 6px;
+    background: #F1F1F1;
+    font-size: 0.95em;
+    font-weight: 600;
+    color: #505050;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-family: 'Nunito', sans-serif;
 }
 
 .formulaBtn:hover {
-  background: #f3f3f3;
+    background: #f3f3f3;
 }
 
 .validateBtn {
-  height: 2.7em;
-  padding: 0 1em;
-  border: none;
-  border-radius: 6px;
-  background: #505050;
-  color: #fff;
-  font-size: 0.95em;
-  font-weight: 700;
-  cursor: pointer;
-  font-family: 'Montserrat', sans-serif;
-  transition: background 0.2s;
-  white-space: nowrap;
+    height: 2.7em;
+    padding: 0 1em;
+    border: none;
+    border-radius: 6px;
+    background: #505050;
+    color: #fff;
+    font-size: 0.95em;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    transition: background 0.2s;
+    white-space: nowrap;
 }
 
 .validateBtn:hover {
-  background: #222;
+    background: #222;
 }
 
 .addParamBtn {
-  height: 2.7em;
-  padding: 0 0.875em;
-  border: 1px solid #E2E3E5;
-  border-radius: 6px;
-  background: #F1F1F1;
-  font-size: 0.95em;
-  font-weight: 600;
-  color: #505050;
-  cursor: pointer;
-  font-family: 'Nunito', sans-serif;
-  transition: background 0.2s;
-  white-space: nowrap;
+    height: 2.7em;
+    padding: 0 0.875em;
+    border: 1px solid #E2E3E5;
+    border-radius: 6px;
+    background: #F1F1F1;
+    font-size: 0.95em;
+    font-weight: 600;
+    color: #505050;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    transition: background 0.2s;
+    white-space: nowrap;
 }
 
 .addParamBtn:hover {
-  background: #f3f3f3;
+    background: #f3f3f3;
 }
 
 .clearBtn {
-  height: 2.7em;
-  width: 10.9em;
-  padding: 0 0.875em;
-  border: 1px solid #E2E3E5;
-  border-radius: 6px;
-  background: #fff;
-  font-size: 0.95em;
-  font-weight: 600;
-  color: black;
-  cursor: pointer;
-  font-family: 'Nunito', sans-serif;
-  transition: background 0.2s;
-  white-space: nowrap;
+    height: 2.7em;
+    width: 10.9em;
+    padding: 0 0.875em;
+    border: 1px solid #E2E3E5;
+    border-radius: 6px;
+    background: #fff;
+    font-size: 0.95em;
+    font-weight: 600;
+    color: black;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    transition: background 0.2s;
+    white-space: nowrap;
 }
 
 .clearBtn:hover {
-  background: #F1F1F1;
+    background: #F1F1F1;
 }
 
+
 /* ─── Footer Actions ──────────────────────────────────────────────────────── */
+
 .footerActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75em;
-  padding: 1em 1.5em;
-  flex-shrink: 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75em;
+    padding: 1em 1.5em;
+    flex-shrink: 0;
 }
 
 .cancelBtn {
-  height: 2.75em;
-  padding: 0 1.5em;
-  border: 1px solid #E2E3E5;
-  border-radius: 10px;
-  background: #fff;
-  font-size: 1em;
-  font-weight: 600;
-  color: #505050;
-  cursor: pointer;
-  font-family: 'Montserrat', sans-serif;
-  transition: background 0.2s;
+    height: 2.75em;
+    padding: 0 1.5em;
+    border: 1px solid #E2E3E5;
+    border-radius: 10px;
+    background: #fff;
+    font-size: 1em;
+    font-weight: 600;
+    color: #505050;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    transition: background 0.2s;
 }
 
 .cancelBtn:hover {
-  background: #f3f3f3;
+    background: #f3f3f3;
 }
 
 .saveBtn {
-  height: 2.75em;
-  padding: 0 2em;
-  border: none;
-  border-radius: 10px;
-  background: #505050;
-  color: #fff;
-  font-size: 1em;
-  font-weight: 700;
-  cursor: pointer;
-  font-family: 'Montserrat', sans-serif;
-  transition: background 0.2s;
+    height: 2.75em;
+    padding: 0 2em;
+    border: none;
+    border-radius: 10px;
+    background: #505050;
+    color: #fff;
+    font-size: 1em;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    transition: background 0.2s;
 }
 
 .saveBtn:hover {
-  background: #222;
+    background: #222;
 }
 
+
 /* ─── Side Panel ──────────────────────────────────────────────────────────── */
+
 .overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.3);
-  z-index: 10000;
-  display: flex;
-  justify-content: flex-end;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    display: flex;
+    justify-content: flex-end;
 }
 
 .sidePanel {
-  width: 420px;
-  height: 100%;
-  background: #fff;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+    width: 420px;
+    height: 100%;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
 }
 
 .sidePanelHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25em 1.5em;
-  border-bottom: 1px solid #f0f0f0;
-  flex-shrink: 0;
-  background: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25em 1.5em;
+    border-bottom: 1px solid #f0f0f0;
+    flex-shrink: 0;
+    background: #fff;
 }
 
 .sidePanelTitle {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 1em;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1em;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
 }
 
 .closeBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-size: 1.25em;
-  color: #9e9e9e;
-  padding: 0.25em;
-  border-radius: 6px;
-  transition: background 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.25em;
+    color: #9e9e9e;
+    padding: 0.25em;
+    border-radius: 6px;
+    transition: background 0.2s;
 }
 
 .closeBtn:hover {
-  background: #f3f3f3;
+    background: #f3f3f3;
 }
 
 .sidePanelContent {
-  padding: 1.5em;
-  display: flex;
-  flex-direction: column;
-  gap: 1em;
-  flex: 1;
-  overflow-y: auto;
+    padding: 1.5em;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    flex: 1;
+    overflow-y: auto;
 }
 
 .sidePanelGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1em;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1em;
 }
 
 .sidePanelFooter {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75em;
-  padding: 1em 1.5em;
-  border-top: 1px solid #f0f0f0;
-  flex-shrink: 0;
-  background: #fff;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75em;
+    padding: 1em 1.5em;
+    border-top: 1px solid #f0f0f0;
+    flex-shrink: 0;
+    background: #fff;
 }
 
 .divider {
-  height: 1px;
-  background: #f0f0f0;
-  margin: 0.25em 0;
+    height: 1px;
+    background: #f0f0f0;
+    margin: 0.25em 0;
 }
 
 .varyingRangesText {
-  font-size: 0.8em;
-  color: #505050;
-  line-height: 1.5;
+    font-size: 0.8em;
+    color: #505050;
+    line-height: 1.5;
 }
 
+
 /* legacy kept for side panel number input */
+
 .numberInputWrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
+    position: relative;
+    display: flex;
+    align-items: center;
 }
 
 .numberInput {
-  height: 2.75em;
-  padding: 0 2.5em 0 0.875em;
-  border: 1px solid #E2E3E5;
-  border-radius: 8px;
-  font-size: 0.9em;
-  font-family: 'Nunito', sans-serif;
-  font-weight: 500;
-  color: #1a1a1a;
-  outline: none;
-  transition: border 0.2s;
-  box-sizing: border-box;
-  width: 100%;
-  -moz-appearance: textfield;
+    height: 2.75em;
+    padding: 0 2.5em 0 0.875em;
+    border: 1px solid #E2E3E5;
+    border-radius: 8px;
+    font-size: 0.9em;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 500;
+    color: #1a1a1a;
+    outline: none;
+    transition: border 0.2s;
+    box-sizing: border-box;
+    width: 100%;
+    -moz-appearance: textfield;
 }
 
 .numberInput::-webkit-outer-spin-button,
 .numberInput::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 .numberInput:focus {
-  border-color: #9e9e9e;
+    border-color: #9e9e9e;
+}
+
+
+/* ─── Formula chips ───────────────────────────────────────────────────────── */
+
+.formulaParamChip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    background: #e8f4ff;
+    border: 1px solid #b3d4f5;
+    border-radius: 6px;
+    padding: 0.25em 0.5em;
+    font-size: 0.85em;
+    font-weight: 600;
+    color: #1a6bbf;
+    cursor: pointer;
+    transition: background 0.15s;
+    user-select: none;
+}
+
+.formulaParamChip:hover {
+    background: #cce4ff;
+}
+
+.formulaOpChip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 0.25em 0.5em;
+    font-size: 0.88em;
+    font-weight: 700;
+    color: #333;
+    cursor: pointer;
+    transition: background 0.15s;
+    user-select: none;
+}
+
+.formulaOpChip:hover {
+    background: #ebebeb;
+}
+
+.formulaChipRemove {
+    font-size: 0.85em;
+    color: #999;
+    margin-left: 2px;
+}
+
+
+/* ─── Validate message ────────────────────────────────────────────────────── */
+
+.validateMsg {
+    font-size: 0.82em;
+    font-weight: 600;
+    margin-top: 0.5em;
+    padding: 0 0.5em;
+}
+
+
+/* ─── Parameter picker dropdown ───────────────────────────────────────────── */
+
+.paramPicker {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 0;
+    width: 320px;
+    background: #fff;
+    border: 1px solid #E2E3E5;
+    border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    z-index: 300;
+    overflow: hidden;
+}
+
+.paramPickerSearch {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.6em 0.875em;
+    border: none;
+    border-bottom: 1px solid #E2E3E5;
+    font-size: 0.88em;
+    font-family: 'Nunito', sans-serif;
+    outline: none;
+    color: #1a1a1a;
+}
+
+.paramPickerList {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.paramPickerRow {
+    display: flex;
+    align-items: center;
+    gap: 0.75em;
+    padding: 0.6em 0.875em;
+    cursor: pointer;
+    transition: background 0.12s;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.paramPickerRow:hover {
+    background: #f0f7ff;
+}
+
+.paramPickerCode {
+    font-size: 0.82em;
+    font-weight: 700;
+    color: #1a6bbf;
+    min-width: 80px;
+    flex-shrink: 0;
+}
+
+.paramPickerName {
+    font-size: 0.85em;
+    color: #333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.paramPickerEmpty {
+    padding: 1em;
+    font-size: 0.85em;
+    color: #999;
+    text-align: center;
 }
