@@ -15,6 +15,8 @@ type RejectedRow = {
   age: number;
   patientCode: string;
   gender: string;
+  rejectDate?: string | null;
+  rejectTime?: string | null;
   remark?: string | null;
   resendNewSample?: boolean | null;
 };
@@ -29,7 +31,7 @@ function RejectedTab({ rows }: RejectedTabProps) {
     <table className="receive-table">
       <thead>
         <tr>
-          <th>Date | Time</th>
+          <th>Reject Date | Time</th>
           <th>Shipment No.</th>
           <th>Sample No. | Type</th>
           <th>Test Code | Name</th>
@@ -44,8 +46,8 @@ function RejectedTab({ rows }: RejectedTabProps) {
         {rows.map((row) => (
           <tr key={row.id}>
             <td>
-              <div className="cell-primary">{row.shipDate}</div>
-              <div className="cell-secondary">{row.shipTime}</div>
+              <div className="cell-primary">{row.rejectDate ?? "—"}</div>
+              <div className="cell-secondary">{row.rejectTime ?? "—"}</div>
             </td>
             <td>
               <div className="cell-primary">{row.shipmentNo}</div>
@@ -82,7 +84,7 @@ function RejectedTab({ rows }: RejectedTabProps) {
                 <ErrorOutlineIcon className="warning-icon" fontSize="small" />
                 <span className="info-hover-card" role="tooltip">
                   <span className="info-hover-row">
-                    <span>Ship Date & Time</span>
+                    <span>Ship Date &amp; Time</span>
                     <strong>
                       {row.shipDate} | {row.shipTime}
                     </strong>
