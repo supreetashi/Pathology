@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { toast } from "react-toastify";
 import "../../styles/Authorization/ResultDetails.css";
 import backIcon from "../Authorization/Icons/back-icon.png";
 import { AuthorizationItem } from "../../types";
@@ -26,7 +27,6 @@ type ParameterRow = {
 const ResultDetails: React.FC<Props> = ({ onBack, authorization }) => {
   const [submitting, setSubmitting] = useState(false);
 
-  // Tests derived from the authorization record (comma-separated test_name)
   const tests = authorization?.test_name
     ? authorization.test_name.split(",").map((t) => t.trim()).filter(Boolean)
     : [];
@@ -34,7 +34,6 @@ const ResultDetails: React.FC<Props> = ({ onBack, authorization }) => {
   const [selectedTests, setSelectedTests] = useState<string[]>(tests);
   const [activeTab, setActiveTab] = useState<string>(tests[0] ?? "");
 
-  // Parameter rows must come from a results API - empty until wired up
   const [parameters, setParameters] = useState<ParameterRow[]>([]);
 
   const handleParameterChange = (
@@ -59,11 +58,11 @@ const ResultDetails: React.FC<Props> = ({ onBack, authorization }) => {
       setSubmitting(true);
       await approveAuthorization(Number(authorization.id));
 
-      alert("Approved Successfully");
+      toast.success("Approved Successfully");
       onBack();
     } catch (err) {
       console.error(err);
-      alert("Failed to approve. Please try again.");
+      toast.error("Failed to approve. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -76,11 +75,11 @@ const ResultDetails: React.FC<Props> = ({ onBack, authorization }) => {
       setSubmitting(true);
       await rejectAuthorization(Number(authorization.id));
 
-      alert("Rejected Successfully");
+      toast.success("Rejected Successfully");
       onBack();
     } catch (err) {
       console.error(err);
-      alert("Failed to reject. Please try again.");
+      toast.error("Failed to reject. Please try again.");
     } finally {
       setSubmitting(false);
     }

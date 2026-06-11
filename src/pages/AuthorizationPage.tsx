@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import TopSection from "../components/Authorization/TopSection";
 import TableSection from "../components/Authorization/TableSection";
 import ResultDetails from "../components/Authorization/ResultDetails";
@@ -31,6 +32,7 @@ const AuthorizationPage: React.FC = () => {
       setRejectedCount(rejected.length);
     } catch (err) {
       console.error(err);
+      toast.error("Failed to load authorization counts");
     }
   };
 
@@ -54,6 +56,7 @@ const AuthorizationPage: React.FC = () => {
       setData(response);
     } catch (err) {
       console.error(err);
+      toast.error("Failed to load authorizations");
     } finally {
       setLoading(false);
     }
