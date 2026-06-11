@@ -1,429 +1,311 @@
 import React, { useState } from "react";
+import { toast } from "react-toastify";
 import "../../styles/Authorization/ResultDetails.css";
 import backIcon from "../Authorization/Icons/back-icon.png";
 import { AuthorizationItem } from "../../types";
 import {
-    approveAuthorization,
-    rejectAuthorization,
-} from "../../services/authorizationService";
+  approveAuthorization,
+  rejectAuthorization,
+} from "../../services/authorization.api";
 
 type Props = {
-    onBack: () => void;
-    authorization?: AuthorizationItem | null;
+  onBack: () => void;
+  authorization?: AuthorizationItem | null;
 };
 
+type ParameterRow = {
+  parameter: string;
+  category: string;
+  machine: string;
+  operator: string;
+  resultValue: string;
+  referenceRange: string;
+  authRange: string;
+  status: string;
+};
 
-const ResultDetails: React.FC<Props> = ({
-    onBack,
-    authorization,
-}) => {
-    const handleApprove = async () => {
-        if (!authorization) return;
+const ResultDetails: React.FC<Props> = ({ onBack, authorization }) => {
+  const [submitting, setSubmitting] = useState(false);
 
-        try {
-            await approveAuthorization(
-                Number(authorization.id)
-            );
+  const tests = authorization?.test_name
+    ? authorization.test_name.split(",").map((t) => t.trim()).filter(Boolean)
+    : [];
 
-            alert("Approved Successfully");
-            onBack();
-        } catch (err) {
-            console.error(err);
-        }
+  const [selectedTests, setSelectedTests] = useState<string[]>(tests);
+  const [activeTab, setActiveTab] = useState<string>(tests[0] ?? "");
+
+  const [parameters, setParameters] = useState<ParameterRow[]>([]);
+
+  const handleParameterChange = (
+    index: number,
+    field: keyof ParameterRow,
+    value: string,
+  ) => {
+    const updated = [...parameters];
+
+    updated[index] = {
+      ...updated[index],
+      [field]: value,
     };
 
-    const handleReject = async () => {
-        if (!authorization) return;
+    setParameters(updated);
+  };
 
-        try {
-            await rejectAuthorization(
-                Number(authorization.id)
-            );
+  const handleApprove = async () => {
+    if (!authorization || submitting) return;
 
-            alert("Rejected Successfully");
-            onBack();
-        } catch (err) {
-            console.error(err);
-        }
-    };
+    try {
+      setSubmitting(true);
+      await approveAuthorization(Number(authorization.id));
 
+      toast.success("Approved Successfully");
+      onBack();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to approve. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
-    const [selectedTests, setSelectedTests] = useState<string[]>([
-        "HIV (Rapid Card)",
-        "HCV (Rapid Card)",
-        "(CBC) Complete Blood Count",
-    ]);
-    const [activeTab, setActiveTab] = useState(
-        "(CBC) Complete Blood Count"
-    );
+  const handleReject = async () => {
+    if (!authorization || submitting) return;
 
-    const tests = [
-        "HIV (Rapid Card)",
-        "HCV (Rapid Card)",
-        "HBaSG (Rapid Card)",
-        "(CBC) Complete Blood Count",
-        "Serum Uric Acid",
-        "VDRL (Rapid Card)",
-        "Blood Glucose (RBS)",
-    ];
+    try {
+      setSubmitting(true);
+      await rejectAuthorization(Number(authorization.id));
 
-    const handleParameterChange = (
-        index: number,
-        field: string,
-        value: string
-    ) => {
-        const updated = [...parameters];
+      toast.success("Rejected Successfully");
+      onBack();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to reject. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
-        updated[index] = {
-            ...updated[index],
-            [field]: value,
-        };
+  return (
+    <div className="result-container">
+      {/* Top Header */}
+      <div className="result-header">
+        <button className="back-btn" onClick={onBack}>
+          <img src={backIcon} alt="back" className="back-icon" />
+        </button>
+        <h2>View Result Details</h2>
+      </div>
 
-        setParameters(updated);
-    };
-
-
-    const [parameters, setParameters] = useState([
-        {
-            parameter: "Heamoglobin (hb)",
-            category: "Female",
-            machine: "Manual",
-            operator: "+",
-            resultValue: "14",
-            referenceRange: "12 - 16.5",
-            authRange: "14",
-            status: "Normal",
-        },
-        {
-            parameter: "MCV",
-            category: "Female",
-            machine: "Manual",
-            operator: "-",
-            resultValue: "91",
-            referenceRange: "80 - 100",
-            authRange: "90",
-            status: "Abnormal",
-        },
-        {
-            parameter: "Hematocrit",
-            category: "Female",
-            machine: "Manual",
-            operator: "+",
-            resultValue: "Red",
-            referenceRange: "40 - 52.5",
-            authRange: "45",
-            status: "Reflex",
-        },
-        {
-            parameter: "RDW",
-            category: "Female",
-            machine: "Manual",
-            operator: "",
-            resultValue: "12.8",
-            referenceRange: "12 - 16.5",
-            authRange: "13",
-            status: "Panic",
-        },
-        {
-            parameter: "MCHC",
-            category: "Female",
-            machine: "Manual",
-            operator: "",
-            resultValue: "14",
-            referenceRange: "12 - 16.5",
-            authRange: "14",
-            status: "Improbable",
-        },
-    ]);
-
-    return (
-        <div className="result-container">
-            {/* Top Header */}
-            <div className="result-header">
-                <button className="back-btn" onClick={onBack}>
-                    <img src={backIcon} alt="back" className="back-icon" />
-                </button>
-                <h2>View Result Details</h2>
-            </div>
-
-
-            {/* Patient Info Card */}
-            <div className="patient-card">
-                <img
-                    src="https://randomuser.me/api/portraits/women/44.jpg"
-                    alt="patient"
-                />
-
-                <div className="patient-grid">
-                    <div>
-                        <label>Patient Name</label>
-                        <p>Emilia Williamson</p>
-                    </div>
-                    <div>
-                        <label>Age</label>
-                        <p>27 Years</p>
-                    </div>
-                    <div>
-                        <label>Sex Assigned At Birth</label>
-                        <p>Female</p>
-                    </div>
-                    <div>
-                        <label>MRN</label>
-                        <p>PCC - 4912</p>
-                    </div>
-                    <div>
-                        <label>Allergy</label>
-                        <p>No</p>
-                    </div>
-                    <div>
-                        <label>SART ID</label>
-                        <p>14SGK9876432</p>
-                    </div>
-                    <div>
-                        <label>Last Modified</label>
-                        <p>04/02/2026</p>
-                    </div>
-                    <div>
-                        <label>Referred By</label>
-                        <p>Soniya</p>
-                    </div>
-                    <div>
-                        <label>Pathologist</label>
-                        <p>John Wick</p>
-                    </div>
-                </div>
-            </div>
-
-            <div className="result-content">
-
-                <div className="test-sidebar">
-
-                    {/* SELECT ALL */}
-                    <div
-                        className="test-item"
-                        onClick={() => {
-                            if (selectedTests.length === tests.length) {
-                                setSelectedTests([]);
-                            } else {
-                                setSelectedTests(tests);
-                            }
-                        }}
-                    >
-                        <div className="checkbox">
-                            {selectedTests.length === tests.length && "✓"}
-                        </div>
-
-                        Select All
-                    </div>
-
-                    {/* TEST LIST */}
-                    {tests.map((test) => {
-                        const isSelected = selectedTests.includes(test);
-
-                        return (
-                            <div
-                                key={test}
-                                className={`test-item ${isSelected ? "active" : ""}`}
-                                onClick={() => {
-                                    if (isSelected) {
-                                        setSelectedTests(
-                                            selectedTests.filter((t) => t !== test)
-                                        );
-                                    } else {
-                                        setSelectedTests([...selectedTests, test]);
-                                    }
-                                }}
-                            >
-                                <div className="checkbox">
-                                    {isSelected && "✓"}
-                                </div>
-
-                                {test}
-                            </div>
-                        );
-                    })}
-
-                    <button
-                        className="get-test-btn"
-                        onClick={() => alert("Get Test Clicked")}
-                    >
-                        Get Test
-                    </button>
-
-                </div>
-
-                {/* RIGHT SIDE */}
-                <div className="table-section">
-
-                    {/* Tabs */}
-                    <div className="result-tabs">
-
-                        <button
-                            className={activeTab === "HIV (Rapid Card)" ? "active" : ""}
-                            onClick={() => setActiveTab("HIV (Rapid Card)")}
-                        >
-                            HIV (Rapid Card)
-                        </button>
-
-                        <button
-                            className={activeTab === "HCV (Rapid Card)" ? "active" : ""}
-                            onClick={() => setActiveTab("HCV (Rapid Card)")}
-                        >
-                            HCV (Rapid Card)
-                        </button>
-
-                        <button
-                            className={
-                                activeTab === "(CBC) Complete Blood Count"
-                                    ? "active"
-                                    : ""
-                            }
-                            onClick={() =>
-                                setActiveTab("(CBC) Complete Blood Count")
-                            }
-                        >
-                            (CBC) Complete Blood Count
-                        </button>
-
-                    </div>
-
-                    {/* TABLE */}
-                    <div className="table-scroll">
-                        <div className="result-table">
-
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Parameter</th>
-                                        <th>Category</th>
-                                        <th>Machine/Manual</th>
-                                        <th>Operator</th>
-                                        <th>Result Value</th>
-                                        <th>Reference Range</th>
-                                        <th>AuthZ Range</th>
-                                        <th>Varying Ref. Range</th>
-                                        <th>Result Status</th>
-                                        <th>Previous</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    {parameters.map((row, index) => (
-                                        <tr key={index}>
-                                            <td>{row.parameter}</td>
-                                            <td>{row.category}</td>
-                                            <td>{row.machine}</td>
-
-                                            {/* Operator Dropdown */}
-                                            <td>
-                                                <select
-                                                    className="table-select"
-                                                    value={row.operator}
-                                                    onChange={(e) =>
-                                                        handleParameterChange(
-                                                            index,
-                                                            "operator",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                >
-                                                    <option value="">Select</option>
-                                                    <option value="+">+</option>
-                                                    <option value="-">-</option>
-                                                </select>
-                                            </td>
-
-                                            {/* Result Value Editable Dropdown */}
-                                            <td>
-                                                <input
-                                                    list={`result-options-${index}`}
-                                                    className="table-input"
-                                                    value={row.resultValue}
-                                                    onChange={(e) =>
-                                                        handleParameterChange(
-                                                            index,
-                                                            "resultValue",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                />
-
-                                                <datalist id={`result-options-${index}`}>
-                                                    <option value="14" />
-                                                    <option value="15" />
-                                                    <option value="16" />
-                                                    <option value="91" />
-                                                    <option value="12.8" />
-                                                    <option value="Red" />
-                                                </datalist>
-                                            </td>
-
-                                            <td>{row.referenceRange}</td>
-                                            <td>{row.authRange}</td>
-
-                                            <td>
-                                                Female: 12-16.5 g/dl
-                                                <br />
-                                                Newborn: 14-22 g/dl
-                                            </td>
-
-                                            <td>
-                                                <span className={`badge ${row.status.toLowerCase()}`}>
-                                                    {row.status}
-                                                </span>
-                                            </td>
-
-                                            <td>⚠️</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    {/* FOOTER */}
-                    <div className="result-footer">
-
-                        <div>
-                            <strong>Suggestion Note :</strong>
-
-                            <p>
-                                Hb Within Normal Range. Continue Routine Monitoring If Clinically Required.
-                            </p>
-                        </div>
-
-                        <div>
-                            <strong>Foot Note :</strong>
-
-                            <p>
-                                Reference Ranges May Vary Depending On Age, Gender, And Clinical Condition.
-                            </p>
-                        </div>
-
-                    </div>
-
-                    {/* BUTTON */}
-                    <div className="authorize-btn-wrap">
-                        <button
-                            className="authorize-btn"
-                            onClick={handleApprove}
-                        >
-                            Authorize
-                        </button>
-
-                        <button
-                            className="authorize-btn"
-                            onClick={handleReject}
-                        >
-                            Reject
-                        </button>
-                    </div>
-
-                </div>
-
-            </div>
+      {/* Patient Info Card */}
+      <div className="patient-card">
+        <div className="patient-grid">
+          <div>
+            <label>Patient Name</label>
+            <p>{authorization?.patient_name ?? "-"}</p>
+          </div>
+          <div>
+            <label>Age</label>
+            <p>{authorization?.patient_age ? `${authorization.patient_age} Years` : "-"}</p>
+          </div>
+          <div>
+            <label>Sex Assigned At Birth</label>
+            <p>{authorization?.patient_gender ?? "-"}</p>
+          </div>
+          <div>
+            <label>MRN</label>
+            <p>{authorization?.patient_code ?? "-"}</p>
+          </div>
+          <div>
+            <label>Bill No</label>
+            <p>{authorization?.bill_no ?? "-"}</p>
+          </div>
+          <div>
+            <label>Order Date</label>
+            <p>{authorization?.order_date ?? "-"}</p>
+          </div>
+          <div>
+            <label>Order Time</label>
+            <p>{authorization?.order_time ?? "-"}</p>
+          </div>
+          <div>
+            <label>Referred By</label>
+            <p>{authorization?.doctor_name ?? "-"}</p>
+          </div>
+          <div>
+            <label>Authorized By</label>
+            <p>{authorization?.authorized_by ?? "-"}</p>
+          </div>
         </div>
-    );
+      </div>
+
+      <div className="result-content">
+        <div className="test-sidebar">
+          {tests.length > 0 ? (
+            <>
+              {/* SELECT ALL */}
+              <div
+                className="test-item"
+                onClick={() => {
+                  if (selectedTests.length === tests.length) {
+                    setSelectedTests([]);
+                  } else {
+                    setSelectedTests(tests);
+                  }
+                }}
+              >
+                <div className="checkbox">
+                  {selectedTests.length === tests.length && "✓"}
+                </div>
+                Select All
+              </div>
+
+              {/* TEST LIST */}
+              {tests.map((test) => {
+                const isSelected = selectedTests.includes(test);
+
+                return (
+                  <div
+                    key={test}
+                    className={`test-item ${isSelected ? "active" : ""}`}
+                    onClick={() => {
+                      if (isSelected) {
+                        setSelectedTests(selectedTests.filter((t) => t !== test));
+                      } else {
+                        setSelectedTests([...selectedTests, test]);
+                      }
+                    }}
+                  >
+                    <div className="checkbox">{isSelected && "✓"}</div>
+
+                    {test}
+                  </div>
+                );
+              })}
+            </>
+          ) : (
+            <p className="empty-state">No tests available</p>
+          )}
+        </div>
+
+        {/* RIGHT SIDE */}
+        <div className="table-section">
+          {/* Tabs */}
+          {tests.length > 0 && (
+            <div className="result-tabs">
+              {tests.map((test) => (
+                <button
+                  key={test}
+                  className={activeTab === test ? "active" : ""}
+                  onClick={() => setActiveTab(test)}
+                >
+                  {test}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* TABLE */}
+          <div className="table-scroll">
+            <div className="result-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Category</th>
+                    <th>Machine/Manual</th>
+                    <th>Operator</th>
+                    <th>Result Value</th>
+                    <th>Reference Range</th>
+                    <th>AuthZ Range</th>
+                    <th>Result Status</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {parameters.length > 0 ? (
+                    parameters.map((row, index) => (
+                      <tr key={index}>
+                        <td>{row.parameter}</td>
+                        <td>{row.category}</td>
+                        <td>{row.machine}</td>
+
+                        {/* Operator Dropdown */}
+                        <td>
+                          <select
+                            className="table-select"
+                            value={row.operator}
+                            onChange={(e) =>
+                              handleParameterChange(
+                                index,
+                                "operator",
+                                e.target.value,
+                              )
+                            }
+                          >
+                            <option value="">Select</option>
+                            <option value="+">+</option>
+                            <option value="-">-</option>
+                          </select>
+                        </td>
+
+                        {/* Result Value */}
+                        <td>
+                          <input
+                            className="table-input"
+                            value={row.resultValue}
+                            onChange={(e) =>
+                              handleParameterChange(
+                                index,
+                                "resultValue",
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </td>
+
+                        <td>{row.referenceRange}</td>
+                        <td>{row.authRange}</td>
+
+                        <td>
+                          <span className={`badge ${row.status.toLowerCase()}`}>
+                            {row.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={8} className="empty-state">
+                        No parameter data available
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* BUTTON */}
+          <div className="authorize-btn-wrap">
+            <button
+              className="authorize-btn"
+              onClick={handleApprove}
+              disabled={submitting}
+            >
+              {submitting ? "Processing..." : "Authorize"}
+            </button>
+
+            <button
+              className="authorize-btn"
+              onClick={handleReject}
+              disabled={submitting}
+            >
+              {submitting ? "Processing..." : "Reject"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default ResultDetails;
