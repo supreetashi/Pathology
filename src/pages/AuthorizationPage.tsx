@@ -10,6 +10,8 @@ const AuthorizationPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"pending" | "approved">("pending");
   const [search, setSearch] = useState("");
   const [showResult, setShowResult] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [approvedCount, setApprovedCount] = useState(0);
 
   const [selectedAuthorization, setSelectedAuthorization] =
     useState<AuthorizationItem | null>(null);
@@ -17,21 +19,33 @@ const AuthorizationPage: React.FC = () => {
   const [data, setData] = useState<AuthorizationItem[]>([]);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const loadCounts = async () => {
+      const pending = await getAuthorizations("Pending");
+      const approved = await getAuthorizations("APPROVED");
+
+      setPendingCount(pending.length);
+      setApprovedCount(approved.length);
+    };
+
+    loadCounts();
+  }, []);
+
   const fetchAuthorizations = async () => {
     try {
       setLoading(true);
 
-      const status =
-        activeTab === "pending"
-          ? "Pending"
-          : "APPROVED";
+      const status = activeTab === "pending" ? "Pending" : "APPROVED";
 
-      const response = await getAuthorizations(
-        status,
-        search
-      );
+      const response = await getAuthorizations(status, search);
 
       setData(response);
+
+      if (activeTab === "pending") {
+        setPendingCount(response.length);
+      } else {
+        setApprovedCount(response.length);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -41,6 +55,7 @@ const AuthorizationPage: React.FC = () => {
 
   useEffect(() => {
     fetchAuthorizations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, search]);
 
   return (
@@ -57,6 +72,8 @@ const AuthorizationPage: React.FC = () => {
             setActiveTab={setActiveTab}
             search={search}
             setSearch={setSearch}
+            pendingCount={pendingCount}
+            approvedCount={approvedCount}
           />
 
           {loading ? (
