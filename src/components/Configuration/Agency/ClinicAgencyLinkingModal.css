@@ -1,0 +1,236 @@
+/* Overlay */
+.cal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Modal card */
+.cal-modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  width: 420px;
+  max-width: 95vw;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Header */
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cal-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.cal-close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  line-height: 1;
+  color: #888;
+  cursor: pointer;
+  padding: 0 4px;
+  border-radius: 50%;
+  transition: background 0.15s;
+}
+
+.cal-close:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+/* Field wrapper */
+.cal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+
+.cal-field label {
+  font-size: 12px;
+  color: #888;
+  font-weight: 500;
+}
+
+/* Read-only clinic name */
+.cal-readonly {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: #1a1a1a;
+  background: #fafafa;
+  min-height: 40px;
+}
+
+/* Select box */
+.cal-select-box {
+  display: flex;
+  align-items: center;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 0 12px;
+  background: #fff;
+  cursor: text;
+  transition: border-color 0.15s;
+}
+
+.cal-select-box:focus-within {
+  border-color: #6c63ff;
+}
+
+.cal-select-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: #1a1a1a;
+  padding: 10px 0;
+  background: transparent;
+}
+
+.cal-select-input::placeholder {
+  color: #bbb;
+}
+
+.cal-chevron {
+  font-size: 18px;
+  color: #aaa;
+  user-select: none;
+}
+
+/* Dropdown */
+.cal-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.cal-dropdown-item {
+  padding: 10px 14px;
+  font-size: 14px;
+  color: #1a1a1a;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.cal-dropdown-item:hover {
+  background: #f5f3ff;
+}
+
+.cal-dropdown-empty {
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #aaa;
+}
+
+/* Tags */
+.cal-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cal-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f0eeff;
+  color: #5a4fcf;
+  border: 1px solid #d4cfff;
+  border-radius: 20px;
+  padding: 4px 10px 4px 12px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.cal-tag-remove {
+  background: none;
+  border: none;
+  color: #e05b5b;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.cal-tag-remove:hover {
+  color: #c0392b;
+}
+
+/* Error */
+.cal-error {
+  font-size: 13px;
+  color: #e05b5b;
+  background: #fff0f0;
+  border-radius: 6px;
+  padding: 8px 12px;
+  word-break: break-word;
+}
+
+/* Footer */
+.cal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.cal-btn {
+  padding: 9px 22px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.cal-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cal-cancel {
+  background: #fff;
+  border: 1px solid #d0d0d0;
+  color: #444;
+}
+
+.cal-cancel:hover:not(:disabled) {
+  background: #f5f5f5;
+}
+
+.cal-save {
+  background: #1a1a1a;
+  color: #fff;
+}
+
+.cal-save:hover:not(:disabled) {
+  background: #333;
+}
