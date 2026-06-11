@@ -11,6 +11,7 @@ import templateReducer from "./templateSlice";
 import receiveReducer from "./ReceiveSlice";
 import laboratoryTestReducer from "./laboratoryTestSlice";
 import agencyReducer from "./agencySlice";
+import authorizationReducer from "./authorizationSlice";
 
 export const store = configureStore({
   reducer: {
@@ -26,6 +27,7 @@ export const store = configureStore({
     receive: receiveReducer,
     laboratoryTests: laboratoryTestReducer,
     agency: agencyReducer,
+    authorization: authorizationReducer,
   },
 });
 

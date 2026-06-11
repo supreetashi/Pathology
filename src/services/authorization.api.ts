@@ -19,21 +19,25 @@ export const getAuthorizationLogs = async () => {
 };
 
 export const approveAuthorization = async (id: number) => {
-  return http.post(`/approve-result/${id}/`);
+  const res = await http.post(`/approve-result/${id}/`);
+  return res.data;
 };
 
 export const rejectAuthorization = async (id: number) => {
-  return http.post(`/reject-authorization/${id}/`);
+  const res = await http.post(`/reject-authorization/${id}/`);
+  return res.data;
 };
 
 export const deleteAuthorization = async (id: number) => {
-  return http.delete(`/delete-authorization/${id}/`);
+  const res = await http.delete(`/delete-authorization/${id}/`);
+  return res.data;
 };
 
 export const createAuthorization = async (resultEntryId: number) => {
-  return http.post("/create-authorization/", {
+  const res = await http.post("/create-authorization/", {
     result_entry: resultEntryId,
   });
+  return res.data;
 };
 
 export const getDeletedAuthorizations = async () => {

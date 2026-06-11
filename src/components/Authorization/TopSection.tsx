@@ -2,12 +2,13 @@ import React from "react";
 import "../../styles/Authorization/TopSection.css";
 
 type Props = {
-  activeTab: "pending" | "approved";
-  setActiveTab: (tab: "pending" | "approved") => void;
+  activeTab: "pending" | "approved" | "rejected";
+  setActiveTab: (tab: "pending" | "approved" | "rejected") => void;
   search: string;
   setSearch: (value: string) => void;
   pendingCount: number;
   approvedCount: number;
+  rejectedCount: number;
 };
 
 const TopSection: React.FC<Props> = ({
@@ -17,6 +18,7 @@ const TopSection: React.FC<Props> = ({
   setSearch,
   pendingCount,
   approvedCount,
+  rejectedCount,
 }) => {
   return (
     <>
@@ -45,6 +47,13 @@ const TopSection: React.FC<Props> = ({
           onClick={() => setActiveTab("approved")}
         >
           Approved ({approvedCount})
+        </button>
+
+        <button
+          className={activeTab === "rejected" ? "active" : ""}
+          onClick={() => setActiveTab("rejected")}
+        >
+          Rejected ({rejectedCount})
         </button>
       </div>
     </>
