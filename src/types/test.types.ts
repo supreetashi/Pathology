@@ -23,6 +23,7 @@ export interface CategoryItem {
   name: string;
   isActive: boolean;
   tests: string[];
+  noOfTests: number; 
 }
 
 // =====================================================

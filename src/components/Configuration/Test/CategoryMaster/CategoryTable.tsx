@@ -51,11 +51,11 @@ export default function CategoryTable({
     { key: "code", header: "Category Code", width: "15%" },
     { key: "name", header: "Category Name", width: "19%" },
     {
-      key: "tests",
-      header: "No. of Tests",
-      width: "50%",
-      render: (row) => <span>{row.tests.length}</span>,
-    },
+  key: "tests",
+  header: "No. of Tests",
+  width: "50%",
+  render: (row) => <span>{row.noOfTests ?? row.tests.length}</span>,
+},
     {
       key: "status",
       header: "Status",
