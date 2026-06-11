@@ -209,6 +209,7 @@ const testSlice = createSlice({
           name: item.category_name,
           isActive: item.status ?? true,
           tests: item.tests ?? [],
+          noOfTests: item.no_of_tests ?? item.tests?.length ?? 0,
         }));
       })
       .addCase(fetchCategories.rejected, (state) => {
