@@ -4,12 +4,13 @@ import { FiSearch, FiPlus } from "react-icons/fi";
 import AddNewAgency from "./Add_agency";
 import editicon from "../../../assets/icons/edit.svg";
 import { agencyApi, type Agency } from "../../../services/agency.api";
+import { agencyClinicApi } from "../../../services/agencyclinic.api";
 
-interface Linking {
-  id: number;
-  clinic: string;
-  agencyCount: number;
-}
+// interface Linking {
+//   id: number;
+//   clinic: string;
+//   agencyCount: number;
+// }
 
 const AgencyPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"agency" | "linking">("agency");
@@ -20,13 +21,7 @@ const AgencyPage: React.FC = () => {
   const [agencyTotal, setAgencyTotal] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const [linkingData] = useState<Linking[]>([
-    { id: 1, clinic: "Apollo Clinic", agencyCount: 4 },
-    { id: 2, clinic: "Fortis", agencyCount: 2 },
-    { id: 3, clinic: "Manipal Hospital", agencyCount: 5 },
-    { id: 4, clinic: "Aster Clinic", agencyCount: 3 },
-    { id: 5, clinic: "Narayana Health", agencyCount: 6 },
-  ]);
+  const [linkingData, setLinkingData] = useState<any[]>([]);
 
   const [agencySearch, setAgencySearch] = useState("");
   const [linkingSearch, setLinkingSearch] = useState("");
@@ -80,6 +75,19 @@ const AgencyPage: React.FC = () => {
     }
   }, []);
 
+  const fetchAgencyClinicLinks = useCallback(async (search?: string) => {
+    try {
+      const res: any = await agencyClinicApi.getAll(search);
+
+      setLinkingData(
+        res?.data?.results ?? res?.results ?? res?.data ?? res ?? [],
+      );
+    } catch (err) {
+      console.error(err);
+      setLinkingData([]);
+    }
+  }, []);
+
   useEffect(() => {
     fetchAgencies();
   }, [fetchAgencies]);
@@ -92,6 +100,12 @@ const AgencyPage: React.FC = () => {
     }, 400);
     return () => clearTimeout(timer);
   }, [agencySearch, fetchAgencies]);
+
+  useEffect(() => {
+    if (activeTab === "linking") {
+      fetchAgencyClinicLinks(linkingSearch || undefined);
+    }
+  }, [activeTab, linkingSearch, fetchAgencyClinicLinks]);
 
   // ── Toggle status optimistic ─────────────────────────
   const toggleStatus = async (agency: Agency) => {
@@ -136,7 +150,7 @@ const AgencyPage: React.FC = () => {
 
   // ── Linking (client-side) ────────────────────────────
   const filteredLinking = linkingData.filter((l) =>
-    l.clinic.toLowerCase().includes(linkingSearch.toLowerCase())
+    l.clinic_name?.toLowerCase().includes(linkingSearch.toLowerCase()),
   );
   const linkingTotalPages = Math.max(
     1,
@@ -188,9 +202,7 @@ const AgencyPage: React.FC = () => {
                       ? "Search by Code, Name"
                       : "Search by Clinic"
                   }
-                  value={
-                    activeTab === "agency" ? agencySearch : linkingSearch
-                  }
+                  value={activeTab === "agency" ? agencySearch : linkingSearch}
                   onChange={(e) =>
                     activeTab === "agency"
                       ? setAgencySearch(e.target.value)
@@ -272,24 +284,22 @@ const AgencyPage: React.FC = () => {
               ))}
 
             {/* Empty state */}
-            {!loading &&
-              activeTab === "agency" &&
-              agencyData.length === 0 && (
-                <div
-                  className="table-row"
-                  style={{ justifyContent: "center", color: "#aaa" }}
-                >
-                  No agencies found.
-                </div>
-              )}
+            {!loading && activeTab === "agency" && agencyData.length === 0 && (
+              <div
+                className="table-row"
+                style={{ justifyContent: "center", color: "#aaa" }}
+              >
+                No agencies found.
+              </div>
+            )}
 
             {/* Linking rows */}
             {!loading &&
               activeTab === "linking" &&
               linkingDataPaginated.map((item) => (
                 <div className="table-row" key={item.id}>
-                  <span>{item.clinic}</span>
-                  <span>{item.agencyCount}</span>
+                  <span>{item.clinic_name}</span>
+                  <span>{item.agency_name}</span>
                   <div className="status-cell">
                     <button className="edit-btn">
                       <img src={editicon} alt="edit" />
@@ -318,9 +328,7 @@ const AgencyPage: React.FC = () => {
               <button
                 className="nav-btn"
                 disabled={
-                  activeTab === "agency"
-                    ? agencyPage === 1
-                    : linkingPage === 1
+                  activeTab === "agency" ? agencyPage === 1 : linkingPage === 1
                 }
                 onClick={() =>
                   activeTab === "agency"
@@ -333,9 +341,7 @@ const AgencyPage: React.FC = () => {
 
               {Array.from({
                 length:
-                  activeTab === "agency"
-                    ? agencyTotalPages
-                    : linkingTotalPages,
+                  activeTab === "agency" ? agencyTotalPages : linkingTotalPages,
               }).map((_, index) => {
                 const pageNumber = index + 1;
                 const currentPage =
