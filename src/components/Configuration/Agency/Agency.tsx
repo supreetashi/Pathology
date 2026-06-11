@@ -4,7 +4,7 @@ import { FiSearch, FiPlus } from "react-icons/fi";
 import AddNewAgency from "./Add_agency";
 import editicon from "../../../assets/icons/edit.svg";
 import { agencyApi, type Agency } from "../../../services/agency.api";
-import { agencyClinicApi } from "../../../services/agencyclinic.api";
+import { agencyClinicApi } from "../../../services/agency-clinic.api";
 
 // interface Linking {
 //   id: number;
@@ -111,8 +111,8 @@ const AgencyPage: React.FC = () => {
   const toggleStatus = async (agency: Agency) => {
     setAgencyData((prev) =>
       prev.map((item) =>
-        item.id === agency.id ? { ...item, status: !item.status } : item
-      )
+        item.id === agency.id ? { ...item, status: !item.status } : item,
+      ),
     );
     try {
       await agencyApi.update(agency.id, { status: !agency.status });
@@ -120,8 +120,8 @@ const AgencyPage: React.FC = () => {
       console.error("Failed to toggle status:", err);
       setAgencyData((prev) =>
         prev.map((item) =>
-          item.id === agency.id ? { ...item, status: agency.status } : item
-        )
+          item.id === agency.id ? { ...item, status: agency.status } : item,
+        ),
       );
     }
   };
@@ -154,11 +154,11 @@ const AgencyPage: React.FC = () => {
   );
   const linkingTotalPages = Math.max(
     1,
-    Math.ceil(filteredLinking.length / itemsPerPage)
+    Math.ceil(filteredLinking.length / itemsPerPage),
   );
   const linkingDataPaginated = filteredLinking.slice(
     (linkingPage - 1) * itemsPerPage,
-    linkingPage * itemsPerPage
+    linkingPage * itemsPerPage,
   );
   useEffect(() => setLinkingPage(1), [linkingSearch]);
 
