@@ -54,7 +54,7 @@ const AddNewAgency: React.FC<Props> = ({ onBack, onSaved, editingAgency }) => {
   const [allServiceOptions, setAllServiceOptions] = useState<ServiceOption[]>([]);
   const [loadingServices, setLoadingServices] = useState(false);
 
-  // ── Fetch laboratory tests from Vidai ────────────────
+  // ── Fetch laboratory tests ───────────────────────────
   useEffect(() => {
     const fetchServices = async () => {
       setLoadingServices(true);
@@ -62,7 +62,6 @@ const AddNewAgency: React.FC<Props> = ({ onBack, onSaved, editingAgency }) => {
         const allItems: any[] = [];
         let offset = 0;
         const limit = 100;
-
         while (true) {
           const res = await http.get(
             `/laboratory-test/?limit=${limit}&offset=${offset}`
@@ -73,7 +72,6 @@ const AddNewAgency: React.FC<Props> = ({ onBack, onSaved, editingAgency }) => {
           if (!data?.meta?.next) break;
           offset += limit;
         }
-
         setAllServiceOptions(
           allItems.map((item: any) => ({
             id: item.id,
@@ -87,7 +85,6 @@ const AddNewAgency: React.FC<Props> = ({ onBack, onSaved, editingAgency }) => {
         setLoadingServices(false);
       }
     };
-
     fetchServices();
   }, []);
 
@@ -111,7 +108,6 @@ const AddNewAgency: React.FC<Props> = ({ onBack, onSaved, editingAgency }) => {
         contact2Phone: editingAgency.contact_person_2_mobile ?? "",
         contact2Email: editingAgency.contact_person_2_email ?? "",
       });
-
       if (Array.isArray(editingAgency.agency_services)) {
         setServices(
           editingAgency.agency_services.map((s) => ({
@@ -139,10 +135,7 @@ const AddNewAgency: React.FC<Props> = ({ onBack, onSaved, editingAgency }) => {
   );
 
   const addService = (svc: ServiceOption) => {
-    setServices((prev) => [
-      ...prev,
-      { id: Date.now(), name: svc.name, rate: "" },
-    ]);
+    setServices((prev) => [...prev, { id: Date.now(), name: svc.name, rate: "" }]);
     setSearch("");
   };
 
@@ -227,12 +220,8 @@ const AddNewAgency: React.FC<Props> = ({ onBack, onSaved, editingAgency }) => {
 
       {/* Stepper */}
       <div className="stepper">
-        <div className={`step ${step === 1 ? "active" : ""}`}>
-          1 Agency Details
-        </div>
-        <div className={`step ${step === 2 ? "active" : ""}`}>
-          2 Service Details
-        </div>
+        <div className={`step ${step === 1 ? "active" : ""}`}>1 Agency Details</div>
+        <div className={`step ${step === 2 ? "active" : ""}`}>2 Service Details</div>
       </div>
 
       {/* Error banner */}
@@ -256,134 +245,54 @@ const AddNewAgency: React.FC<Props> = ({ onBack, onSaved, editingAgency }) => {
       {step === 1 && (
         <div className="form-container">
           <h4>BASIC DETAILS</h4>
-
           <div className="row">
-            <input
-              name="code"
-              placeholder="Agency Code"
-              value={agencyData.code}
-              onChange={handleChange}
-            />
-            <input
-              name="name"
-              placeholder="Agency Name"
-              value={agencyData.name}
-              onChange={handleChange}
-            />
+            <input name="code" placeholder="Agency Code" value={agencyData.code} onChange={handleChange} />
+            <input name="name" placeholder="Agency Name" value={agencyData.name} onChange={handleChange} />
           </div>
-
           <div className="row">
-            <select
-              name="country"
-              value={agencyData.country}
-              onChange={handleChange}
-            >
+            <select name="country" value={agencyData.country} onChange={handleChange}>
               <option value="">Select Country</option>
               <option value="India">India</option>
               <option value="USA">USA</option>
               <option value="UK">UK</option>
             </select>
-
-            <select
-              name="state"
-              value={agencyData.state}
-              onChange={handleChange}
-            >
+            <select name="state" value={agencyData.state} onChange={handleChange}>
               <option value="">Select State</option>
               <option value="Karnataka">Karnataka</option>
               <option value="Tamil Nadu">Tamil Nadu</option>
               <option value="Maharashtra">Maharashtra</option>
               <option value="Delhi">Delhi</option>
             </select>
-
-            <select
-              name="city"
-              value={agencyData.city}
-              onChange={handleChange}
-            >
+            <select name="city" value={agencyData.city} onChange={handleChange}>
               <option value="">Select City</option>
               <option value="Bangalore">Bangalore</option>
               <option value="Chennai">Chennai</option>
               <option value="Mumbai">Mumbai</option>
               <option value="Delhi">Delhi</option>
             </select>
-
-            <input
-              name="pinCode"
-              placeholder="Pin Code"
-              value={agencyData.pinCode}
-              onChange={handleChange}
-            />
+            <input name="pinCode" placeholder="Pin Code" value={agencyData.pinCode} onChange={handleChange} />
           </div>
-
           <div className="row">
-            <input
-              name="field1"
-              placeholder="Address Line 1"
-              value={agencyData.field1}
-              onChange={handleChange}
-            />
-            <input
-              name="field2"
-              placeholder="Address Line 2"
-              value={agencyData.field2}
-              onChange={handleChange}
-            />
-            <input
-              name="field3"
-              placeholder="Address Line 3"
-              value={agencyData.field3}
-              onChange={handleChange}
-            />
+            <input name="field1" placeholder="Address Line 1" value={agencyData.field1} onChange={handleChange} />
+            <input name="field2" placeholder="Address Line 2" value={agencyData.field2} onChange={handleChange} />
+            <input name="field3" placeholder="Address Line 3" value={agencyData.field3} onChange={handleChange} />
           </div>
 
           <h4>CONTACT DETAILS</h4>
-
           <div className="contact-box">
             <p>CONTACT PERSON 1</p>
             <div className="row">
-              <input
-                name="contact1Name"
-                placeholder="Name"
-                value={agencyData.contact1Name}
-                onChange={handleChange}
-              />
-              <input
-                name="contact1Phone"
-                placeholder="Phone Number"
-                value={agencyData.contact1Phone}
-                onChange={handleChange}
-              />
-              <input
-                name="contact1Email"
-                placeholder="Email Address"
-                value={agencyData.contact1Email}
-                onChange={handleChange}
-              />
+              <input name="contact1Name" placeholder="Name" value={agencyData.contact1Name} onChange={handleChange} />
+              <input name="contact1Phone" placeholder="Phone Number" value={agencyData.contact1Phone} onChange={handleChange} />
+              <input name="contact1Email" placeholder="Email Address" value={agencyData.contact1Email} onChange={handleChange} />
             </div>
           </div>
-
           <div className="contact-box">
             <p>CONTACT PERSON 2</p>
             <div className="row">
-              <input
-                name="contact2Name"
-                placeholder="Name"
-                value={agencyData.contact2Name}
-                onChange={handleChange}
-              />
-              <input
-                name="contact2Phone"
-                placeholder="Phone Number"
-                value={agencyData.contact2Phone}
-                onChange={handleChange}
-              />
-              <input
-                name="contact2Email"
-                placeholder="Email Address"
-                value={agencyData.contact2Email}
-                onChange={handleChange}
-              />
+              <input name="contact2Name" placeholder="Name" value={agencyData.contact2Name} onChange={handleChange} />
+              <input name="contact2Phone" placeholder="Phone Number" value={agencyData.contact2Phone} onChange={handleChange} />
+              <input name="contact2Email" placeholder="Email Address" value={agencyData.contact2Email} onChange={handleChange} />
             </div>
           </div>
         </div>
@@ -394,22 +303,13 @@ const AddNewAgency: React.FC<Props> = ({ onBack, onSaved, editingAgency }) => {
         <div className="service-container">
           <div className="service-header">
             <div>
-              <span>
-                Agency Code: <b>{agencyData.code || "—"}</b>
-              </span>
-              <span>
-                Agency Name: <b>{agencyData.name || "—"}</b>
-              </span>
+              <span>Agency Code: <b>{agencyData.code || "—"}</b></span>
+              <span>Agency Name: <b>{agencyData.name || "—"}</b></span>
             </div>
-
             <div className="search-wrapper">
               <input
                 className="search"
-                placeholder={
-                  loadingServices
-                    ? "Loading services..."
-                    : "Search & Add Service"
-                }
+                placeholder={loadingServices ? "Loading services..." : "Search & Add Service"}
                 value={search}
                 disabled={loadingServices}
                 onChange={(e) => setSearch(e.target.value)}
@@ -417,12 +317,7 @@ const AddNewAgency: React.FC<Props> = ({ onBack, onSaved, editingAgency }) => {
               {search && !loadingServices && (
                 <div className="dropdown">
                   {filteredServiceOptions.length === 0 ? (
-                    <div
-                      className="dropdown-item"
-                      style={{ color: "#aaa" }}
-                    >
-                      No results
-                    </div>
+                    <div className="dropdown-item" style={{ color: "#aaa" }}>No results</div>
                   ) : (
                     filteredServiceOptions.map((item) => (
                       <div
@@ -440,24 +335,16 @@ const AddNewAgency: React.FC<Props> = ({ onBack, onSaved, editingAgency }) => {
           </div>
 
           <h4>SERVICE LIST ({services.length})</h4>
-
           <div className="service-grid">
             {services.map((s) => (
               <div key={s.id} className="service-card">
-                <button
-                  className="remove-btn"
-                  onClick={() => removeService(s.id)}
-                >
-                  ×
-                </button>
-
+                <button className="remove-btn" onClick={() => removeService(s.id)}>×</button>
                 <div className="field">
                   <label>Service Name</label>
                   <select value={s.name} onChange={() => {}}>
                     <option>{s.name}</option>
                   </select>
                 </div>
-
                 <div className="field">
                   <label>Rate (₹)</label>
                   <input
@@ -468,7 +355,6 @@ const AddNewAgency: React.FC<Props> = ({ onBack, onSaved, editingAgency }) => {
                 </div>
               </div>
             ))}
-
             {services.length === 0 && (
               <p style={{ color: "#aaa", padding: "12px 0" }}>
                 No services added. Search above to add.
@@ -480,10 +366,7 @@ const AddNewAgency: React.FC<Props> = ({ onBack, onSaved, editingAgency }) => {
 
       {/* Footer */}
       <div className="footer">
-        <button className="cancel" onClick={onBack} disabled={saving}>
-          Cancel
-        </button>
-
+        <button className="cancel" onClick={onBack} disabled={saving}>Cancel</button>
         {step === 1 ? (
           <button
             className="save"
