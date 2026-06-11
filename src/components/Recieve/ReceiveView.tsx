@@ -73,15 +73,20 @@ const formatTime = (t: string | null | undefined): string => {
 };
 
 function toSampleRow(r: ReceiveSample) {
-  // The backend uses receive_date / receive_time for BOTH accepted and rejected
-  // records. There is no separate reject_date / reject_time field.
+  const shipDate = r.ship_date
+    ? r.ship_date.split("-").reverse().join("/")
+    : "—";
+
+  const shipTime = r.ship_time ? formatTime(r.ship_time) : "—";
+
+  // Backend uses receive_date/receive_time for both Received and Rejected
   const actionDate = formatDate(r.receive_date);
   const actionTime = formatTime(r.receive_time);
 
   return {
     id: r.id,
-    shipDate: formatDate(r.ship_date) ?? "—",
-    shipTime: formatTime(r.ship_time),
+    shipDate,
+    shipTime,
     shipmentNo: r.shipment_no,
     sampleNo: r.specimen_no,
     type: r.specimen_type,
@@ -93,18 +98,22 @@ function toSampleRow(r: ReceiveSample) {
     patientCode: r.patient_code,
     gender: r.patient_gender,
     remark: typeof r.remark === "string" ? r.remark : null,
-    // Received tab — same receive_date/receive_time fields
+
     receiveDate: actionDate,
     receiveTime: actionTime,
-    resultStatus: typeof r.result_status === "string" ? r.result_status : null,
-    // Rejected tab — backend reuses receive_date/receive_time for the reject timestamp
+
+    resultStatus:
+      typeof r.result_status === "string" ? r.result_status : null,
+
     rejectDate: actionDate,
     rejectTime: actionTime,
+
     resendNewSample:
-      typeof r.resend_new_sample === "boolean" ? r.resend_new_sample : null,
+      typeof r.resend_new_sample === "boolean"
+        ? r.resend_new_sample
+        : null,
   };
 }
-
 type SampleRow = ReturnType<typeof toSampleRow>;
 
 type ReceivePayload = {
