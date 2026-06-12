@@ -11,10 +11,12 @@ import {
   fetchServiceNameLists,
   selectPathologyProfiles,
   togglePathologyProfileStatus,
+  updatePathologyProfile,
 } from "../../../store/pathologyProfileSlice";
 import { AppDispatch } from "../../../store";
 import styles from "../../../styles/Configuration/PathologyProfile/pathologyProfile.module.css";
 import CreatePathologyProfileModal from "./CreatePathologyProfileModal";
+import { PathologyProfileItem } from "../../../types/pathologyProfile.types";
 
 function PathologyProfile() {
   const [searchText, setSearchText] = useState("");
@@ -23,6 +25,7 @@ function PathologyProfile() {
 
   const pathologyProfilesData = useSelector(selectPathologyProfiles);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProfile, setEditingProfile] = useState<PathologyProfileItem | null>(null);
 
   const itemsPerPage = 10;
 
@@ -120,7 +123,7 @@ function PathologyProfile() {
                 paginatedRows.map((row) => (
                   <tr key={row.id}>
                     <td className={styles.td}>{row.service_name}</td>
-                    <td className={styles.td}>{row.tests}</td>
+                    <td className={styles.td}>{row.no_of_tests ?? 0}</td>
                     <td className={`${styles.td} ${styles.statusCell}`}>
                       <label className={styles.switchLabel}>
                         <input
@@ -151,6 +154,10 @@ function PathologyProfile() {
                         type="button"
                         className={styles.iconButton}
                         aria-label={`Edit ${row.service_name}`}
+                        onClick={() => {
+                          setEditingProfile(row);
+                          setIsModalOpen(true);
+                        }}
                       >
                         <img src={EditIcon} alt="edit" width={14} height={14} />
                       </button>
@@ -221,18 +228,27 @@ function PathologyProfile() {
           </div>
         </div>
 
-        <CreatePathologyProfileModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSave={(service_name: any, tests: any) => {
-            dispatch(
-              createPathologyProfile({
-                service_name: service_name,
-                tests: tests,
-              }),
-            );
-          }}
-        />
+        {
+<CreatePathologyProfileModal
+  isOpen={isModalOpen}
+  editingProfile={editingProfile}
+  onClose={() => {
+    setIsModalOpen(false);
+    setEditingProfile(null);
+  }}
+  onSave={(data) => {
+    if (editingProfile) {
+      dispatch(
+        updatePathologyProfile({
+          id: editingProfile.id,
+          ...data,
+        })
+      );
+    } else {
+      dispatch(createPathologyProfile(data));
+    }
+  }}
+/>}
       </div>
     </div>
   );

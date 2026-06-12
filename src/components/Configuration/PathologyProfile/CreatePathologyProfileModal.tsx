@@ -7,11 +7,19 @@ import { useDispatch } from "react-redux";
 import type { AppDispatch } from "../../../store";
 import { useSelector } from "react-redux";
 import { http } from "../../../services/http";
+import { PathologyProfileItem } from "../../../types/pathologyProfile.types";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (service_name: string, tests: string[]) => void;
+
+  onSave: (data: {
+    service_name: string;
+    tests: string[];
+    clinic: string;
+  }) => void;
+
+  editingProfile?: PathologyProfileItem | null;
 }
 
 type SelectableItem = {
@@ -104,13 +112,14 @@ function FigmaDropdown({
   );
 }
 
-function CreatePathologyProfileModal({ isOpen, onClose, onSave }: Props) {
+function CreatePathologyProfileModal({ isOpen, onClose, onSave, editingProfile }: Props) {
   const dispatch = useDispatch<AppDispatch>();
   const laboratoryTests = useSelector(selectLaboratoryTests);
 
   const [allTests, setAllTests] = useState<SelectableItem[]>([]);
   const [selectedTestIds, setSelectedTestIds] = useState<string[]>([]);
   const [serviceName, setServiceName] = useState("");
+  const [clinic, setClinic] = useState<string>("");
 
   useEffect(() => {
     dispatch(fetchLaboratoryTests());
@@ -139,13 +148,19 @@ function CreatePathologyProfileModal({ isOpen, onClose, onSave }: Props) {
     fetchTests();
   }, [isOpen]);
 
-  // Reset on close
-  useEffect(() => {
-    if (!isOpen) {
-      setSelectedTestIds([]);
-      setServiceName("");
-    }
-  }, [isOpen]);
+// In the component, pre-populate on edit:
+useEffect(() => {
+  if (!isOpen) {
+    setSelectedTestIds([]);
+    setServiceName("");
+    return;
+  }
+  if (editingProfile) {
+    setServiceName(editingProfile.service_name);
+    setSelectedTestIds(editingProfile.tests);  // pre-select test IDs
+    setClinic(editingProfile.clinic);  // pre-populate clinic
+  }
+}, [isOpen, editingProfile]);
 
   if (!isOpen) return null;
 
@@ -157,16 +172,29 @@ function CreatePathologyProfileModal({ isOpen, onClose, onSave }: Props) {
   const selectedTests = allTests.filter((t) => selectedTestIds.includes(t.id));
 
   const handleSave = () => {
-    if (!serviceName.trim()) return;
-    onSave(serviceName.trim(), selectedTestIds);
-    onClose();
-  };
+  if (!serviceName.trim()) return;
+
+  if (!clinic) {
+    console.error("Clinic is required");
+    return;
+  }
+
+  onSave({
+    service_name: serviceName.trim(),
+    tests: selectedTestIds,
+    clinic,
+  });
+
+  onClose();
+};
 
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
-          <span className={styles.title}>New Profile</span>
+          <span className={styles.title}>
+            {editingProfile ? "Edit Profile" : "New Profile"}
+          </span>
           <button type="button" className={styles.closeButton} onClick={onClose}>×</button>
         </div>
 
