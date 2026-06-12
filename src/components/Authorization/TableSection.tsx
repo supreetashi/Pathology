@@ -38,7 +38,11 @@ const TableSection: React.FC<Props> = ({ data, onViewResult }) => {
 
                 <tbody>
                     {currentData.map((item) => (
-                        <tr key={item.id}>
+                        <tr
+                            key={item.id}
+                            onClick={() => onViewResult(item)}
+                            style={{ cursor: "pointer" }}
+                        >
                             <td>
                                 <div>{item.order_date}</div>
                                 <span className="sub">{item.order_time}</span>

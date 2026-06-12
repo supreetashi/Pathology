@@ -35,6 +35,7 @@ const ResultDetails: React.FC<Props> = ({ onBack, authorization }) => {
   const [activeTab, setActiveTab] = useState<string>(tests[0] ?? "");
 
   const [parameters, setParameters] = useState<ParameterRow[]>([]);
+  const [showApprovePopup, setShowApprovePopup] = useState(false);
 
   const handleParameterChange = (
     index: number,
@@ -286,24 +287,85 @@ const ResultDetails: React.FC<Props> = ({ onBack, authorization }) => {
 
           {/* BUTTON */}
           <div className="authorize-btn-wrap">
-            <button
-              className="authorize-btn"
-              onClick={handleApprove}
-              disabled={submitting}
-            >
-              {submitting ? "Processing..." : "Authorize"}
-            </button>
 
-            <button
-              className="authorize-btn"
-              onClick={handleReject}
-              disabled={submitting}
-            >
-              {submitting ? "Processing..." : "Reject"}
-            </button>
+            {authorization?.status === "Pending" && (
+              <>
+                <button
+                  className="authorize-btn"
+                  onClick={() => setShowApprovePopup(true)}
+                  disabled={submitting}
+                >
+                  Authorize
+                </button>
+
+                <button
+                  className="reject-btn"
+                  onClick={handleReject}
+                  disabled={submitting}
+                >
+                  Reject
+                </button>
+              </>
+            )}
+
+            {authorization?.status === "APPROVED" && (
+              <div className="authorization-status">
+                <span>Authorization Status :</span>
+
+                <span className="authorized-badge">
+                  Authorized
+                </span>
+              </div>
+            )}
+
+            {authorization?.status === "REJECTED" && (
+              <div className="authorization-status">
+                <span>Authorization Status :</span>
+
+                <span className="rejected-badge">
+                  Rejected
+                </span>
+              </div>
+            )}
+
           </div>
         </div>
       </div>
+      {showApprovePopup && (
+        <div className="modal-overlay">
+          <div className="confirm-modal">
+
+            <h2>Authorize Result</h2>
+
+            <p>
+              Are you sure you want to Authorize
+              <br />
+              "{activeTab}" Result?
+            </p>
+
+            <div className="modal-actions">
+
+              <button
+                className="cancel-btn"
+                onClick={() => setShowApprovePopup(false)}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="yes-btn"
+                onClick={async () => {
+                  setShowApprovePopup(false);
+                  await handleApprove();
+                }}
+              >
+                Yes
+              </button>
+
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
