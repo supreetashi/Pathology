@@ -8,6 +8,7 @@ import type { AppDispatch } from "../../../store";
 import { useSelector } from "react-redux";
 import { http } from "../../../services/http";
 import { PathologyProfileItem } from "../../../types/pathologyProfile.types";
+import { selectClinic, fetchFirstClinic } from "../../../store/clinicSlice";
 
 interface Props {
   isOpen: boolean;
@@ -115,14 +116,15 @@ function FigmaDropdown({
 function CreatePathologyProfileModal({ isOpen, onClose, onSave, editingProfile }: Props) {
   const dispatch = useDispatch<AppDispatch>();
   const laboratoryTests = useSelector(selectLaboratoryTests);
+  const clinic = useSelector(selectClinic);
 
   const [allTests, setAllTests] = useState<SelectableItem[]>([]);
   const [selectedTestIds, setSelectedTestIds] = useState<string[]>([]);
   const [serviceName, setServiceName] = useState("");
-  const [clinic, setClinic] = useState<string>("");
 
   useEffect(() => {
     dispatch(fetchLaboratoryTests());
+    dispatch(fetchFirstClinic());
   }, [dispatch]);
 
   // Fetch all tests from API
@@ -158,7 +160,6 @@ useEffect(() => {
   if (editingProfile) {
     setServiceName(editingProfile.service_name);
     setSelectedTestIds(editingProfile.tests);  // pre-select test IDs
-    setClinic(editingProfile.clinic);  // pre-populate clinic
   }
 }, [isOpen, editingProfile]);
 
@@ -182,7 +183,7 @@ useEffect(() => {
   onSave({
     service_name: serviceName.trim(),
     tests: selectedTestIds,
-    clinic,
+    clinic: clinic.id,
   });
 
   onClose();
