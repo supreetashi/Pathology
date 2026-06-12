@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { AuthorizationItem } from "../../types/index";
 import "../../styles/Authorization/TableSection.css";
-import resultIcon from "../Authorization/Icons/resultIcon.png";
+import resultIcon from "../Authorization/Icons/download1.png";
 
 type Props = {
     data: AuthorizationItem[];

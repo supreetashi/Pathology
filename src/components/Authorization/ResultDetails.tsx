@@ -288,45 +288,49 @@ const ResultDetails: React.FC<Props> = ({ onBack, authorization }) => {
           {/* BUTTON */}
           <div className="authorize-btn-wrap">
 
-            {authorization?.status === "Pending" && (
-              <>
-                <button
-                  className="authorize-btn"
-                  onClick={() => setShowApprovePopup(true)}
-                  disabled={submitting}
-                >
-                  Authorize
-                </button>
+            <div className="authorize-btn-wrap">
 
-                <button
-                  className="reject-btn"
-                  onClick={handleReject}
-                  disabled={submitting}
-                >
-                  Reject
-                </button>
-              </>
-            )}
+              {authorization?.authorization_status?.toUpperCase() === "PENDING" && (
+                <>
+                  <button
+                    className="authorize-btn"
+                    onClick={() => setShowApprovePopup(true)}
+                    disabled={submitting}
+                  >
+                    Authorize
+                  </button>
 
-            {authorization?.status === "APPROVED" && (
-              <div className="authorization-status">
-                <span>Authorization Status :</span>
+                  <button
+                    className="reject-btn"
+                    onClick={handleReject}
+                    disabled={submitting}
+                  >
+                    Reject
+                  </button>
+                </>
+              )}
 
-                <span className="authorized-badge">
-                  Authorized
-                </span>
-              </div>
-            )}
+              {authorization?.authorization_status?.toUpperCase() === "APPROVED" && (
+                <div className="authorization-status">
+                  <span>Authorization Status :</span>
 
-            {authorization?.status === "REJECTED" && (
-              <div className="authorization-status">
-                <span>Authorization Status :</span>
+                  <span className="authorized-badge">
+                    Authorized
+                  </span>
+                </div>
+              )}
 
-                <span className="rejected-badge">
-                  Rejected
-                </span>
-              </div>
-            )}
+              {authorization?.authorization_status?.toUpperCase() === "REJECTED" && (
+                <div className="authorization-status">
+                  <span>Authorization Status :</span>
+
+                  <span className="rejected-badge">
+                    Rejected
+                  </span>
+                </div>
+              )}
+
+            </div>
 
           </div>
         </div>
