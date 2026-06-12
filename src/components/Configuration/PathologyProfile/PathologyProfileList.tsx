@@ -18,6 +18,7 @@ type Props = {
     onAdd: () => void;
     onEdit: (row: PathologyProfileRow) => void;
     onToggleStatus: (id: number) => void;
+    onSave: (service_name: string, tests: string[], clinic: string) => void;
 };
 
 function PathologyProfileList({ rows, onAdd, onEdit, onToggleStatus }: Props) {

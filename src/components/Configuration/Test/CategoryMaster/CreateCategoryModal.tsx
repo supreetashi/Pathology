@@ -24,6 +24,7 @@ type Props = {
     testIds?: string[];
   };
   availableTests?: TestItem[];
+  isEditMode?: boolean;
 };
 
 // ─── Tests Dropdown ───────────────────────────────────────────────────────────

@@ -1,6 +1,7 @@
 import {
     CreatePathologyProfilePayload,
 } from "../types/pathologyProfile.types";
+
 import { http } from "./http";
 
 // =====================================================
@@ -15,4 +16,7 @@ export const pathologyProfileApi = {
     // Create pathology profile
     createPathologyProfile: (payload: CreatePathologyProfilePayload) =>
         http.post("/profiles/", payload),
+
+    updatePathologyProfile: (id: number, payload: CreatePathologyProfilePayload) =>
+        http.put(`/profiles/${id}/`, payload),
 };
