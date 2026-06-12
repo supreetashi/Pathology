@@ -29,4 +29,5 @@ export type AuthorizationItem = {
     deleted_at: string | null;
 
     result_entry: number;
+    status: string;
 };

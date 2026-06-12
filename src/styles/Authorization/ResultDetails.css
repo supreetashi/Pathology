@@ -333,40 +333,61 @@
     background: #d9d9d9;
 }
 
-/* SELECT */
-
-/* .table-select {
-    width: 80px;
-    height: 38px;
-
-    border: 1px solid #e2e2e2;
-    border-radius: 10px;
-
-    background: #fff;
-
-    padding: 0 10px;
-
-    font-size: 14px;
-    color: #444;
-
-    outline: none;
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
 }
 
-/* INPUT */
+.confirm-modal {
+    width: 500px;
+    background: white;
+    border-radius: 20px;
+    padding: 32px;
+    text-align: center;
+}
 
-/* .table-input {
-    width: 70px;
-    height: 38px;
+.modal-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 24px;
+}
 
-    border: 1px solid #e2e2e2;
-    border-radius: 10px;
+.cancel-btn,
+.yes-btn {
+    width: 45%;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+}
 
-    padding: 0 10px;
+.cancel-btn {
+    background: #f3f3f3;
+}
 
-    font-size: 14px;
+.yes-btn {
+    background: #5a5a5a;
+    color: white;
+}
 
-    outline: none;
-} */
+.authorized-badge {
+    color: #22c55e;
+    border: 1px solid #22c55e;
+    padding: 8px 18px;
+    border-radius: 20px;
+}
+
+.rejected-badge {
+    color: red;
+    border: 1px solid red;
+    padding: 8px 18px;
+    border-radius: 20px;
+}
 
 .table-input {
     width: 90px;
