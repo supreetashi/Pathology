@@ -375,18 +375,35 @@
     color: white;
 }
 
+.authorization-status {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 20px;
+}
+
 .authorized-badge {
     color: #22c55e;
     border: 1px solid #22c55e;
-    padding: 8px 18px;
+    background: #eaf8ee;
+    padding: 6px 16px;
     border-radius: 20px;
+    font-weight: 600;
 }
 
 .rejected-badge {
-    color: red;
-    border: 1px solid red;
-    padding: 8px 18px;
+    color: #ef4444;
+    border: 1px solid #ef4444;
+    background: #fee2e2;
+    padding: 6px 16px;
     border-radius: 20px;
+    font-weight: 600;
+}
+
+.reject-btn {
+    background: #ef4444;
+    color: white;
 }
 
 .table-input {
