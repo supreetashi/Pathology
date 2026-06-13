@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import CloseIcon from "@mui/icons-material/Close";
 
 type SampleRow = {
@@ -136,11 +137,19 @@ function ReceiveSpecimenModal({ isOpen, rows, onClose, onConfirm }: ReceiveSpeci
         </div>
 
         <label className="sub-optimal-toggle" style={{ cursor: "pointer" }}>
-          <CheckCircleIcon
-            fontSize="small"
-            style={{ color: subOptimal ? "#10b981" : "#9ca3af" }}
-            onClick={() => setSubOptimal((prev) => !prev)}
-          />
+          {subOptimal ? (
+            <CheckCircleIcon
+              fontSize="small"
+              style={{ color: "#10b981" }}
+              onClick={() => setSubOptimal((prev) => !prev)}
+            />
+          ) : (
+            <RadioButtonUncheckedIcon
+              fontSize="small"
+              style={{ color: "#9ca3af" }}
+              onClick={() => setSubOptimal((prev) => !prev)}
+            />
+          )}
           <span onClick={() => setSubOptimal((prev) => !prev)}>Sub-Optimal</span>
         </label>
 
