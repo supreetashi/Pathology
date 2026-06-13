@@ -5,14 +5,14 @@ import type { Result } from "../components/ResultEntry/types";
 
 export interface ResultEntryRecord {
   id: number;
-  receive_sample: number;        // FK id → ReceiveSample
+  receive_sample: number; // FK id → ReceiveSample
   parameter_name: string;
   result_value: string | null;
   remarks: string | null;
   entered_by: string | null;
   result_status: "Pending" | "Completed";
   is_deleted: boolean;
-  created_at: string;            // ISO datetime
+  created_at: string; // ISO datetime
   deleted_at: string | null;
   // Read-only computed fields from serializer:
   specimen_no: string | null;
@@ -35,9 +35,14 @@ export interface PendingSample {
 export function toResult(r: ResultEntryRecord): Result {
   return {
     id: r.id,
-    date: r.created_at ? r.created_at.slice(0, 10).split("-").reverse().join("/") : "—",
+    date: r.created_at
+      ? r.created_at.slice(0, 10).split("-").reverse().join("/")
+      : "—",
     time: r.created_at
-      ? new Date(r.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      ? new Date(r.created_at).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
       : "—",
     patient: r.patient_name ?? "—",
     details: r.specimen_no ?? "—",
@@ -82,4 +87,46 @@ export const createResultEntry = async (
 /** POST /api/result-entry/<id>/complete/ */
 export const completeResultEntry = async (resultId: number): Promise<void> => {
   await http.post(`/result-entry/${resultId}/complete/`);
+};
+
+export interface ResultEntryDetails {
+  result_entry: {
+    id: number;
+    status: string;
+  };
+
+  patient: {
+    name: string;
+    age: number;
+    gender: string;
+    patient_code: string;
+  };
+
+  test: {
+    id: string;
+    test_name: string;
+    report_type: string;
+    suggestion_note: string | null;
+    disclaimer: string | null;
+  };
+
+  parameters: {
+    id: string;
+    parameter_name: string;
+    parameter_code: string;
+    unit: string;
+    min_ref: number;
+    max_ref: number;
+    min_authz: number;
+    max_authz: number;
+    varying_reference_range: string;
+  }[];
+}
+
+export const getResultEntryDetails = async (
+  resultId: number,
+): Promise<ResultEntryDetails> => {
+  const res = await http.get(`/result-entry/${resultId}/details/`);
+
+  return res.data;
 };

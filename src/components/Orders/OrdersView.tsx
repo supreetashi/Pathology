@@ -241,10 +241,9 @@ export default function OrdersView() {
 
   return (
     <div className={styles.wrapper}>
-
       {/* ── Toolbar ── */}
       <div className={styles.toolbar}>
-        <h2 className={styles.title}>List of Work Orders ({filtered.length})</h2>
+        <h2 className={styles.title}> List of Work Orders ({totalCount})</h2>
         <div className={styles.actions}>
           <div className={styles.searchWrap}>
             <img src={SearchIcon} className={styles.searchIcon} alt="" />
@@ -252,10 +251,16 @@ export default function OrdersView() {
               className={styles.searchInput}
               placeholder="Search by Patient Name, MRN No., Bill No."
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setApiPage(1); }}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setApiPage(1);
+              }}
             />
           </div>
-          <button className={styles.filterBtn} onClick={() => setFilterOpen(true)}>
+          <button
+            className={styles.filterBtn}
+            onClick={() => setFilterOpen(true)}
+          >
             <img src={FilterIcon} alt="filter" width={18} height={18} />
           </button>
         </div>
@@ -272,8 +277,8 @@ export default function OrdersView() {
             {tab === "all"
               ? `All Orders (${orders.length})`
               : tab === "inhouse"
-              ? `Inhouse (${inhouseCount})`
-              : `Outsource (${outsourceCount})`}
+                ? `Inhouse (${inhouseCount})`
+                : `Outsource (${outsourceCount})`}
           </button>
         ))}
       </div>
@@ -294,49 +299,89 @@ export default function OrdersView() {
             </tr>
           </thead>
           <tbody className={styles.scrollBody}>
-            {pageRows.length > 0 ? pageRows.map((row) => (
-              <tr key={row.id} className={styles.row}>
+            {pageRows.length > 0 ? (
+              pageRows.map((row) => (
+                <tr key={row.id} className={styles.row}>
+                  <td>
+                    <div className={styles.dateCell}>
+                      <span className={styles.dateText}>{row.date}</span>
+                      <span className={styles.timeText}>{row.time}</span>
+                    </div>
+                  </td>
 
-                <td>
-                  <div className={styles.dateCell}>
-                    <span className={styles.dateText}>{row.date}</span>
-                    <span className={styles.timeText}>{row.time}</span>
-                  </div>
-                </td>
+                  <td>
+                    <div className={styles.patientCell}>
+                      <span className={styles.patientName}>
+                        {row.patientName} | {row.patientAge}
+                      </span>
+                      <span className={styles.patientSub}>
+                        {row.mrn} | {row.gender}
+                      </span>
+                    </div>
+                  </td>
 
-                <td>
-                  <div className={styles.patientCell}>
-                    <span className={styles.patientName}>{row.patientName} | {row.patientAge}</span>
-                    <span className={styles.patientSub}>{row.mrn} | {row.gender}</span>
-                  </div>
-                </td>
+                  <td style={{ color: "#111827", fontSize: "12px" }}>
+                    {row.patientType}
+                  </td>
+                  <td style={{ color: "#111827", fontSize: "12px" }}>
+                    {row.doctorName}
+                  </td>
 
-                <td style={{ color: "#111827", fontSize: "12px" }}>{row.patientType}</td>
-                <td style={{ color: "#111827", fontSize: "12px" }}>{row.doctorName}</td>
+                  <td>
+                    <BillTooltip
+                      billNo={row.billNo}
+                      netAmt={row.netAmt}
+                      billStatus={row.billStatus}
+                    />
+                  </td>
 
-                <td>
-                  <BillTooltip billNo={row.billNo} netAmt={row.netAmt} billStatus={row.billStatus} />
-                </td>
+                  <td
+                    style={{
+                      textAlign: "center",
+                      color: "#111827",
+                      fontSize: "12px",
+                    }}
+                  >
+                    {row.totalTests}
+                  </td>
 
-                <td style={{ textAlign: "center", color: "#111827", fontSize: "12px" }}>{row.totalTests}</td>
+                  <td style={{ textAlign: "right" }}>
+                    <StatusBadge status={row.orderStatus} />
+                  </td>
 
-                <td style={{ textAlign: "right" }}>
-                  <StatusBadge status={row.orderStatus} />
-                </td>
-
-                <td style={{ textAlign: "center" }}>
-                  <button className={styles.viewBtn} onClick={() => dispatch(setSelectedOrder(row))}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5A8AEA" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="3" />
-                      <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z" />
-                    </svg>
-                  </button>
-                </td>
-
-              </tr>
-            )) : (
+                  <td style={{ textAlign: "center" }}>
+                    <button
+                      className={styles.viewBtn}
+                      onClick={() => dispatch(setSelectedOrder(row))}
+                    >
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#5A8AEA"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <circle cx="12" cy="12" r="3" />
+                        <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z" />
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
               <tr>
-                <td colSpan={8} style={{ textAlign: "center", padding: "2rem", color: "#9ca3af", fontSize: "13px" }}>
+                <td
+                  colSpan={8}
+                  style={{
+                    textAlign: "center",
+                    padding: "2rem",
+                    color: "#9ca3af",
+                    fontSize: "13px",
+                  }}
+                >
                   No matching records found.
                 </td>
               </tr>
@@ -363,9 +408,19 @@ export default function OrdersView() {
           ))}
 
           {/* Next — enabled only when API has next page */}
-          <button className={styles.pageBtn} disabled={!hasNext} onClick={() => setApiPage((p) => p + 1)}>
+          <button
+            className={styles.pageBtn}
+            disabled={!hasNext}
+            onClick={() => setApiPage((p) => p + 1)}
+          >
             <svg width="7" height="11" viewBox="0 0 7 11" fill="none">
-              <path d="M1 1L6 5.5L1 10" stroke="#505050" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path
+                d="M1 1L6 5.5L1 10"
+                stroke="#505050"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </button>
         </div>
@@ -376,7 +431,10 @@ export default function OrdersView() {
         isOpen={filterOpen}
         onClose={() => setFilterOpen(false)}
         onApply={() => setAppliedFilters(filters)}
-        onClear={() => { setFilters(emptyFilters); setAppliedFilters(emptyFilters); }}
+        onClear={() => {
+          setFilters(emptyFilters);
+          setAppliedFilters(emptyFilters);
+        }}
         values={filters}
         onChange={setFilters}
         doctors={doctors}

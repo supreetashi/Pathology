@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./CBC.css";
 // import { Result } from "./types";
 import { Result } from "./types";
@@ -7,8 +7,10 @@ import Chromosome from "./Chromosome";
 
 import Ellipse_12 from "../../assets/icons/Ellipse_12.svg";
 import UndoIconAsset from "../../assets/icons/undo.png";
-
-
+import {
+  getResultEntryDetails,
+  ResultEntryDetails,
+} from "../../services/resultEntry.api";
 
 interface Props {
   onBack: () => void;
@@ -21,13 +23,13 @@ interface SidebarItem {
   checked: boolean;
 }
 
-const INITIAL_PARAMETERS: SidebarItem[] = [
-  { label: "Select All", checked: false },
-  { label: "HIV (Rapid Card)", checked: true },
-  { label: "HCV (Rapid Card)", checked: true },
-  { label: "HBaSG (Rapid Card)", checked: false },
-  { label: "(CBC) Complete Bl...", checked: true },
-];
+// const INITIAL_PARAMETERS: SidebarItem[] = [
+//   { label: "Select All", checked: false },
+//   { label: "HIV (Rapid Card)", checked: true },
+//   { label: "HCV (Rapid Card)", checked: true },
+//   { label: "HBaSG (Rapid Card)", checked: false },
+//   { label: "(CBC) Complete Bl...", checked: true },
+// ];
 
 const INITIAL_TEMPLATES: SidebarItem[] = [
   { label: "Testosteron Total", checked: true },
@@ -35,7 +37,10 @@ const INITIAL_TEMPLATES: SidebarItem[] = [
   { label: "Blood Glucose (RBS)", checked: false },
 ];
 
-const previousResults: Record<string, { date: string; param: string; value: string }[]> = {
+const previousResults: Record<
+  string,
+  { date: string; param: string; value: string }[]
+> = {
   "Heamoglobin (hb)": [
     { date: "04/02/2026", param: "Heamoglobin (hb)", value: "13.2 g/dL" },
     { date: "26/10/2025", param: "Heamoglobin (hb)", value: "12.8 g/dL" },
@@ -57,135 +62,112 @@ const CBC: React.FC<Props> = ({ onBack, data, initialMode = "edit" }) => {
   const [isEdit, setIsEdit] = useState(initialMode === "edit");
   const [activeTab, setActiveTab] = useState("");
   const [modalParam, setModalParam] = useState<string | null>(null);
-  const [parameters, setParameters] = useState<SidebarItem[]>(INITIAL_PARAMETERS);
   const [templates, setTemplates] = useState<SidebarItem[]>(INITIAL_TEMPLATES);
+  const [details, setDetails] = useState<ResultEntryDetails | null>(null);
+  const parameters: SidebarItem[] = [
+    {
+      label: "Select All",
+      checked: true,
+    },
+    ...(details?.parameters?.map((p) => ({
+      label: p.parameter_name,
+      checked: true,
+    })) ?? []),
+  ];
 
   React.useEffect(() => {
     setIsEdit(initialMode === "edit");
   }, [initialMode]);
 
-  const testTabs = [
-    "HIV (Rapid Card)",
-    "HCV (Rapid Card)",
-    "(CBC) Complete Blood Count",
-    "Y Chromosome Microdeletion",
-  ];
+  useEffect(() => {
+    if (!data?.id) return;
 
-  const toggleParameter = (index: number) => {
-    setParameters((prev) => {
-      // First row controls all test checkboxes.
-      if (index === 0) {
-        const nextChecked = !prev[0].checked;
-        return prev.map((item) => ({ ...item, checked: nextChecked }));
-      }
+    getResultEntryDetails(data.id).then(setDetails).catch(console.error);
+  }, [data.id]);
 
-      const next = prev.map((item, i) =>
-        i === index ? { ...item, checked: !item.checked } : item
-      );
-      const allChecked = next.slice(1).every((item) => item.checked);
-      next[0] = { ...next[0], checked: allChecked };
-      return next;
-    });
-  };
+  // const testTabs = [
+  //   "HIV (Rapid Card)",
+  //   "HCV (Rapid Card)",
+  //   "(CBC) Complete Blood Count",
+  //   "Y Chromosome Microdeletion",
+  // ];
+  const testTabs = [details?.test?.test_name ?? "Loading..."];
+
+  // const toggleParameter = (index: number) => {
+  //   setParameters((prev) => {
+  //     // First row controls all test checkboxes.
+  //     if (index === 0) {
+  //       const nextChecked = !prev[0].checked;
+  //       return prev.map((item) => ({ ...item, checked: nextChecked }));
+  //     }
+
+  //     const next = prev.map((item, i) =>
+  //       i === index ? { ...item, checked: !item.checked } : item,
+  //     );
+  //     const allChecked = next.slice(1).every((item) => item.checked);
+  //     next[0] = { ...next[0], checked: allChecked };
+  //     return next;
+  //   });
+  // };
 
   const toggleTemplate = (index: number) => {
     setTemplates((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, checked: !item.checked } : item))
+      prev.map((item, i) =>
+        i === index ? { ...item, checked: !item.checked } : item,
+      ),
     );
   };
 
-  const [tableData, setTableData] = useState([
-    {
-      param: "Heamoglobin (hb)",
-      category: "Female",
-      type: "Manual",
-      operator: "=",
-      value: "14.0",
-      ref: "12.0 - 16.5 g/dL",
-      auth: "14",
-      varying: [
-        { label: "Female", val: ": 12-16.1 g/dl" },
-        { label: "Newborn", val: ": 14-22.0 g/dl" },
-      ],
-      status: ["Normal"],
-      warn: true,
-    },
-    {
-      param: "MCV",
-      category: "Female",
-      type: "Manual",
-      operator: "+",
-      value: "135",
-      ref: "80 - 100 fL",
-      auth: "90",
-      varying: [
-        { label: "Female", val: ": 80 - 100 fL" },
-        { label: "Newborn", val: ": 95 - 121 fL" },
-      ],
-      status: ["Abnormal", "Panic", "Improbable"],
-      warn: false,
-    },
-    {
-      param: "Hematocrit",
-      category: "Female",
-      type: "Manual",
-      operator: "Select",
-      value: "52",
-      ref: "36.0 - 46.0 %",
-      auth: "45",
-      varying: [
-        { label: "Female", val: ": 36 - 46 %" },
-        { label: "Newborn", val: ": 44 - 64 %" },
-      ],
-      status: ["Reflex"],
-      warn: false,
-    },
-    {
-      param: "RDW",
-      category: "Female",
-      type: "Manual",
-      operator: "+",
-      value: "12.8",
-      ref: "11.5 - 14.5 %",
-      auth: "13",
-      varying: [
-        { label: "Female", val: ": 11.5 - 14.5 %" },
-        { label: "Newborn", val: ": 14.0 - 20 %" },
-      ],
-      status: ["Panic"],
-      warn: true,
-    },
-    {
-      param: "MCHC",
-      category: "Female",
-      type: "Manual",
-      operator: "-",
-      value: "14",
-      ref: "32 - 36 g/dL",
-      auth: "14",
-      varying: [
-        { label: "Female", val: ": 32 - 36 g/dL" },
-        { label: "Newborn", val: ": 30 - 36 g/dL" },
-      ],
-      status: ["Improbable"],
-      warn: true,
-    },
-  ]);
+  const [tableData, setTableData] = useState<any[]>([]);
 
-  const updateRow = (index: number, field: "operator" | "value", val: string) => {
+  useEffect(() => {
+    if (!details?.parameters) return;
+
+    setTableData(
+      details.parameters.map((p) => ({
+        param: p.parameter_name,
+        category: details.patient.gender,
+        type: "Manual",
+        operator: "=",
+        value: "",
+        ref: `${p.min_ref} - ${p.max_ref} ${p.unit}`,
+        auth: `${p.min_authz} - ${p.max_authz}`,
+        varying: [
+          {
+            label: details.patient.gender,
+            val: p.varying_reference_range ?? "-",
+          },
+        ],
+        status: [],
+        warn: false,
+      })),
+    );
+  }, [details]);
+
+  const updateRow = (
+    index: number,
+    field: "operator" | "value",
+    val: string,
+  ) => {
     setTableData((prev) =>
-      prev.map((row, i) => (i === index ? { ...row, [field]: val } : row))
+      prev.map((row, i) => (i === index ? { ...row, [field]: val } : row)),
     );
   };
 
   const statusClass = (s: string) => {
     switch (s.toLowerCase()) {
-      case "normal": return "status normal";
-      case "abnormal": return "status abnormal";
-      case "panic": return "status panic";
-      case "improbable": return "status improbable";
-      case "reflex": return "status reflex";
-      default: return "status";
+      case "normal":
+        return "status normal";
+      case "abnormal":
+        return "status abnormal";
+      case "panic":
+        return "status panic";
+      case "improbable":
+        return "status improbable";
+      case "reflex":
+        return "status reflex";
+      default:
+        return "status";
     }
   };
 
@@ -196,7 +178,9 @@ const CBC: React.FC<Props> = ({ onBack, data, initialMode = "edit" }) => {
         <div className="modal-box" onClick={(e) => e.stopPropagation()}>
           <div className="modal-header">
             <h3>Previous Result</h3>
-            <button className="modal-close" onClick={() => setModalParam(null)}>✕</button>
+            <button className="modal-close" onClick={() => setModalParam(null)}>
+              ✕
+            </button>
           </div>
           <div className="modal-divider" />
           <table className="modal-table">
@@ -222,7 +206,6 @@ const CBC: React.FC<Props> = ({ onBack, data, initialMode = "edit" }) => {
     );
   };
 
-  
   const renderRows = (editable: boolean) =>
     tableData.map((row, i) => (
       <tr key={i}>
@@ -255,8 +238,28 @@ const CBC: React.FC<Props> = ({ onBack, data, initialMode = "edit" }) => {
                 onChange={(e) => updateRow(i, "value", e.target.value)}
               />
               <div className="spinner-arrows">
-                <button onClick={() => updateRow(i, "value", String((parseFloat(row.value) + 0.1).toFixed(1)))}>▲</button>
-                <button onClick={() => updateRow(i, "value", String((parseFloat(row.value) - 0.1).toFixed(1)))}>▼</button>
+                <button
+                  onClick={() =>
+                    updateRow(
+                      i,
+                      "value",
+                      String((parseFloat(row.value) + 0.1).toFixed(1)),
+                    )
+                  }
+                >
+                  ▲
+                </button>
+                <button
+                  onClick={() =>
+                    updateRow(
+                      i,
+                      "value",
+                      String((parseFloat(row.value) - 0.1).toFixed(1)),
+                    )
+                  }
+                >
+                  ▼
+                </button>
               </div>
             </div>
           ) : (
@@ -276,7 +279,9 @@ const CBC: React.FC<Props> = ({ onBack, data, initialMode = "edit" }) => {
         <td>
           <div className="status-wrap">
             {row.status.map((s, si) => (
-              <span key={si} className={statusClass(s)}>{s}</span>
+              <span key={si} className={statusClass(s)}>
+                {s}
+              </span>
             ))}
           </div>
         </td>
@@ -295,17 +300,17 @@ const CBC: React.FC<Props> = ({ onBack, data, initialMode = "edit" }) => {
         </td>
       </tr>
     ));
-if (activeTab === "Y Chromosome Microdeletion") {
-  return (
-    <Chromosome
-      onBack={() => setActiveTab("")}
-      data={data}
-      initialMode={isEdit ? "edit" : "view"}
-      startInEditor
-    />
-  );
-}
- 
+  if (activeTab === "Y Chromosome Microdeletion") {
+    return (
+      <Chromosome
+        onBack={() => setActiveTab("")}
+        data={data}
+        initialMode={isEdit ? "edit" : "view"}
+        startInEditor
+      />
+    );
+  }
+
   if (isEdit) {
     return (
       <div className="cbc-edit-wrapper">
@@ -319,16 +324,37 @@ if (activeTab === "Y Chromosome Microdeletion") {
         </div>
 
         <div className="cbc-patient-card">
-  <img src={Ellipse_12} alt="profile" />
+          <img src={Ellipse_12} alt="profile" />
 
           <div className="cbc-patient-info">
-            <div className="pi-field"><span>Patient Name</span><strong>{data.patient}</strong></div>
-            <div className="pi-field"><span>Age</span><strong>27 Years</strong></div>
-            <div className="pi-field"><span>Sex Assigned At Birth</span><strong>Female</strong></div>
-            <div className="pi-field"><span>MRN</span><strong>PCC - 4912</strong></div>
-            <div className="pi-field"><span>Allergy</span><strong>No</strong></div>
-            <div className="pi-field"><span>SART ID</span><strong>14SKG9876432</strong></div>
-            <div className="pi-field"><span>Last Modified</span><strong>{data.date}</strong></div>
+            <div className="pi-field">
+              <span>Patient Name</span>
+              <strong>{data.patient}</strong>
+            </div>
+            <div className="pi-field">
+              <span>Age</span>
+              <strong>{details?.patient.age} Years</strong>
+            </div>
+            <div className="pi-field">
+              <span>Sex Assigned At Birth</span>
+              <strong>{details?.patient.gender}</strong>
+            </div>
+            <div className="pi-field">
+              <span>MRN</span>
+              <strong>{details?.patient.patient_code}</strong>
+            </div>
+            <div className="pi-field">
+              <span>Allergy</span>
+              <strong>No</strong>
+            </div>
+            <div className="pi-field">
+              <span>SART ID</span>
+              <strong>14SKG9876432</strong>
+            </div>
+            <div className="pi-field">
+              <span>Last Modified</span>
+              <strong>{data.date}</strong>
+            </div>
           </div>
         </div>
 
@@ -339,7 +365,7 @@ if (activeTab === "Y Chromosome Microdeletion") {
               <label
                 key={i}
                 className="sidebar-item"
-                onClick={() => toggleParameter(i)}
+                onClick={() => {}}
                 style={{ cursor: "pointer" }}
               >
                 <span className={`sidebar-check ${p.checked ? "checked" : ""}`}>
@@ -348,7 +374,9 @@ if (activeTab === "Y Chromosome Microdeletion") {
                 {p.label}
               </label>
             ))}
-            <div className="sidebar-section-title" style={{ marginTop: 20 }}>TEMPLATE</div>
+            <div className="sidebar-section-title" style={{ marginTop: 20 }}>
+              TEMPLATE
+            </div>
             {templates.map((t, i) => (
               <label
                 key={i}
@@ -368,31 +396,36 @@ if (activeTab === "Y Chromosome Microdeletion") {
           <div className="cbc-main">
             <div className="cbc-tabs">
               {testTabs.map((tab, i) => (
-  <button
-    key={i}
-    className={`cbc-tab ${
-      tab === "(CBC) Complete Blood Count" ? "active" : ""
-    }`}
-    onClick={() => {
-      if (tab === "Y Chromosome Microdeletion") {
-        setActiveTab(tab); 
-      }
-    }}
-  >
-    {tab}
-  </button>
-))}
-              
+                <button
+                  key={i}
+                  className={`cbc-tab ${
+                    tab === "(CBC) Complete Blood Count" ? "active" : ""
+                  }`}
+                  onClick={() => {
+                    if (tab === "Y Chromosome Microdeletion") {
+                      setActiveTab(tab);
+                    }
+                  }}
+                >
+                  {tab}
+                </button>
+              ))}
             </div>
 
             <div className="cbc-table-wrap">
               <table className="cbc-table">
                 <thead>
                   <tr>
-                    <th>Parameter</th><th>Category</th><th>Machine/Manual</th>
-                    <th>Operator</th><th>Result Value</th><th>Reference Range</th>
-                    <th>AuthZ Range</th><th>Varying Ref. Range</th>
-                    <th>Result Status</th><th>Previous</th>
+                    <th>Parameter</th>
+                    <th>Category</th>
+                    <th>Machine/Manual</th>
+                    <th>Operator</th>
+                    <th>Result Value</th>
+                    <th>Reference Range</th>
+                    <th>AuthZ Range</th>
+                    <th>Varying Ref. Range</th>
+                    <th>Result Status</th>
+                    <th>Previous</th>
                   </tr>
                 </thead>
                 <tbody>{renderRows(true)}</tbody>
@@ -402,11 +435,11 @@ if (activeTab === "Y Chromosome Microdeletion") {
             <div className="cbc-notes-row">
               <div className="cbc-note-field">
                 <label>Suggestion Note</label>
-                <textarea defaultValue="Hb Within Normal Range. Continue Routine Monitoring If Clinically Requ..." />
+                <textarea defaultValue={details?.test?.suggestion_note ?? ""} />
               </div>
               <div className="cbc-note-field">
                 <label>Foot Note</label>
-                <textarea defaultValue="Reference Ranges May Vary Depending On Age, Gender, And Clinical Co..." />
+                <textarea defaultValue={details?.test?.disclaimer ?? ""} />
               </div>
             </div>
 
@@ -425,8 +458,12 @@ if (activeTab === "Y Chromosome Microdeletion") {
                 </div>
               </div>
               <div className="cbc-action-btns">
-                <button className="cancel-btn" onClick={() => setIsEdit(false)}>Cancel</button>
-                <button className="save-btn" onClick={() => setIsEdit(false)}>Save</button>
+                <button className="cancel-btn" onClick={() => setIsEdit(false)}>
+                  Cancel
+                </button>
+                <button className="save-btn" onClick={() => setIsEdit(false)}>
+                  Save
+                </button>
               </div>
             </div>
           </div>
@@ -435,7 +472,6 @@ if (activeTab === "Y Chromosome Microdeletion") {
     );
   }
 
-  
   return (
     <div className="cbc-view-wrapper">
       {modalParam && <PreviousModal />}
@@ -445,21 +481,50 @@ if (activeTab === "Y Chromosome Microdeletion") {
           <img src={UndoIconAsset} alt="Back" className="back-btn-icon" />
         </button>
         <h2>View Result Details</h2>
-        <button className="print-btn" style={{ marginLeft: "auto" }}>🖨</button>
+        <button className="print-btn" style={{ marginLeft: "auto" }}>
+          🖨
+        </button>
       </div>
 
       <div className="cbc-patient-card">
         <img src={Ellipse_12} alt="profile" />
         <div className="cbc-patient-info">
-          <div className="pi-field"><span>Patient Name</span><strong>{data.patient}</strong></div>
-          <div className="pi-field"><span>Age</span><strong>27 Years</strong></div>
-          <div className="pi-field"><span>Sex Assigned At Birth</span><strong>Female</strong></div>
-          <div className="pi-field"><span>MRN</span><strong>PCC - 4912</strong></div>
-          <div className="pi-field"><span>Allergy</span><strong>No</strong></div>
-          <div className="pi-field"><span>SART ID</span><strong>14SKG9876432</strong></div>
-          <div className="pi-field"><span>Last Modified</span><strong>{data.date}</strong></div>
-          <div className="pi-field"><span>Referred By</span><strong>Soniya</strong></div>
-          <div className="pi-field"><span>Pathologist</span><strong>John Wick</strong></div>
+          <div className="pi-field">
+            <span>Patient Name</span>
+            <strong>{data.patient}</strong>
+          </div>
+          <div className="pi-field">
+            <span>Age</span>
+            <strong>{details?.patient.age} Years</strong>
+          </div>
+          <div className="pi-field">
+            <span>Sex Assigned At Birth</span>
+            <strong>{details?.patient.gender}</strong>
+          </div>
+          <div className="pi-field">
+            <span>MRN</span>
+            <strong>{details?.patient.patient_code}</strong>
+          </div>
+          <div className="pi-field">
+            <span>Allergy</span>
+            <strong>No</strong>
+          </div>
+          <div className="pi-field">
+            <span>SART ID</span>
+            <strong>14SKG9876432</strong>
+          </div>
+          <div className="pi-field">
+            <span>Last Modified</span>
+            <strong>{data.date}</strong>
+          </div>
+          <div className="pi-field">
+            <span>Referred By</span>
+            <strong>Soniya</strong>
+          </div>
+          <div className="pi-field">
+            <span>Pathologist</span>
+            <strong>John Wick</strong>
+          </div>
         </div>
       </div>
 
@@ -484,10 +549,16 @@ if (activeTab === "Y Chromosome Microdeletion") {
         <table className="cbc-table">
           <thead>
             <tr>
-              <th>Parameter</th><th>Category</th><th>Machine/Manual</th>
-              <th>Operator</th><th>Result Value</th><th>Reference Range</th>
-              <th>AuthZ Range</th><th>Varying Ref. Range</th>
-              <th>Result Status</th><th>Previous</th>
+              <th>Parameter</th>
+              <th>Category</th>
+              <th>Machine/Manual</th>
+              <th>Operator</th>
+              <th>Result Value</th>
+              <th>Reference Range</th>
+              <th>AuthZ Range</th>
+              <th>Varying Ref. Range</th>
+              <th>Result Status</th>
+              <th>Previous</th>
             </tr>
           </thead>
           <tbody>{renderRows(false)}</tbody>
@@ -497,21 +568,27 @@ if (activeTab === "Y Chromosome Microdeletion") {
       <div className="cbc-footer-notes">
         <div>
           <span className="note-label">Suggestion Note :</span>
-          <p>Hb Within Normal Range. Continue Routine Monitoring If Clinically Required.</p>
+          <p>
+            Hb Within Normal Range. Continue Routine Monitoring If Clinically
+            Required.
+          </p>
         </div>
         <div>
           <span className="note-label">Foot Note :</span>
-          <p>Reference Ranges May Vary Depending On Age, Gender, And Clinical Condition.</p>
+          <p>
+            Reference Ranges May Vary Depending On Age, Gender, And Clinical
+            Condition.
+          </p>
         </div>
       </div>
 
       <div className="view-edit-row">
-        <button className="save-btn" onClick={() => setIsEdit(true)}>Edit</button>
+        <button className="save-btn" onClick={() => setIsEdit(true)}>
+          Edit
+        </button>
       </div>
     </div>
   );
 };
 
 export default CBC;
-
-
