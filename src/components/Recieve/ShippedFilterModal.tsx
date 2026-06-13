@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -34,6 +34,9 @@ function ShippedFilterModal({
 }: ShippedFilterModalProps) {
   const [values, setValues] = useState<ShippedFilterValues>(initialValues);
 
+  const fromDateInputRef = useRef<HTMLInputElement>(null);
+  const toDateInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     if (isOpen) {
       setValues(initialValues);
@@ -43,6 +46,12 @@ function ShippedFilterModal({
   if (!isOpen) {
     return null;
   }
+
+  const formatDateDisplay = (iso: string) => {
+    if (!iso) return "";
+    const [y, m, d] = iso.split("-");
+    return `${d}/${m}/${y}`;
+  };
 
   return (
     <div className="receive-modal-overlay" role="presentation" onClick={onClose}>
@@ -65,11 +74,26 @@ function ShippedFilterModal({
             <label>From Date</label>
             <div className="shipped-filter-input-wrap">
               <input
+                type="text"
+                value={formatDateDisplay(values.fromDate)}
+                placeholder="DD/MM/YYYY"
+                readOnly
+                style={{ cursor: "pointer" }}
+                onClick={() => fromDateInputRef.current?.showPicker()}
+              />
+              <input
+                ref={fromDateInputRef}
                 type="date"
                 value={values.fromDate}
                 onChange={(event) => setValues((prev) => ({ ...prev, fromDate: event.target.value }))}
+                style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: 0 }}
               />
-              <CalendarMonthIcon className="field-icon" fontSize="small" />
+              <CalendarMonthIcon
+                className="field-icon"
+                fontSize="small"
+                style={{ cursor: "pointer" }}
+                onClick={() => fromDateInputRef.current?.showPicker()}
+              />
             </div>
           </div>
 
@@ -77,11 +101,26 @@ function ShippedFilterModal({
             <label>To Date</label>
             <div className="shipped-filter-input-wrap">
               <input
+                type="text"
+                value={formatDateDisplay(values.toDate)}
+                placeholder="DD/MM/YYYY"
+                readOnly
+                style={{ cursor: "pointer" }}
+                onClick={() => toDateInputRef.current?.showPicker()}
+              />
+              <input
+                ref={toDateInputRef}
                 type="date"
                 value={values.toDate}
                 onChange={(event) => setValues((prev) => ({ ...prev, toDate: event.target.value }))}
+                style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: 0 }}
               />
-              <CalendarMonthIcon className="field-icon" fontSize="small" />
+              <CalendarMonthIcon
+                className="field-icon"
+                fontSize="small"
+                style={{ cursor: "pointer" }}
+                onClick={() => toDateInputRef.current?.showPicker()}
+              />
             </div>
           </div>
 

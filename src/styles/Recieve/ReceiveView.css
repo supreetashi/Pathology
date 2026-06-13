@@ -428,7 +428,7 @@
 }
 
 .shipped-filter-modal {
-  width: min(620px, 100%);
+  width: min(420px, 100%);
   background: #ffffff;
   border: 1px solid #ececec;
   border-radius: 16px;
@@ -481,13 +481,13 @@
 .shipped-filter-input-wrap input,
 .shipped-filter-input-wrap select {
   width: 100%;
-  height: 50px;
+  height: 42px;
   border: 1px solid #d8d8d8;
-  border-radius: 12px;
+  border-radius: 10px;
   background: #ffffff;
-  padding: 0 54px 0 20px;
+  padding: 0 36px 0 14px;
   font-family: "Nunito", sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: #2f2f2f;
   outline: none;
@@ -499,10 +499,11 @@
 
 .shipped-filter-input-wrap .field-icon {
   position: absolute;
-  right: 16px;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
   color: #2f2f2f;
+  font-size: 18px;
   pointer-events: none;
 }
 
@@ -515,11 +516,11 @@
 
 .shipped-filter-clear,
 .shipped-filter-apply {
-  height: 50px;
+  height: 42px;
   border: 0;
-  border-radius: 12px;
+  border-radius: 10px;
   font-family: "Nunito", sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 1;
   cursor: pointer;
@@ -534,6 +535,18 @@
   background: #595b5d;
   color: #ffffff;
 }
+
+/* Hide native browser date picker icon so only the custom CalendarMonthIcon shows */
+.shipped-filter-input-wrap input[type="date"]::-webkit-calendar-picker-indicator {
+  display: none;
+  -webkit-appearance: none;
+}
+
+/* Hide native select arrow so only the custom KeyboardArrowDownIcon shows */
+.shipped-filter-input-wrap select::-ms-expand {
+  display: none;
+}
+
 
 .activity-filter-modal {
   width: min(700px, 100%);
@@ -697,7 +710,7 @@
 .receive-modal-header h3 {
   margin: 0;
   font-family: "Montserrat", sans-serif;
-  font-size: 32px;
+  font-size: 18px;
   font-weight: 700;
   line-height: 1;
   color: #2d2d2d;
@@ -726,7 +739,7 @@
   display: block;
   margin-bottom: 4px;
   font-family: "Nunito", sans-serif;
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 500;
   line-height: 1;
   color: #b1b1b1;
@@ -742,12 +755,19 @@
   border: 1px solid #d8d8d8;
   border-radius: 10px;
   background: #ffffff;
-  padding: 0 12px;
+  padding: 0 36px 0 12px;
   font-family: "Nunito", sans-serif;
-  font-size: 28px;
+  font-size: 14px;
   font-weight: 500;
   line-height: 1;
   color: #3f3f3f;
+  box-sizing: border-box;
+}
+
+.receive-modal-input-wrap input[type="time"]::-webkit-calendar-picker-indicator,
+.receive-modal-input-wrap input[type="date"]::-webkit-calendar-picker-indicator {
+  display: none;
+  -webkit-appearance: none;
 }
 
 .receive-modal-field.disabled .receive-modal-input-wrap input {
@@ -760,10 +780,17 @@
   top: 50%;
   transform: translateY(-50%);
   color: #6f6f6f;
+  font-size: 18px;
+  pointer-events: auto;
+  z-index: 1;
 }
 
 .remark-field {
   margin-top: 8px;
+}
+
+.remark-field .receive-modal-input-wrap input {
+  padding-right: 12px;
 }
 
 .sub-optimal-toggle {
@@ -772,7 +799,7 @@
   align-items: center;
   gap: 6px;
   font-family: "Nunito", sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
   line-height: 1;
   color: #4a4a4a;
@@ -785,7 +812,7 @@
 .receive-modal-section-title {
   margin: 16px 0 10px;
   font-family: "Nunito", sans-serif;
-  font-size: 20px;
+  font-size: 15px;
   font-weight: 700;
   line-height: 1;
   color: #4a4a4a;
@@ -808,7 +835,7 @@
   text-align: left;
   padding: 10px;
   font-family: "Nunito", sans-serif;
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 500;
   line-height: 1;
   color: #7c7c7c;
@@ -819,6 +846,9 @@
   border-bottom: 1px solid #ececec;
   padding: 10px;
   vertical-align: top;
+  font-family: "Nunito", sans-serif;
+  font-size: 13px;
+  color: #3f3f3f;
 }
 
 .receive-modal-table tbody tr:last-child td {
@@ -839,7 +869,7 @@
   border-radius: 10px;
   padding: 0 18px;
   font-family: "Nunito", sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 650;
   line-height: 1;
   cursor: pointer;
@@ -911,7 +941,7 @@
   }
 
   .receive-modal-header h3 {
-    font-size: 24px;
+    font-size: 18px;
   }
 
   .receive-modal-form-grid {
@@ -919,7 +949,7 @@
   }
 
   .receive-modal-input-wrap input {
-    font-size: 18px;
+    font-size: 14px;
   }
 
   .receive-modal-table {
