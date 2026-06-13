@@ -269,7 +269,7 @@ const CBC: React.FC<Props> = ({ onBack, data, initialMode = "edit" }) => {
         <td>{row.ref}</td>
         <td>{row.auth}</td>
         <td className="varying-cell">
-          {row.varying.map((v, vi) => (
+          {row.varying.map((v: { label: string; val: string }, vi: number) => (
             <div key={vi} className="varying-row">
               <span className="varying-label">{v.label}</span>
               <span className="varying-val">{v.val}</span>
@@ -278,7 +278,7 @@ const CBC: React.FC<Props> = ({ onBack, data, initialMode = "edit" }) => {
         </td>
         <td>
           <div className="status-wrap">
-            {row.status.map((s, si) => (
+            {row.status.map((s: string, si: number) => (
               <span key={si} className={statusClass(s)}>
                 {s}
               </span>
