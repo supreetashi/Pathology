@@ -18,6 +18,9 @@ import ActivityLogFilterModal, {
 import ShippedFilterModal, {
   type ShippedFilterValues,
 } from "./ShippedFilterModal";
+import RejectedFilterModal, {
+  type RejectedFilterValues,
+} from "./RejectedFilterModal";
 import ShippedTab from "./ShippedTab";
 import ReceivedTab from "./ReceivedTab";
 import RejectedTab from "./RejectedTab";
@@ -29,6 +32,17 @@ type ReceiveTab = "shipped" | "received" | "rejected" | "activity";
 const ITEMS_PER_PAGE = 10;
 
 const EMPTY_SHIPPED_FILTERS: ShippedFilterValues = {
+  dateFilterType: "ship",
+  fromDate: "",
+  toDate: "",
+  shipTo: "",
+  specimenType: "",
+  testName: "",
+  service: "",
+};
+
+const EMPTY_REJECTED_FILTERS: RejectedFilterValues = {
+  dateFilterType: "ship",
   fromDate: "",
   toDate: "",
   specimenType: "",
@@ -148,12 +162,15 @@ function ReceiveView() {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showShippedFilterModal, setShowShippedFilterModal] = useState(false);
   const [showActivityFilterModal, setShowActivityFilterModal] = useState(false);
+  const [showRejectedFilterModal, setShowRejectedFilterModal] = useState(false);
   const [shippedFilters, setShippedFilters] =
     useState<ShippedFilterValues>(EMPTY_SHIPPED_FILTERS);
   const [receivedFilters, setReceivedFilters] =
     useState<ShippedFilterValues>(EMPTY_SHIPPED_FILTERS);
   const [activityFilters, setActivityFilters] =
     useState<ActivityLogFilterValues>(EMPTY_ACTIVITY_FILTERS);
+  const [rejectedFilters, setRejectedFilters] =
+    useState<RejectedFilterValues>(EMPTY_REJECTED_FILTERS);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -209,6 +226,24 @@ function ReceiveView() {
   const activityServiceOptions = useMemo(
     () => Array.from(new Set(activityData.map((row) => row.serviceName))),
     [activityData],
+  );
+
+  // Shipped/Received "Ship To" options — placeholder static list until
+  // row data includes a shipTo field.
+  const shipToOptions = useMemo(() => ["Fertivue, Pune", "Willowbrook"], []);
+
+  // Rejected tab option lists
+  const rejectedSpecimenOptions = useMemo(
+    () => Array.from(new Set(rejectedData.map((row) => row.type))),
+    [rejectedData],
+  );
+  const rejectedTestOptions = useMemo(
+    () => Array.from(new Set(rejectedData.map((row) => row.testName))),
+    [rejectedData],
+  );
+  const rejectedServiceOptions = useMemo(
+    () => Array.from(new Set(rejectedData.map((row) => row.serviceName))),
+    [rejectedData],
   );
 
   // ── Date parsing for filters ─────────────────────────────────
@@ -289,12 +324,41 @@ function ReceiveView() {
         );
       }
 
+      if (activeTab === "rejected") {
+        const rowDate = parseDate(
+          rejectedFilters.dateFilterType === "receive"
+            ? row.rejectDate ?? ""
+            : row.shipDate,
+        );
+        const fromDate = parseDate(rejectedFilters.fromDate);
+        const toDate = parseDate(rejectedFilters.toDate);
+
+        return (
+          matchesSearch &&
+          (!fromDate || (rowDate !== null && rowDate >= fromDate)) &&
+          (!toDate || (rowDate !== null && rowDate <= toDate)) &&
+          (!rejectedFilters.specimenType ||
+            row.type.toLowerCase() ===
+              rejectedFilters.specimenType.toLowerCase()) &&
+          (!rejectedFilters.testName ||
+            row.testName.toLowerCase() ===
+              rejectedFilters.testName.toLowerCase()) &&
+          (!rejectedFilters.service ||
+            row.serviceName.toLowerCase() ===
+              rejectedFilters.service.toLowerCase())
+        );
+      }
+
       if (activeTab !== "shipped" && activeTab !== "received")
         return matchesSearch;
 
       const activeFilters =
         activeTab === "received" ? receivedFilters : shippedFilters;
-      const rowDate = parseDate(row.shipDate);
+      const rowDate = parseDate(
+        activeFilters.dateFilterType === "order"
+          ? row.receiveDate ?? row.shipDate
+          : row.shipDate,
+      );
       const fromDate = parseDate(activeFilters.fromDate);
       const toDate = parseDate(activeFilters.toDate);
 
@@ -320,6 +384,7 @@ function ReceiveView() {
     shippedFilters,
     receivedFilters,
     activityFilters,
+    rejectedFilters,
   ]);
 
   // ── Pagination ───────────────────────────────────────────────
@@ -466,12 +531,13 @@ function ReceiveView() {
             type="button"
             className="receive-filter-button"
             aria-label="Open filters"
-            disabled={activeTab === "rejected"}
             onClick={() => {
               if (activeTab === "shipped" || activeTab === "received")
                 setShowShippedFilterModal(true);
               else if (activeTab === "activity")
                 setShowActivityFilterModal(true);
+              else if (activeTab === "rejected")
+                setShowRejectedFilterModal(true);
             }}
           >
             <FilterAltIcon fontSize="small" />
@@ -609,6 +675,7 @@ function ReceiveView() {
         initialValues={
           activeTab === "received" ? receivedFilters : shippedFilters
         }
+        shipToOptions={shipToOptions}
         specimenOptions={specimenOptions}
         testOptions={testOptions}
         serviceOptions={serviceOptions}
@@ -625,6 +692,25 @@ function ReceiveView() {
           else setShippedFilters(EMPTY_SHIPPED_FILTERS);
           setCurrentPage(1);
           setShowShippedFilterModal(false);
+        }}
+      />
+
+      <RejectedFilterModal
+        isOpen={showRejectedFilterModal}
+        initialValues={rejectedFilters}
+        specimenOptions={rejectedSpecimenOptions}
+        testOptions={rejectedTestOptions}
+        serviceOptions={rejectedServiceOptions}
+        onClose={() => setShowRejectedFilterModal(false)}
+        onApply={(values) => {
+          setRejectedFilters(values);
+          setCurrentPage(1);
+          setShowRejectedFilterModal(false);
+        }}
+        onClear={() => {
+          setRejectedFilters(EMPTY_REJECTED_FILTERS);
+          setCurrentPage(1);
+          setShowRejectedFilterModal(false);
         }}
       />
 
