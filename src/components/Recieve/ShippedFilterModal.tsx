@@ -4,8 +4,10 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 
 export type ShippedFilterValues = {
+  dateFilterType: "ship" | "order";
   fromDate: string;
   toDate: string;
+  shipTo: string;
   specimenType: string;
   testName: string;
   service: string;
@@ -14,6 +16,7 @@ export type ShippedFilterValues = {
 type ShippedFilterModalProps = {
   isOpen: boolean;
   initialValues: ShippedFilterValues;
+  shipToOptions: string[];
   specimenOptions: string[];
   testOptions: string[];
   serviceOptions: string[];
@@ -25,6 +28,7 @@ type ShippedFilterModalProps = {
 function ShippedFilterModal({
   isOpen,
   initialValues,
+  shipToOptions,
   specimenOptions,
   testOptions,
   serviceOptions,
@@ -67,6 +71,29 @@ function ShippedFilterModal({
           <button type="button" className="receive-modal-close" onClick={onClose} aria-label="Close filters">
             <CloseIcon fontSize="small" />
           </button>
+        </div>
+
+        <div className="shipped-filter-date-type" role="radiogroup" aria-label="Filter date by">
+          <label className="shipped-filter-radio">
+            <input
+              type="radio"
+              name="dateFilterType"
+              value="ship"
+              checked={values.dateFilterType === "ship"}
+              onChange={() => setValues((prev) => ({ ...prev, dateFilterType: "ship" }))}
+            />
+            Ship Date
+          </label>
+          <label className="shipped-filter-radio">
+            <input
+              type="radio"
+              name="dateFilterType"
+              value="order"
+              checked={values.dateFilterType === "order"}
+              onChange={() => setValues((prev) => ({ ...prev, dateFilterType: "order" }))}
+            />
+            Order Date
+          </label>
         </div>
 
         <div className="shipped-filter-grid">
@@ -121,6 +148,24 @@ function ShippedFilterModal({
                 style={{ cursor: "pointer" }}
                 onClick={() => toDateInputRef.current?.showPicker()}
               />
+            </div>
+          </div>
+
+          <div className="shipped-filter-field">
+            <label>Ship To</label>
+            <div className="shipped-filter-input-wrap">
+              <select
+                value={values.shipTo}
+                onChange={(event) => setValues((prev) => ({ ...prev, shipTo: event.target.value }))}
+              >
+                <option value="">All</option>
+                {shipToOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+              <KeyboardArrowDownIcon className="field-icon" fontSize="small" />
             </div>
           </div>
 
