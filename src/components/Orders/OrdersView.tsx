@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch } from "../../store";
-import { fetchOrders, selectOrders, selectOrdersLoading, selectOrdersMeta, setSelectedOrder, selectSelectedOrder, clearSelectedOrder } from "../../store/orders.slice";
+import { fetchOrders, selectOrders, selectOrdersError, selectOrdersLoading, selectOrdersMeta, setSelectedOrder, selectSelectedOrder, clearSelectedOrder } from "../../store/orders.slice";
 import styles from "./OrdersView.module.css";
 import FilterIcon from "../../assets/icons/filter.svg";
 import SearchIcon from "../../assets/icons/search.png";
@@ -13,6 +13,28 @@ type TabKey = "all" | "inhouse" | "outsource";
 
 const ORDER_STATUSES = ["", "Pending", "Partial", "Complete"];
 const PATIENT_TYPES  = ["", "Walk-In", "Registered"];
+
+const PAGE_SIZE = 10;
+
+function isWithinDateRange(visitDate: string | null, fromDate: string, toDate: string) {
+  if (!fromDate && !toDate) return true;
+  if (!visitDate) return false;
+
+  const value = new Date(visitDate);
+  if (Number.isNaN(value.getTime())) return false;
+
+  if (fromDate) {
+    const from = new Date(`${fromDate}T00:00:00`);
+    if (value < from) return false;
+  }
+
+  if (toDate) {
+    const to = new Date(`${toDate}T23:59:59`);
+    if (value > to) return false;
+  }
+
+  return true;
+}
 
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 
@@ -54,7 +76,7 @@ function BillTooltip({ billNo, netAmt, billStatus }: { billNo: string; netAmt: n
         <div className={styles.billTooltip}>
           <div className={styles.billTooltipRow}>
             <span className={styles.billTooltipLabel}>Net Amt.</span>
-            <span className={styles.billTooltipValue}>₹{netAmt.toLocaleString()}</span>
+            <span className={styles.billTooltipValue}>Rs. {netAmt.toLocaleString()}</span>
           </div>
           <div className={styles.billTooltipRow}>
             <span className={styles.billTooltipLabel}>Status</span>
@@ -156,11 +178,13 @@ export default function OrdersView() {
   const dispatch      = useDispatch<AppDispatch>();
   const orders        = useSelector(selectOrders);
   const loading       = useSelector(selectOrdersLoading);
+  const error         = useSelector(selectOrdersError);
   const selectedOrder = useSelector(selectSelectedOrder);
   const meta          = useSelector(selectOrdersMeta);
 
   const [activeTab, setActiveTab]           = useState<TabKey>("all");
   const [search, setSearch]                 = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filterOpen, setFilterOpen]         = useState(false);
 
   const emptyFilters: OrderFilters = { fromDate: "", toDate: "", doctor: "", orderStatus: "", patientType: "" };
@@ -170,8 +194,22 @@ export default function OrdersView() {
   const [apiPage, setApiPage] = useState(1);
 
   useEffect(() => {
-    dispatch(fetchOrders({ limit: 10, offset: (apiPage - 1) * 10 }));
-  }, [dispatch, apiPage]);
+    const timer = window.setTimeout(() => {
+      setDebouncedSearch(search.trim());
+    }, 300);
+
+    return () => window.clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
+    dispatch(fetchOrders({
+      limit: PAGE_SIZE,
+      offset: (apiPage - 1) * PAGE_SIZE,
+      search: debouncedSearch,
+      fromDate: appliedFilters.fromDate,
+      toDate: appliedFilters.toDate,
+    }));
+  }, [dispatch, apiPage, debouncedSearch, appliedFilters.fromDate, appliedFilters.toDate]);
 
   const doctors = useMemo(() =>
     [...new Set(orders.map((o) => o.doctorName).filter(Boolean))],
@@ -188,17 +226,19 @@ export default function OrdersView() {
     const q = search.trim().toLowerCase();
     return tabFiltered.filter((o) => {
       const matchSearch = !q || o.patientName.toLowerCase().includes(q) || o.mrn.toLowerCase().includes(q) || o.billNo.toLowerCase().includes(q);
+      const matchDate    = isWithinDateRange(o.visitDate, appliedFilters.fromDate, appliedFilters.toDate);
       const matchDoctor  = !appliedFilters.doctor      || o.doctorName  === appliedFilters.doctor;
       const matchStatus  = !appliedFilters.orderStatus || o.orderStatus === appliedFilters.orderStatus;
       const matchType    = !appliedFilters.patientType || o.patientType === appliedFilters.patientType;
-      return matchSearch && matchDoctor && matchStatus && matchType;
+      return matchSearch && matchDate && matchDoctor && matchStatus && matchType;
     });
   }, [tabFiltered, search, appliedFilters]);
 
 
   // API pagination - 10 records per page
   const totalCount     = meta?.total_count ?? orders.length;
-  const totalApiPages  = Math.ceil(totalCount / 10) || 1;
+  const totalApiPages  = Math.ceil(totalCount / PAGE_SIZE) || 1;
+  const hasPrevious    = apiPage > 1;
   const hasNext        = !!meta?.next;
 
   // Client-side filtering on current page records
@@ -216,8 +256,17 @@ export default function OrdersView() {
     return nums;
   }, [apiPage, totalApiPages]);
 
-  const startEntry = totalCount > 0 ? (apiPage - 1) * 10 + 1 : 0;
-  const endEntry   = Math.min(apiPage * 10, totalCount);
+  const startEntry = totalCount > 0 ? (apiPage - 1) * PAGE_SIZE + 1 : 0;
+  const endEntry   = Math.min(apiPage * PAGE_SIZE, totalCount);
+  const retryOrders = () => {
+    dispatch(fetchOrders({
+      limit: PAGE_SIZE,
+      offset: (apiPage - 1) * PAGE_SIZE,
+      search: debouncedSearch,
+      fromDate: appliedFilters.fromDate,
+      toDate: appliedFilters.toDate,
+    }));
+  };
 
   if (selectedOrder) {
     return (
@@ -233,10 +282,6 @@ export default function OrdersView() {
         onBack={() => dispatch(clearSelectedOrder())}
       />
     );
-  }
-
-  if (loading) {
-    return <div className={styles.wrapper} style={{ padding: "2rem", color: "#9ca3af" }}>Loading orders...</div>;
   }
 
   return (
@@ -299,7 +344,25 @@ export default function OrdersView() {
             </tr>
           </thead>
           <tbody className={styles.scrollBody}>
-            {pageRows.length > 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan={8}>
+                  <div className={styles.tableState}>Loading orders...</div>
+                </td>
+              </tr>
+            ) : error ? (
+              <tr>
+                <td colSpan={8}>
+                  <div className={`${styles.tableState} ${styles.tableError}`}>
+                    <strong>{error}</strong>
+                    <span>Could not load this page. Please retry.</span>
+                    <button className={styles.retryBtn} onClick={retryOrders}>
+                      Retry
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ) : pageRows.length > 0 ? (
               pageRows.map((row) => (
                 <tr key={row.id} className={styles.row}>
                   <td>
@@ -396,6 +459,23 @@ export default function OrdersView() {
           Showing {startEntry} to {endEntry} of {totalCount} entries
         </span>
         <div className={styles.pagination}>
+          <button
+            className={styles.pageBtn}
+            disabled={!hasPrevious}
+            onClick={() => setApiPage((p) => Math.max(1, p - 1))}
+            aria-label="Previous page"
+          >
+            <svg width="7" height="11" viewBox="0 0 7 11" fill="none">
+              <path
+                d="M6 1L1 5.5L6 10"
+                stroke="#505050"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+
           {/* 3 page numbers */}
           {pageNumbers.map((p) => (
             <button
@@ -430,10 +510,14 @@ export default function OrdersView() {
       <FilterModal
         isOpen={filterOpen}
         onClose={() => setFilterOpen(false)}
-        onApply={() => setAppliedFilters(filters)}
+        onApply={() => {
+          setAppliedFilters(filters);
+          setApiPage(1);
+        }}
         onClear={() => {
           setFilters(emptyFilters);
           setAppliedFilters(emptyFilters);
+          setApiPage(1);
         }}
         values={filters}
         onChange={setFilters}

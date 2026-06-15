@@ -1,8 +1,11 @@
 import { http } from "./http";
-import type { PathologyOrderListResponse } from "../types/orders.types";
+import type {
+  OrderQueryParams,
+  PathologyOrderListResponse,
+} from "../types/orders.types";
 
 export const ordersApi = {
-  // GET /pathology-orders/
-  getAll: (params?: { limit?: number; offset?: number; search?: string }) =>
+  // GET /orders/
+  getAll: (params?: OrderQueryParams) =>
     http.get<PathologyOrderListResponse>("/orders/", { params }),
 };

@@ -82,6 +82,7 @@ export type PatientType = "Walk-In" | "Registered";
 
 export interface OrderRow {
   id: string;
+  visitDate: string | null;
   orderId: number;          // ← Vidai work_order id for detail API
   date: string;
   time: string;
@@ -141,4 +142,12 @@ export interface OrderFilters {
   doctor: string;
   orderStatus: string;
   patientType: string;
+}
+
+export interface OrderQueryParams {
+  limit?: number;
+  offset?: number;
+  search?: string;
+  fromDate?: string;
+  toDate?: string;
 }

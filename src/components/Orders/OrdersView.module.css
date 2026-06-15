@@ -6,6 +6,7 @@
     color: #111827;
     padding: 0 1.5em 1.5em;
     flex: 1;
+    height: calc(100vh - 132px);
     min-height: 0;
     display: flex;
     flex-direction: column;
@@ -92,6 +93,20 @@
     background: #ebebeb;
 }
 
+.retryBtn {
+    margin-top: 6px;
+    height: 34px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 8px;
+    background: #1a1a1a;
+    color: #fff;
+    font-family: var(--shipment-font-family);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
 
 /* ─── Tab Pills ───────────────────────────────────────────────────────────── */
 
@@ -137,6 +152,7 @@
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
+    scrollbar-gutter: stable;
 }
 
 .table {
@@ -156,6 +172,9 @@
 .table colgroup col:nth-child(8) { width: 40px;  }  /* View */
 
 .head th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
     padding: 0 10px;
     height: 40px;
     background: #fafafa;
@@ -687,4 +706,34 @@
     cursor: pointer;
     padding: 0;
     min-width: 0;
+}
+
+.tableState {
+    min-height: 220px;
+    padding: 32px 16px;
+    color: #9ca3af;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-align: center;
+    font-size: 13px;
+}
+
+.tableState strong {
+    color: #1f2937;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.tableState span {
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.tableError {
+    background: #fffaf7;
+    border-top: 1px solid #f5c9b0;
+    border-bottom: 1px solid #f5c9b0;
 }

@@ -4,7 +4,7 @@ import type { RootState } from ".";
 import { ordersApi } from "../services/orders.api";
 import type {
   PathologyOrder, OrderRow,
-  BillStatus, OrderType, PatientType,
+  BillStatus, OrderQueryParams, OrderType, PatientType,
 } from "../types/orders.types";
 
 // ── State ─────────────────────────────────────────────────────────────────────
@@ -14,6 +14,7 @@ type S = {
   selectedOrder: OrderRow | null;
   loading: boolean;
   error: string | null;
+  currentRequestId: string | null;
   meta: { total_count: number; next: string | null; offset: number; limit: number } | null;
 };
 
@@ -34,10 +35,13 @@ const mapStatus = (s: string): "Pending" | "Partial" | "Complete" => {
   return "Pending";
 };
 
+const wait = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
+
 // Maps client API response fields (name, gender, patient_type, etc.)
 const mapOrder = (d: PathologyOrder): OrderRow => ({
   id:          String(d.id),
   orderId:     d.id,
+  visitDate:   d.visit_date ?? null,
   date:        fmtDate(d.visit_date),
   time:        fmtTime(d.invoice_datetime ?? d.visit_date),
   patientName: d.patient.name,
@@ -59,13 +63,32 @@ const mapOrder = (d: PathologyOrder): OrderRow => ({
 
 export const fetchOrders = createAsyncThunk<
   { rows: OrderRow[]; meta: { total_count: number; next: string | null; offset: number; limit: number } },
-  { limit?: number; offset?: number } | void
+  OrderQueryParams | void
 >(
   "orders/fetchOrders",
   async (params) => {
     const limit  = (params as any)?.limit  ?? 10;
     const offset = (params as any)?.offset ?? 0;
-    const res = await ordersApi.getAll({ limit, offset });
+    const search = (params as any)?.search?.trim();
+    const fromDate = (params as any)?.fromDate;
+    const toDate = (params as any)?.toDate;
+    const query = {
+      limit,
+      offset,
+      ...(search ? { search } : {}),
+      ...(fromDate ? { fromDate } : {}),
+      ...(toDate ? { toDate } : {}),
+    };
+
+    let res;
+    try {
+      res = await ordersApi.getAll(query);
+    } catch (error) {
+      await wait(350);
+      console.error(error);
+      res = await ordersApi.getAll(query);
+    }
+
     return {
       rows: res.data.objects.map(mapOrder),
       meta: res.data.meta,
@@ -82,6 +105,7 @@ const ordersSlice = createSlice({
     selectedOrder: null,
     loading:       false,
     error:         null,
+    currentRequestId: null,
     meta:          null,
   }),
   reducers: {
@@ -94,9 +118,24 @@ const ordersSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchOrders.pending,   (state: DS) => { state.loading = true;  state.error = null; })
-      .addCase(fetchOrders.fulfilled, (state: DS, { payload }: PayloadAction<{ rows: OrderRow[]; meta: any }>) => { state.loading = false; state.orders = payload.rows; state.meta = payload.meta; })
-      .addCase(fetchOrders.rejected,  (state: DS) => { state.loading = false; state.error = "Failed to load orders"; });
+      .addCase(fetchOrders.pending, (state: DS, action) => {
+        state.loading = true;
+        state.error = null;
+        state.currentRequestId = action.meta.requestId;
+      })
+      .addCase(fetchOrders.fulfilled, (state: DS, action) => {
+        if (state.currentRequestId !== action.meta.requestId) return;
+        state.loading = false;
+        state.orders = action.payload.rows;
+        state.meta = action.payload.meta;
+        state.currentRequestId = null;
+      })
+      .addCase(fetchOrders.rejected, (state: DS, action) => {
+        if (state.currentRequestId !== action.meta.requestId) return;
+        state.loading = false;
+        state.error = "Failed to load orders";
+        state.currentRequestId = null;
+      });
   },
 });
 
