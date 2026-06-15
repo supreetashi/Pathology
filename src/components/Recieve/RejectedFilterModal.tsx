@@ -1,48 +1,39 @@
 import { useEffect, useRef, useState } from "react";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import CloseIcon from "@mui/icons-material/Close";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 
-export type ActivityLogFilterValues = {
+export type RejectedFilterValues = {
   dateFilterType: "ship" | "receive";
   fromDate: string;
   toDate: string;
-  shipFrom: string;
-  shipTo: string;
-  shipBy: string;
-  receiveAt: string;
-  receiveBy: string;
+  specimenType: string;
+  testName: string;
   service: string;
 };
 
-type ActivityLogFilterModalProps = {
+type RejectedFilterModalProps = {
   isOpen: boolean;
-  initialValues: ActivityLogFilterValues;
-  shipFromOptions: string[];
-  shipToOptions: string[];
-  shipByOptions: string[];
-  receiveAtOptions: string[];
-  receiveByOptions: string[];
+  initialValues: RejectedFilterValues;
+  specimenOptions: string[];
+  testOptions: string[];
   serviceOptions: string[];
   onClose: () => void;
-  onApply: (values: ActivityLogFilterValues) => void;
+  onApply: (values: RejectedFilterValues) => void;
   onClear: () => void;
 };
 
-function ActivityLogFilterModal({
+function RejectedFilterModal({
   isOpen,
   initialValues,
-  shipFromOptions,
-  shipToOptions,
-  shipByOptions,
-  receiveAtOptions,
-  receiveByOptions,
+  specimenOptions,
+  testOptions,
   serviceOptions,
   onClose,
   onApply,
   onClear,
-}: ActivityLogFilterModalProps) {
-  const [values, setValues] = useState<ActivityLogFilterValues>(initialValues);
+}: RejectedFilterModalProps) {
+  const [values, setValues] = useState<RejectedFilterValues>(initialValues);
 
   const fromDateInputRef = useRef<HTMLInputElement>(null);
   const toDateInputRef = useRef<HTMLInputElement>(null);
@@ -77,20 +68,20 @@ function ActivityLogFilterModal({
   return (
     <div className="receive-modal-overlay" role="presentation" onClick={onClose}>
       <div
-        className="activity-filter-modal"
+        className="shipped-filter-modal"
         role="dialog"
         aria-modal="true"
-        aria-label="Activity logs filters"
+        aria-label="Rejected filters"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="activity-filter-header">
+        <div className="shipped-filter-header">
           <h3>Filters</h3>
           <button type="button" className="receive-modal-close" onClick={onClose} aria-label="Close filters">
             <CloseIcon fontSize="small" />
           </button>
         </div>
 
-        <div className="activity-filter-content">
+        <div className="shipped-filter-content">
           <h4 className="activity-filter-subtitle">Apply Date Filter</h4>
           <div className="activity-filter-radio-row">
             <label className="activity-radio-option">
@@ -113,10 +104,10 @@ function ActivityLogFilterModal({
             </label>
           </div>
 
-          <div className="activity-filter-grid">
-            <div className="activity-filter-field">
+          <div className="shipped-filter-grid">
+            <div className="shipped-filter-field">
               <label>From Date</label>
-              <div className="activity-filter-input-wrap">
+              <div className="shipped-filter-input-wrap">
                 <input
                   type="text"
                   value={formatDateDisplay(values.fromDate)}
@@ -141,9 +132,9 @@ function ActivityLogFilterModal({
               </div>
             </div>
 
-            <div className="activity-filter-field">
+            <div className="shipped-filter-field">
               <label>To Date</label>
-              <div className="activity-filter-input-wrap">
+              <div className="shipped-filter-input-wrap">
                 <input
                   type="text"
                   value={formatDateDisplay(values.toDate)}
@@ -168,15 +159,15 @@ function ActivityLogFilterModal({
               </div>
             </div>
 
-            <div className="activity-filter-field">
-              <label>Ship From</label>
-              <div className="activity-filter-input-wrap">
+            <div className="shipped-filter-field">
+              <label>Specimen Type</label>
+              <div className="shipped-filter-input-wrap">
                 <select
-                  value={values.shipFrom}
-                  onChange={(event) => setValues((prev) => ({ ...prev, shipFrom: event.target.value }))}
+                  value={values.specimenType}
+                  onChange={(event) => setValues((prev) => ({ ...prev, specimenType: event.target.value }))}
                 >
                   <option value="">All</option>
-                  {shipFromOptions.map((option) => (
+                  {specimenOptions.map((option) => (
                     <option key={option} value={option}>
                       {option}
                     </option>
@@ -186,15 +177,15 @@ function ActivityLogFilterModal({
               </div>
             </div>
 
-            <div className="activity-filter-field">
-              <label>Ship To</label>
-              <div className="activity-filter-input-wrap">
+            <div className="shipped-filter-field">
+              <label>Test Name</label>
+              <div className="shipped-filter-input-wrap">
                 <select
-                  value={values.shipTo}
-                  onChange={(event) => setValues((prev) => ({ ...prev, shipTo: event.target.value }))}
+                  value={values.testName}
+                  onChange={(event) => setValues((prev) => ({ ...prev, testName: event.target.value }))}
                 >
                   <option value="">All</option>
-                  {shipToOptions.map((option) => (
+                  {testOptions.map((option) => (
                     <option key={option} value={option}>
                       {option}
                     </option>
@@ -204,63 +195,9 @@ function ActivityLogFilterModal({
               </div>
             </div>
 
-            <div className="activity-filter-field">
-              <label>Ship By</label>
-              <div className="activity-filter-input-wrap">
-                <select
-                  value={values.shipBy}
-                  onChange={(event) => setValues((prev) => ({ ...prev, shipBy: event.target.value }))}
-                >
-                  <option value="">All</option>
-                  {shipByOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-                <KeyboardArrowDownIcon className="field-icon" fontSize="small" />
-              </div>
-            </div>
-
-            <div className="activity-filter-field">
-              <label>Receive At</label>
-              <div className="activity-filter-input-wrap">
-                <select
-                  value={values.receiveAt}
-                  onChange={(event) => setValues((prev) => ({ ...prev, receiveAt: event.target.value }))}
-                >
-                  <option value="">All</option>
-                  {receiveAtOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-                <KeyboardArrowDownIcon className="field-icon" fontSize="small" />
-              </div>
-            </div>
-
-            <div className="activity-filter-field">
-              <label>Receive By</label>
-              <div className="activity-filter-input-wrap">
-                <select
-                  value={values.receiveBy}
-                  onChange={(event) => setValues((prev) => ({ ...prev, receiveBy: event.target.value }))}
-                >
-                  <option value="">All</option>
-                  {receiveByOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-                <KeyboardArrowDownIcon className="field-icon" fontSize="small" />
-              </div>
-            </div>
-
-            <div className="activity-filter-field">
+            <div className="shipped-filter-field full-width">
               <label>Service</label>
-              <div className="activity-filter-input-wrap">
+              <div className="shipped-filter-input-wrap">
                 <select
                   value={values.service}
                   onChange={(event) => setValues((prev) => ({ ...prev, service: event.target.value }))}
@@ -278,11 +215,11 @@ function ActivityLogFilterModal({
           </div>
         </div>
 
-        <div className="activity-filter-actions">
-          <button type="button" className="activity-filter-clear" onClick={onClear}>
+        <div className="shipped-filter-actions">
+          <button type="button" className="shipped-filter-clear" onClick={onClear}>
             Clear All
           </button>
-          <button type="button" className="activity-filter-apply" onClick={() => onApply(values)}>
+          <button type="button" className="shipped-filter-apply" onClick={() => onApply(values)}>
             Apply
           </button>
         </div>
@@ -291,4 +228,4 @@ function ActivityLogFilterModal({
   );
 }
 
-export default ActivityLogFilterModal;
+export default RejectedFilterModal;
