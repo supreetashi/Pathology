@@ -285,54 +285,62 @@ const ResultDetails: React.FC<Props> = ({ onBack, authorization }) => {
             </div>
           </div>
 
-          {/* BUTTON */}
-          <div className="authorize-btn-wrap">
+          {/* BOTTOM SECTION */}
+          <div className="bottom-section">
 
-            <div className="authorize-btn-wrap">
-
-              {authorization?.authorization_status?.toUpperCase() === "PENDING" && (
-                <>
-                  <button
-                    className="authorize-btn"
-                    onClick={() => setShowApprovePopup(true)}
-                    disabled={submitting}
-                  >
-                    Authorize
-                  </button>
-
-                  <button
-                    className="reject-btn"
-                    onClick={handleReject}
-                    disabled={submitting}
-                  >
-                    Reject
-                  </button>
-                </>
-              )}
-
-              {authorization?.authorization_status?.toUpperCase() === "APPROVED" && (
-                <div className="authorization-status">
-                  <span>Authorization Status :</span>
-
-                  <span className="authorized-badge">
-                    Authorized
-                  </span>
-                </div>
-              )}
-
-              {authorization?.authorization_status?.toUpperCase() === "REJECTED" && (
-                <div className="authorization-status">
-                  <span>Authorization Status :</span>
-
-                  <span className="rejected-badge">
-                    Rejected
-                  </span>
-                </div>
-              )}
-
+            <div className="note-section">
+              <label>Suggestion Note :</label>
+              <p>
+                Hb Within Normal Range. Continue Routine Monitoring If Clinically Required.
+              </p>
             </div>
 
+            <div className="note-section">
+              <label>Foot Note :</label>
+              <p>
+                Reference Ranges May Vary Depending On Age, Gender, And Clinical Condition.
+              </p>
+            </div>
+
+            {authorization?.authorization_status?.toUpperCase() !== "PENDING" && (
+              <div className="status-section">
+                <label>Authorization Status :</label>
+
+                <span
+                  className={
+                    authorization?.authorization_status?.toUpperCase() === "APPROVED"
+                      ? "authorized-badge"
+                      : "rejected-badge"
+                  }
+                >
+                  {authorization?.authorization_status?.toUpperCase() === "APPROVED"
+                    ? "Approved"
+                    : "Rejected"}
+                </span>
+              </div>
+            )}
           </div>
+
+          {/* BUTTONS ONLY FOR PENDING */}
+          {authorization?.authorization_status?.toUpperCase() === "PENDING" && (
+            <div className="authorize-btn-wrap">
+              <button
+                className="authorize-btn"
+                onClick={() => setShowApprovePopup(true)}
+                disabled={submitting}
+              >
+                Authorize
+              </button>
+
+              <button
+                className="reject-btn"
+                onClick={handleReject}
+                disabled={submitting}
+              >
+                Reject
+              </button>
+            </div>
+          )}
         </div>
       </div>
       {showApprovePopup && (
