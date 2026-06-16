@@ -29,6 +29,7 @@ type ProcessModalProps = { onClose: () => void };
 type AgencyModalProps = { onClose: () => void };
 type ScheduleModalProps = {
   rows: TestRow[];
+  patient: PatientOrder;
   onClose: () => void;
   onCollect: () => void;
 };
@@ -874,7 +875,7 @@ function AgencyModal({ onClose }: AgencyModalProps) {
   );
 }
 
-function ScheduleModal({ rows, onClose, onCollect }: ScheduleModalProps) {
+function ScheduleModal({ rows, patient, onClose, onCollect }: ScheduleModalProps) {
   const BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 
   const [collectionDate, setCollectionDate] = useState(
@@ -926,42 +927,45 @@ function ScheduleModal({ rows, onClose, onCollect }: ScheduleModalProps) {
     setLoadingCollect(true);
     setError(null);
     try {
+      let patientId: number | null = null;
+
+      // Try to find existing patient by MRN or Name
+      const patientsRes = await fetch(`${BASE}/patients/`);
+      if (patientsRes.ok) {
+        const patients = await patientsRes.json();
+        const found = Array.isArray(patients)
+          ? patients.find(
+              (p: Record<string, unknown>) =>
+                String(p.mrn) === String(patient.mrn) ||
+                String(p.patient_name) === String(patient.patientName),
+            )
+          : null;
+        if (found) patientId = found.id;
+      }
+
+      // Create patient if not found
+      if (!patientId) {
+        const createPatientRes = await fetch(`${BASE}/patients/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            patient_name: patient.patientName || "Unknown",
+            age: patient.patientAge || 0,
+            sex: patient.gender || "Unknown",
+            mrn: patient.mrn || "N/A",
+            cycle_id: patient.cycleId || "N/A",
+          }),
+        });
+        if (createPatientRes.ok) {
+          const p = await createPatientRes.json();
+          patientId = p.id;
+        }
+      }
+
+      if (!patientId) throw new Error("Could not identify or create patient.");
+
       for (const row of rows) {
         const bc = barcodeData[row.id];
-
-        let patientId: number | null = null;
-
-        // Try to find existing patient
-        const patientsRes = await fetch(`${BASE}/patients/`);
-        if (patientsRes.ok) {
-          const patients = await patientsRes.json();
-          const found = Array.isArray(patients)
-            ? patients.find(
-                (p: Record<string, unknown>) =>
-                  String(p.patient_name) === String(row.name),
-              )
-            : null;
-          if (found) patientId = found.id;
-        }
-
-        // Create patient if not found
-        if (!patientId) {
-          const createPatientRes = await fetch(`${BASE}/patients/`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              patient_name: row.name || "Unknown",
-              age: 0,
-              sex: "Unknown",
-              mrn: bc?.specimen_no || "N/A",
-              cycle_id: "N/A",
-            }),
-          });
-          if (createPatientRes.ok) {
-            const p = await createPatientRes.json();
-            patientId = p.id;
-          }
-        }
 
         // Create pending shipment
         const pendingRes = await fetch(`${BASE}/pending-shipment/`, {
@@ -969,6 +973,8 @@ function ScheduleModal({ rows, onClose, onCollect }: ScheduleModalProps) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             patient: patientId,
+            order_id: patient.orderId,
+            test_service_id: row.testServiceId,
             order_date: collectionDate,
             sample_no: bc?.specimen_no || row.specimenNo,
             sample_type: row.type === "Blood" ? "Blood" : "Urine",
@@ -980,7 +986,7 @@ function ScheduleModal({ rows, onClose, onCollect }: ScheduleModalProps) {
 
         if (!pendingRes.ok) {
           const errData = await pendingRes.json().catch(() => ({}));
-          throw new Error(`Failed: ${JSON.stringify(errData)}`);
+          throw new Error(`Failed to create pending shipment: ${JSON.stringify(errData)}`);
         }
       }
 
@@ -1245,27 +1251,60 @@ export default function ViewOrderDetails({
     message: string;
     type: "success" | "error";
   } | null>(null);
+  const [detailedPatient, setDetailedPatient] = useState<PatientOrder | null>(
+    null,
+  );
 
   const filterBtnRef = useRef<HTMLButtonElement | null>(null);
+
+  const retryTests = () => setRefreshKey((prev) => prev + 1);
+  const isLoadingTests = testsLoading && !testsError;
 
   // Fetch real tests from Vidai order detail API
   const realOrderId = orderId ?? order?.orderId;
   useEffect(() => {
-    if (!realOrderId) return;
+    let cancelled = false;
+    if (!realOrderId) return undefined;
     setTestsLoading(true);
     setTestsError(null);
-    fetch(`${BASE}/orders/${realOrderId}/`)
-      .then(async (r) => {
+
+    const wait = (ms: number) =>
+      new Promise((resolve) => window.setTimeout(resolve, ms));
+
+    const load = async () => {
+      try {
+        if (cancelled) return;
+        let r = await fetch(`${BASE}/orders/${realOrderId}/`);
         if (!r.ok) {
+          // Retry once after 350ms
+          await wait(350);
+          if (cancelled) return;
+          r = await fetch(`${BASE}/orders/${realOrderId}/`);
+        }
+
+        if (!r.ok) {
+          if (cancelled) return;
           const body = await r.text();
           throw new Error(
             `Failed to load order details (${r.status}): ${body}`,
           );
         }
 
-        return r.json();
-      })
-      .then((data) => {
+        const data = await r.json();
+        if (cancelled) return;
+
+        // Update patient info from detail API
+        if (data.patient) {
+          setDetailedPatient({
+            patientName: data.patient.name,
+            patientAge: data.patient.age,
+            gender: data.patient.gender,
+            mrn: data.patient.mrn,
+            cycleId: data.patient.cycle_number,
+            orderId: data.id,
+          });
+        }
+
         const items = data.invoice_items ?? [];
         const mapStatus = (s: string): TestStatus => {
           const lower = (s || "").toLowerCase();
@@ -1286,7 +1325,7 @@ export default function ViewOrderDetails({
             (item: Record<string, unknown>) => item.test_type !== "OUTSOURCE",
           )
           .map((item: Record<string, unknown>, idx: number) => ({
-            id: Number(item.invoice_item_id) || idx + 1,
+            id: Number(item.id) || idx + 1,
             source: "inhouse" as const,
             date: data.visit_date
               ? new Date(data.visit_date as string).toLocaleDateString("en-GB")
@@ -1306,7 +1345,7 @@ export default function ViewOrderDetails({
             service: String(item.service_name || "-"),
             specimenNo: String(item.specimen_no || "-"),
             type: String(item.sample_type || item.tube_type || "-"),
-            collectorItem: String(item.tube_type || item.tube_name || "-"),
+            collectorItem: String(item.tube_name || item.tube_type || "-"),
             status: mapStatus(String(item.collection_status || "Pending")),
             checked: false,
             testServiceId: Number(item.test_service_id),
@@ -1316,7 +1355,7 @@ export default function ViewOrderDetails({
             (item: Record<string, unknown>) => item.test_type === "OUTSOURCE",
           )
           .map((item: Record<string, unknown>, idx: number) => ({
-            id: Number(item.invoice_item_id) || idx + 1000,
+            id: Number(item.id) || idx + 1000,
             source: "outsource" as const,
             date: data.visit_date
               ? new Date(data.visit_date as string).toLocaleDateString("en-GB")
@@ -1336,7 +1375,7 @@ export default function ViewOrderDetails({
             service: String(item.service_name || "-"),
             specimenNo: String(item.specimen_no || "-"),
             type: String(item.sample_type || "-"),
-            collectorItem: String(item.tube_type || item.tube_name || "-"),
+            collectorItem: String(item.tube_name || item.tube_type || "-"),
             agency: String(item.agency_name || "-"),
             status: mapStatus(String(item.collection_status || "Pending")),
             checked: false,
@@ -1345,26 +1384,28 @@ export default function ViewOrderDetails({
         setInhouseTests(inhouse);
         setOutsourceTests(outsource);
         setCheckedRows(new Set());
-      })
-      .catch((err) => {
+      } catch (err) {
+        if (cancelled) return;
         console.error(err);
         setTestsError("Unable to load test details. Please try again later.");
         setInhouseTests([]);
         setOutsourceTests([]);
-      })
-      .finally(() => setTestsLoading(false));
+      } finally {
+        if (cancelled) return;
+        setTestsLoading(false);
+      }
+    };
+
+    load();
+    return () => {
+      cancelled = true;
+    };
   }, [BASE, realOrderId, refreshKey]);
 
   const isOutsource = activeTab === "outsource";
   const tests: TestRow[] = isOutsource ? outsourceTests : inhouseTests;
-  const totalInhouse = realOrderId
-    ? inhouseTests.filter((t) => !INHOUSE_TESTS.includes(t)).length ||
-      inhouseTests.length
-    : inhouseTests.length;
-  const totalOutsource = realOrderId
-    ? outsourceTests.filter((t) => !OUTSOURCE_TESTS.includes(t)).length ||
-      outsourceTests.length
-    : outsourceTests.length;
+  const totalInhouse = inhouseTests.length;
+  const totalOutsource = outsourceTests.length;
 
   const toggleRow = (id: number) => {
     setCheckedRows((prev) => {
@@ -1482,7 +1523,7 @@ export default function ViewOrderDetails({
     }
   };
 
-  const patient: PatientOrder = order ?? {};
+  const patient: PatientOrder = detailedPatient || order || {};
 
   return (
     <div className={styles.page}>
@@ -1505,7 +1546,14 @@ export default function ViewOrderDetails({
         {/* FIX 3: Patient bar — label small grey, value dark bold */}
         <div className={styles.patientBar}>
           <div className={styles.avatar}>
-            {patient.patientName?.charAt(0) ?? "-"}
+            {patient.patientName
+              ? patient.patientName
+                  .split(" ")
+                  .map((part) => part[0])
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .join("")
+              : "-"}
           </div>
           <div className={styles.patientFields}>
             {[
@@ -1591,53 +1639,29 @@ export default function ViewOrderDetails({
 
         {/* FIX 4 & 5: Table with proper column spacing, status centered, result icons blue */}
         <div className={styles.tableWrap}>
-          {testsLoading ? (
-            <div
-              style={{
-                padding: "40px",
-                textAlign: "center",
-                color: "#9ca3af",
-              }}
-            >
+          {isLoadingTests ? (
+            <div className={`${styles.tableState} ${styles.tableLoading}`}>
               Loading tests...
             </div>
           ) : testsError ? (
-            <div
-              style={{
-                padding: "40px",
-                textAlign: "center",
-                color: "#dc2626",
-                fontSize: "14px",
-              }}
-            >
-              {testsError}
+            <div className={`${styles.tableState} ${styles.tableError}`}>
+              <strong>{testsError}</strong>
+              <span>We could not load this order yet.</span>
+              <button className={styles.scheduleBtn} onClick={retryTests} type="button">
+                Retry
+              </button>
             </div>
           ) : tests.length === 0 ? (
-            <div
-              style={{
-                padding: "40px",
-                textAlign: "center",
-                color: "#9ca3af",
-                fontSize: "14px",
-              }}
-            >
+            <div className={styles.tableState}>
               No tests available for this order.
             </div>
           ) : filteredTests.length === 0 ? (
-            <div
-              style={{
-                padding: "40px",
-                textAlign: "center",
-                color: "#9ca3af",
-                fontSize: "14px",
-              }}
-            >
+            <div className={styles.tableState}>
               No matching tests found.
             </div>
           ) : (
             <table
               className={styles.table}
-              style={{ display: testsLoading ? "none" : "table" }}
             >
               <thead className={styles.head}>
                 <tr>
@@ -1813,6 +1837,7 @@ export default function ViewOrderDetails({
       {scheduleOpen && (
         <ScheduleModal
           rows={checkedTests.length > 0 ? checkedTests : tests.slice(0, 3)}
+          patient={patient}
           onClose={() => setScheduleOpen(false)}
           onCollect={() => {
             setScheduleOpen(false);

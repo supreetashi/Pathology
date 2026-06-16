@@ -50,6 +50,7 @@ const mapOrder = (d: PathologyOrder): OrderRow => ({
   gender:      d.patient.gender,
   patientType: (d.patient.patient_type?.toLowerCase() === "registered"
     ? "Registered" : "Walk-In") as PatientType,
+  cycleNumber: d.patient.cycle_number ?? "-",
   doctorName:  `${d.patient.doctor_first_name} ${d.patient.doctor_last_name}`.trim() || "-",
   billNo:      d.bill_number,
   netAmt:      parseFloat(d.net_amount) || 0,
