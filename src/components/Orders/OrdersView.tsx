@@ -276,6 +276,7 @@ export default function OrdersView() {
           patientAge:  selectedOrder.patientAge,
           gender:      selectedOrder.gender,
           mrn:         selectedOrder.mrn,
+          cycleId:     selectedOrder.cycleNumber,
           orderId:     selectedOrder.orderId,
         }}
         orderId={selectedOrder.orderId}

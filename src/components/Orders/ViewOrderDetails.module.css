@@ -31,7 +31,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 4px 16px 4px;
+    padding: 8px 16px 8px;
 }
 
 .backBtn {
@@ -61,8 +61,12 @@
     display: flex;
     align-items: center;
     gap: 14px;
-    padding: 2px 16px 10px;
-    border-bottom: 1px solid #f0f0f0;
+    padding: 16px;
+    margin: 0 16px 10px;
+    border: 1px solid #f1f1f1;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04);
 }
 
 .avatar {
@@ -100,7 +104,7 @@
 }
 
 .fieldValue {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     color: #111827;
     font-family: var(--shipment-font-family);
@@ -114,7 +118,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 20px 4px;
+    padding: 8px 20px 6px;
 }
 
 .listTitle {
@@ -242,6 +246,7 @@
     min-height: 0;
     overflow-y: auto;
     overflow-x: auto;
+    padding: 0 16px;
 }
 
 .table {
@@ -251,6 +256,9 @@
 }
 
 .head th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
     padding: 10px 12px;
     background: #fafafa;
     color: #9ca3af;
@@ -286,6 +294,41 @@
     border-top: none;
 }
 
+.tableState {
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #9ca3af;
+    text-align: center;
+    font-size: 13px;
+}
+
+.tableState strong {
+    color: #1f2937;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.tableState span {
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.tableError {
+    min-height: 240px;
+    background: #fffaf7;
+    border: 1px solid #f5c9b0;
+    border-radius: 12px;
+    margin: 0 0 8px;
+}
+
+.tableLoading {
+    min-height: 220px;
+}
+
 
 /* ─── Cell sub-types ─────────────────────────────────────────────────────── */
 
@@ -303,7 +346,7 @@
 
 .dateSub {
     font-size: 11px;
-    color: #6b7280;
+    color: #111827;
 }
 
 .codeCell {

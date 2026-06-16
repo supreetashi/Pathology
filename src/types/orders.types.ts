@@ -91,6 +91,7 @@ export interface OrderRow {
   mrn: string;
   gender: string;
   patientType: PatientType;
+  cycleNumber: string;      // ← added
   doctorName: string;
   billNo: string;
   netAmt: number;
